@@ -1,0 +1,9 @@
+{
+  "title": "Data",
+  "description": "Utility data endpoints such as server time and midpoint price.",
+  "icon": "Activity",
+  "pages": [
+    "get-midpoint-price",
+    "get-server-time"
+  ]
+}

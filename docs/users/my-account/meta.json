@@ -1,0 +1,16 @@
+{
+  "title": "Portfolio & Settings",
+  "description": "Track performance, update preferences, and secure your account.",
+  "icon": "UserCircle",
+  "pages": [
+    "portfolio-open-positions",
+    "transaction-history",
+    "profile-settings",
+    "public-profile",
+    "notifications",
+    "trading-preferences",
+    "two-factor-auth",
+    "affiliate-program",
+    "account-security"
+  ]
+}

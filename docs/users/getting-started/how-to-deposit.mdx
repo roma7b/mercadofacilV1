@@ -1,0 +1,47 @@
+---
+title: How to Deposit
+description: Fund your account using wallet transfer, card on-ramp, or direct USDC transfer
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+
+## Open the deposit flow
+
+<Steps>
+  <Step>
+    ### Open wallet actions
+
+    Click <strong>Deposit</strong> in the header.
+  </Step>
+  <Step>
+    ### Pick a funding method
+
+    Choose one of the available options: <strong>Wallet</strong>, <strong>Buy Crypto</strong>,
+    or <strong>Transfer Funds</strong>.
+  </Step>
+  <Step>
+    ### Confirm and wait
+
+    Approve the transaction (when required) and wait for confirmation.
+  </Step>
+</Steps>
+
+## Funding methods
+
+- <strong>Wallet</strong>: bridge/swap supported assets from your connected wallet.
+- <strong>Buy Crypto</strong>: use card/bank methods through the integrated on-ramp provider.
+- <strong>Transfer Funds</strong>: send USDC on Polygon to your displayed deposit address (copy or QR).
+
+<Callout type="warning" title="Network and token check">
+  Always send the exact token/network shown in the deposit modal. Sending unsupported assets
+  or the wrong network can permanently lose funds.
+</Callout>
+
+## USDC naming note
+
+Depending on provider/route, you may see token labels like <strong>USDC</strong> or <strong>USDC.e</strong>.
+Follow the exact token shown in your current transfer flow.
+
+## Test-mode note
+
+If your deployment is in test mode, the deposit modal may show a faucet path to get test USDC.

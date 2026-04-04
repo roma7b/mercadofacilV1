@@ -1,0 +1,18 @@
+{
+  "title": "Trade",
+  "description": "Trading endpoints for creating, managing, and canceling orders.",
+  "icon": "ArrowDownUp",
+  "pages": [
+    "cancel-all-orders",
+    "cancel-orders-for-a-market",
+    "cancel-single-order",
+    "get-builder-trades",
+    "get-order-scoring-status",
+    "get-single-order-by-id",
+    "get-trades",
+    "get-user-orders",
+    "post-a-new-order",
+    "post-multiple-orders",
+    "send-heartbeat"
+  ]
+}

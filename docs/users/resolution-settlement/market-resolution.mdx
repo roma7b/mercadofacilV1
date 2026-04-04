@@ -1,0 +1,37 @@
+---
+title: Market Resolution
+description: Understand how markets finalize and when results become claimable
+---
+
+import { SiteName } from '@/app/[locale]/docs/_components/SiteName'
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+
+## What resolution means
+
+Resolution is the final outcome decision for a market.
+After resolution is finalized, winning positions become redeemable.
+
+## Resolution timeline on market pages
+
+<Steps>
+  <Step>
+    ### Outcome proposed
+
+    The oracle workflow receives a proposed result.
+  </Step>
+  <Step>
+    ### Dispute window / final review
+
+    A challenge window may apply before the result is finalized.
+  </Step>
+  <Step>
+    ### Final outcome
+
+    The market is finalized and claims are enabled for winning positions.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  On <SiteName />, this status appears directly in the market timeline panel
+  (including dispute/final review states when available).
+</Callout>

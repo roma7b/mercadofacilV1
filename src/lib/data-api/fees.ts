@@ -1,0 +1,82 @@
+﻿import { buildDataApiUrl, normalizeDataApiAddress } from '@/lib/data-api/client'
+
+export interface FeeReceiverTotal {
+  exchange: string
+  receiver: string
+  tokenId: string
+  totalAmount: string
+  totalVolume: string
+  updatedAt: number
+}
+
+interface FeeReceiverTotalsParams {
+  endpoint: 'referrers'
+  address: string
+  exchange?: string
+  tokenId?: string
+  limit?: number
+  offset?: number
+}
+
+export async function fetchFeeReceiverTotals({
+  endpoint,
+  address,
+  exchange,
+  tokenId,
+  limit = 100,
+  offset = 0,
+}: FeeReceiverTotalsParams): Promise<FeeReceiverTotal[]> {
+  const params = new URLSearchParams()
+  params.set('address', normalizeDataApiAddress(address))
+  if (exchange) {
+    params.set('exchange', normalizeDataApiAddress(exchange))
+  }
+  if (tokenId) {
+    params.set('tokenId', tokenId)
+  }
+  params.set('limit', Math.min(Math.max(limit, 1), 500).toString())
+  params.set('offset', Math.max(offset, 0).toString())
+
+  const response = await fetch(buildDataApiUrl(`/${endpoint}`, params), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Data API request failed: ${endpoint} (${response.status})`)
+  }
+
+  return response.json() as Promise<FeeReceiverTotal[]>
+}
+
+export function sumFeeTotals(totals: FeeReceiverTotal[]): bigint {
+  return totals.reduce((acc, total) => {
+    try {
+      return acc + BigInt(total.totalAmount)
+    }
+    catch {
+      return acc
+    }
+  }, 0n)
+}
+
+export function sumFeeVolumes(totals: FeeReceiverTotal[]): bigint {
+  return totals.reduce((acc, total) => {
+    try {
+      return acc + BigInt(total.totalVolume)
+    }
+    catch {
+      return acc
+    }
+  }, 0n)
+}
+
+export function baseUnitsToNumber(amount: bigint, decimals = 6): number {
+  if (decimals <= 0) {
+    return Number(amount)
+  }
+  return Number(amount) / 10 ** decimals
+}

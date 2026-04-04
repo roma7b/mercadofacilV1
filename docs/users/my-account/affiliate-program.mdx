@@ -1,0 +1,29 @@
+---
+title: Affiliate Program
+description: Share your referral link and earn commission from referred trading activity
+---
+
+
+## Where to manage it
+
+Open <strong>/settings/affiliate</strong> to view:
+
+- your referral link
+- commission rate
+- referrals and active traders
+- referred volume and earned fees
+
+## How commission is calculated
+
+- Current trading fee: <strong><TradingFeeDisplay /></strong>
+- Your affiliate share of that fee: <strong><AffiliateShareDisplay /></strong>
+
+<Callout type="info" title="Execution basis">
+  Commission is taken from the trading fee at order execution time, not directly from raw volume.
+</Callout>
+
+<FeeCalculationExample amount={1000} />
+
+## Payout timing
+
+Affiliate earnings update as referred trades settle and can be tracked directly in the affiliate dashboard.

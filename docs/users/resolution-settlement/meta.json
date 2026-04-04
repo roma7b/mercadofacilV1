@@ -1,0 +1,10 @@
+{
+  "title": "Resolution & Settlement",
+  "description": "Track finalization states, dispute windows, and claim flows.",
+  "icon": "Gavel",
+  "pages": [
+    "market-resolution",
+    "claiming-winnings",
+    "disputes-edge-cases"
+  ]
+}

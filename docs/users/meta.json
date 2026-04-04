@@ -1,0 +1,21 @@
+{
+  "title": "User Guide",
+  "description": "How to fund your wallet, trade markets, and manage your account.",
+  "icon": "BookOpen",
+  "root": true,
+  "pages": [
+    "index",
+    "---[BookOpen]Getting Started---",
+    "...getting-started",
+    "---[ChartCandlestick]Trading Basics---",
+    "...exploring-markets",
+    "---[UserCircle]Portfolio & Settings---",
+    "...my-account",
+    "---[Gavel]Resolution & Settlement---",
+    "...resolution-settlement",
+    "---[Coins]Fees & Limits---",
+    "...fees-limits",
+    "---[LifeBuoy]Help & Support---",
+    "...help-support"
+  ]
+}

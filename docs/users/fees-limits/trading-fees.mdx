@@ -1,0 +1,37 @@
+---
+title: Trading Fees
+description: How fees are calculated and where to verify them in the UI
+---
+
+## Current trading fee
+
+- Current configured rate: <strong><TradingFeeDisplay /></strong>
+- Source: live affiliate settings configured by the platform admin
+- Display: fee estimate appears in the order flow before you submit
+
+<Callout type="info" title="Fee formula">
+  Trading fee (USDC) = order notional × <TradingFeeDisplay />.
+</Callout>
+
+## Market vs limit orders
+
+- <strong>Market orders</strong> execute immediately and apply the configured trading fee.
+- <strong>Limit orders</strong> apply fee when fills happen.
+- There is no guaranteed maker rebate in this platform flow unless explicitly configured.
+
+## Affiliate split
+
+When a valid referral is attached to the order:
+
+- Affiliate receives: <strong><AffiliateShareDisplay /></strong> of trading fee
+- Platform retains: <strong><PlatformShareDisplay /></strong> of trading fee
+
+If no referral is attached, the platform retains the full fee.
+
+<FeeCalculationExample amount={100} />
+
+## Where to confirm fee amounts
+
+- Order preview (before signing)
+- Portfolio history after fill
+- Affiliate settings/dashboard for commission context

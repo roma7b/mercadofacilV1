@@ -1,0 +1,34 @@
+project_id                           = ""
+app_name                             = "kuest-web"
+region                               = "nyc"
+github_repo                          = "kuestcom/prediction-market"
+github_branch                        = "main"
+deploy_on_push                       = true
+source_dir                           = "/"
+dockerfile_path                      = "infra/docker/Dockerfile"
+http_port                            = 3000
+instance_size_slug                   = "basic-xxs"
+instance_count                       = 1
+site_url                             = "https://markets.example.com"
+
+secret_env = {
+  BETTER_AUTH_SECRET                  = "replace-me"
+  REOWN_APPKIT_PROJECT_ID             = "replace-me"
+  CRON_SECRET                         = "replace-me"
+  POSTGRES_URL                        = "replace-me"
+  ADMIN_WALLETS                       = "replace-me"
+  KUEST_ADDRESS                       = "replace-me"
+  KUEST_API_KEY                       = "replace-me"
+  KUEST_API_SECRET                    = "replace-me"
+  KUEST_PASSPHRASE                    = "replace-me"
+
+  # Choose one storage profile:
+  # Supabase mode
+  SUPABASE_URL                        = "replace-me"
+  SUPABASE_SERVICE_ROLE_KEY           = "replace-me"
+
+  # S3 mode (use this trio when SUPABASE_* is not set)
+  # S3_BUCKET                         = "replace-me"
+  # S3_ACCESS_KEY_ID                  = "replace-me"
+  # S3_SECRET_ACCESS_KEY              = "replace-me"
+}

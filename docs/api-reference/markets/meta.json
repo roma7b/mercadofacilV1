@@ -1,0 +1,14 @@
+{
+  "title": "Markets",
+  "description": "Market discovery endpoints for listing and fetching market details.",
+  "icon": "ChartNoAxesCombined",
+  "pages": [
+    "get-market-by-id",
+    "get-market-by-slug",
+    "get-prices-history",
+    "get-sampling-markets",
+    "get-sampling-simplified-markets",
+    "get-simplified-markets",
+    "list-markets"
+  ]
+}

@@ -1,0 +1,45 @@
+---
+title: Market Overview
+description: Understand how events, markets, and outcomes are organized
+---
+
+import { SiteName } from '@/app/[locale]/docs/_components/SiteName'
+import { Steps, Step } from 'fumadocs-ui/components/steps'
+
+## Event vs market
+
+- An <strong>event</strong> groups related questions.
+- A <strong>market</strong> is the tradable question you buy/sell.
+- Each market has outcomes (usually <strong>Yes</strong>/<strong>No</strong>) with live prices.
+
+## What you see on a market page
+
+- Current chance/probability for each outcome
+- Price chart and recent trades
+- Order book (buyers and sellers waiting at each price)
+- Your open orders and position context
+
+## Typical workflow
+
+<Steps>
+  <Step>
+    ### Find a market
+
+    Browse the home feed or search by topic.
+  </Step>
+  <Step>
+    ### Open details
+
+    Enter the market page to inspect prices, chart, and liquidity.
+  </Step>
+  <Step>
+    ### Place your trade
+
+    Select an outcome, choose order type, review cost/fees, and submit.
+  </Step>
+</Steps>
+
+## Settlement summary
+
+At resolution, winning shares settle to $1 and losing shares to $0.
+On <SiteName />, claim controls appear when your position is redeemable.

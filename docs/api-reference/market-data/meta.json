@@ -1,0 +1,23 @@
+{
+  "title": "Market Data",
+  "description": "Market data endpoints for books, spreads, prices, and fee/tick metadata.",
+  "icon": "CandlestickChart",
+  "pages": [
+    "get-fee-rate",
+    "get-fee-rate-by-path-parameter",
+    "get-last-trade-price",
+    "get-last-trade-prices-query-parameters",
+    "get-last-trade-prices-request-body",
+    "get-market-price",
+    "get-market-prices-query-parameters",
+    "get-market-prices-request-body",
+    "get-midpoint-prices-query-parameters",
+    "get-midpoint-prices-request-body",
+    "get-order-book",
+    "get-order-books-request-body",
+    "get-spread",
+    "get-spreads",
+    "get-tick-size",
+    "get-tick-size-by-path-parameter"
+  ]
+}

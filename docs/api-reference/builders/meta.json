@@ -1,0 +1,9 @@
+{
+  "title": "Builders",
+  "description": "Builder performance endpoints including leaderboard and volume series.",
+  "icon": "Hammer",
+  "pages": [
+    "get-aggregated-builder-leaderboard",
+    "get-daily-builder-volume-time-series"
+  ]
+}

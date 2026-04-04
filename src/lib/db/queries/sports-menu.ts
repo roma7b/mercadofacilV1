@@ -1,0 +1,431 @@
+﻿import type { SportsMenuEntry } from '@/lib/sports-menu-types'
+import type { SportsSlugMappingEntry } from '@/lib/sports-slug-mapping'
+import type { SportsVertical } from '@/lib/sports-vertical'
+import type { QueryResult } from '@/types'
+import { and, asc, eq, gt, or, sql } from 'drizzle-orm'
+import { cacheTag, unstable_cache } from 'next/cache'
+import { cacheTags } from '@/lib/cache-tags'
+import {
+  event_sports,
+  events,
+  sports_menu_items,
+} from '@/lib/db/schema/events/tables'
+import { runQuery } from '@/lib/db/utils/run-query'
+import { db } from '@/lib/drizzle'
+import { normalizeComparableValue, slugifyText } from '@/lib/slug'
+import { SPORTS_AUXILIARY_SLUG_SQL_REGEX } from '@/lib/sports-event-slugs'
+import { buildSportsSidebarEntries } from '@/lib/sports-sidebar-entries'
+import {
+  buildSportsSlugResolver,
+  resolveCanonicalSportsSlugAlias,
+  resolveCanonicalSportsSportSlug,
+} from '@/lib/sports-slug-mapping'
+
+interface SportsMenuItemRow {
+  id: string
+  item_type: string
+  label: string | null
+  href: string | null
+  icon_url: string | null
+  parent_id: string | null
+  menu_slug: string | null
+  h1_title: string | null
+  mapped_tags: unknown
+  url_aliases: unknown
+  games_enabled: boolean
+  props_enabled: boolean
+  sort_order: number
+}
+
+interface ActiveSportsCountRow {
+  slug: string | null
+  series_slug: string | null
+  tags: unknown
+  is_hidden: boolean
+}
+
+export interface SportsMenuLayoutData {
+  menuEntries: SportsMenuEntry[]
+  countsBySlug: Record<string, number>
+  canonicalSlugByAliasKey: Record<string, string>
+  h1TitleBySlug: Record<string, string>
+  sectionsBySlug: Record<string, { gamesEnabled: boolean, propsEnabled: boolean }>
+}
+
+function toOptionalStringArray(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [] as string[]
+  }
+
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map(item => item.trim())
+    .filter(Boolean)
+}
+
+function requireText(value: string | null | undefined, rowId: string, field: string) {
+  if (typeof value !== 'string') {
+    throw new TypeError(`sports_menu_items.${field} is required for row ${rowId}`)
+  }
+
+  const normalized = value.trim()
+  if (!normalized) {
+    throw new TypeError(`sports_menu_items.${field} cannot be empty for row ${rowId}`)
+  }
+
+  return normalized
+}
+
+function buildChildrenByParent(rows: SportsMenuItemRow[]) {
+  const childrenByParent = new Map<string, SportsMenuItemRow[]>()
+
+  for (const row of rows) {
+    if (!row.parent_id) {
+      continue
+    }
+
+    const childRows = childrenByParent.get(row.parent_id) ?? []
+    childRows.push(row)
+    childrenByParent.set(row.parent_id, childRows)
+  }
+
+  for (const childRows of childrenByParent.values()) {
+    childRows.sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id))
+  }
+
+  return childrenByParent
+}
+
+function resolveGroupMenuSlug(row: SportsMenuItemRow) {
+  const configuredSlug = normalizeComparableValue(row.menu_slug)
+  if (configuredSlug) {
+    return configuredSlug
+  }
+
+  const label = row.label?.trim()
+  if (!label) {
+    return null
+  }
+
+  return slugifyText(label) || null
+}
+
+function resolveGroupSectionConfig(childRows: SportsMenuItemRow[]) {
+  const hrefs = childRows
+    .map(child => child.href?.trim().toLowerCase() ?? '')
+    .filter(Boolean)
+
+  return {
+    gamesEnabled: childRows.some(child => child.item_type === 'link' && Boolean(child.games_enabled))
+      || hrefs.some(href => href.endsWith('/games')),
+    propsEnabled: childRows.some(child => child.item_type === 'link' && Boolean(child.props_enabled))
+      || hrefs.some(href => href.endsWith('/props')),
+  }
+}
+
+function buildGroupQueryCandidates(childRows: SportsMenuItemRow[]) {
+  const queryCandidates = new Set<string>()
+
+  for (const child of childRows) {
+    if (child.item_type !== 'link') {
+      continue
+    }
+
+    const menuSlug = normalizeComparableValue(child.menu_slug)
+    if (menuSlug) {
+      queryCandidates.add(menuSlug)
+    }
+
+    if (child.label?.trim()) {
+      queryCandidates.add(child.label)
+    }
+
+    for (const alias of toOptionalStringArray(child.url_aliases)) {
+      queryCandidates.add(alias)
+    }
+
+    for (const mappedTag of toOptionalStringArray(child.mapped_tags)) {
+      queryCandidates.add(mappedTag)
+    }
+  }
+
+  return Array.from(queryCandidates)
+}
+
+const getCachedSportsMenuRows = unstable_cache(
+  async (): Promise<SportsMenuItemRow[]> => {
+    const rows = await db
+      .select({
+        id: sports_menu_items.id,
+        item_type: sports_menu_items.item_type,
+        label: sports_menu_items.label,
+        href: sports_menu_items.href,
+        icon_url: sports_menu_items.icon_url,
+        parent_id: sports_menu_items.parent_id,
+        menu_slug: sports_menu_items.menu_slug,
+        h1_title: sports_menu_items.h1_title,
+        mapped_tags: sports_menu_items.mapped_tags,
+        url_aliases: sports_menu_items.url_aliases,
+        games_enabled: sports_menu_items.games_enabled,
+        props_enabled: sports_menu_items.props_enabled,
+        sort_order: sports_menu_items.sort_order,
+      })
+      .from(sports_menu_items)
+      .where(eq(sports_menu_items.enabled, true))
+      .orderBy(asc(sports_menu_items.sort_order), asc(sports_menu_items.id))
+
+    return rows
+  },
+  ['sports-menu-items-v2'],
+  {
+    revalidate: 1800,
+    tags: [cacheTags.eventsGlobal],
+  },
+)
+
+const getCachedActiveSportsCountRows = unstable_cache(
+  async (): Promise<ActiveSportsCountRow[]> => {
+    const rows = await db
+      .select({
+        slug: event_sports.sports_sport_slug,
+        series_slug: event_sports.sports_series_slug,
+        tags: event_sports.sports_tags,
+        is_hidden: events.is_hidden,
+      })
+      .from(event_sports)
+      .innerJoin(events, eq(event_sports.event_id, events.id))
+      .where(and(
+        eq(events.status, 'active'),
+        eq(events.is_hidden, false),
+        gt(events.active_markets_count, 0),
+        sql`LOWER(TRIM(COALESCE(${events.slug}, ''))) !~ ${SPORTS_AUXILIARY_SLUG_SQL_REGEX}`,
+        or(
+          sql`TRIM(COALESCE(${event_sports.sports_sport_slug}, '')) <> ''`,
+          sql`TRIM(COALESCE(${event_sports.sports_series_slug}, '')) <> ''`,
+          sql`jsonb_array_length(COALESCE(${event_sports.sports_tags}, '[]'::jsonb)) > 0`,
+        ),
+      ))
+
+    return rows
+  },
+  ['sports-menu-active-count-rows-v4'],
+  {
+    revalidate: 300,
+    tags: [cacheTags.eventsGlobal],
+  },
+)
+
+function toMappingEntries(rows: SportsMenuItemRow[]) {
+  const childrenByParent = buildChildrenByParent(rows)
+  const mappings: SportsSlugMappingEntry[] = []
+
+  for (const row of rows) {
+    if (row.item_type === 'link') {
+      const menuSlug = normalizeComparableValue(row.menu_slug)
+      if (!menuSlug) {
+        continue
+      }
+
+      const h1Title = row.h1_title?.trim()
+      if (!h1Title) {
+        throw new Error(`sports_menu_items.h1_title is required for menu slug ${menuSlug}`)
+      }
+
+      mappings.push({
+        menuSlug,
+        h1Title,
+        label: row.label,
+        aliases: toOptionalStringArray(row.url_aliases),
+        mappedTags: toOptionalStringArray(row.mapped_tags),
+        sections: {
+          gamesEnabled: Boolean(row.games_enabled),
+          propsEnabled: Boolean(row.props_enabled),
+        },
+      })
+      continue
+    }
+
+    if (row.item_type !== 'group') {
+      continue
+    }
+
+    const menuSlug = resolveGroupMenuSlug(row)
+    if (!menuSlug) {
+      continue
+    }
+
+    const childRows = childrenByParent.get(row.id) ?? []
+    const sectionConfig = resolveGroupSectionConfig(childRows)
+    if (!sectionConfig.gamesEnabled && !sectionConfig.propsEnabled) {
+      continue
+    }
+
+    mappings.push({
+      menuSlug,
+      h1Title: row.h1_title?.trim() || requireText(row.label, row.id, 'label'),
+      label: row.label,
+      aliases: toOptionalStringArray(row.url_aliases),
+      mappedTags: toOptionalStringArray(row.mapped_tags),
+      queryCandidates: buildGroupQueryCandidates(childRows),
+      sections: sectionConfig,
+      useForEventClassification: false,
+    })
+  }
+
+  return mappings
+}
+
+function buildCountsBySlug(
+  resolver: ReturnType<typeof buildSportsSlugResolver>,
+  activeCountRows: ActiveSportsCountRow[],
+) {
+  const countsBySlug: Record<string, number> = {}
+
+  for (const row of activeCountRows) {
+    if (row.is_hidden) {
+      continue
+    }
+
+    const sportsTags = toOptionalStringArray(row.tags)
+    const canonicalSlug = resolveCanonicalSportsSportSlug(resolver, {
+      sportsSportSlug: row.slug,
+      sportsSeriesSlug: row.series_slug,
+      sportsTags,
+    })
+    if (!canonicalSlug) {
+      continue
+    }
+
+    countsBySlug[canonicalSlug] = (countsBySlug[canonicalSlug] ?? 0) + 1
+  }
+
+  return countsBySlug
+}
+
+function findDefaultLandingHref(menuEntries: SportsMenuEntry[]) {
+  for (const entry of menuEntries) {
+    if (entry.type === 'link') {
+      return entry.href
+    }
+  }
+
+  return null
+}
+
+function findDefaultFuturesHref(menuEntries: SportsMenuEntry[]) {
+  for (const entry of menuEntries) {
+    if (entry.type === 'link' && entry.href.startsWith('/sports/futures/')) {
+      return entry.href
+    }
+
+    if (entry.type === 'group') {
+      const futuresLink = entry.links.find(link => link.href.startsWith('/sports/futures/'))
+      if (futuresLink) {
+        return futuresLink.href
+      }
+    }
+  }
+
+  return null
+}
+
+export async function getSportsSlugResolverFromDb() {
+  const rows = await getCachedSportsMenuRows()
+  const mappingEntries = toMappingEntries(rows)
+  return buildSportsSlugResolver(mappingEntries)
+}
+
+export async function getSportsCountsBySlugFromDb() {
+  const [rows, activeCountRows] = await Promise.all([
+    getCachedSportsMenuRows(),
+    getCachedActiveSportsCountRows(),
+  ])
+  const resolver = buildSportsSlugResolver(toMappingEntries(rows))
+  return buildCountsBySlug(resolver, activeCountRows)
+}
+
+export const SportsMenuRepository = {
+  async getMenuEntries(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuEntry[]>> {
+    'use cache'
+    cacheTag(cacheTags.eventsGlobal)
+
+    return runQuery(async () => {
+      const rows = await getCachedSportsMenuRows()
+
+      return {
+        data: buildSportsSidebarEntries(rows, vertical),
+        error: null,
+      }
+    })
+  },
+
+  async getLayoutData(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuLayoutData>> {
+    'use cache'
+    cacheTag(cacheTags.eventsGlobal)
+
+    return runQuery(async () => {
+      const [rows, activeCountRows] = await Promise.all([
+        getCachedSportsMenuRows(),
+        getCachedActiveSportsCountRows(),
+      ])
+      const resolver = buildSportsSlugResolver(toMappingEntries(rows))
+      const menuEntries = buildSportsSidebarEntries(rows, vertical)
+      const countsBySlug = buildCountsBySlug(resolver, activeCountRows)
+
+      return {
+        data: {
+          menuEntries,
+          countsBySlug,
+          canonicalSlugByAliasKey: Object.fromEntries(resolver.canonicalByAliasKey),
+          h1TitleBySlug: Object.fromEntries(resolver.h1TitleBySlug),
+          sectionsBySlug: Object.fromEntries(resolver.sectionsBySlug),
+        },
+        error: null,
+      }
+    })
+  },
+
+  async resolveCanonicalSlugByAlias(alias: string): Promise<QueryResult<string | null>> {
+    'use cache'
+    cacheTag(cacheTags.eventsGlobal)
+
+    return runQuery(async () => {
+      const resolver = await getSportsSlugResolverFromDb()
+
+      return {
+        data: resolveCanonicalSportsSlugAlias(resolver, alias),
+        error: null,
+      }
+    })
+  },
+
+  async getLandingHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
+    'use cache'
+    cacheTag(cacheTags.eventsGlobal)
+
+    return runQuery(async () => {
+      const rows = await getCachedSportsMenuRows()
+      const menuEntries = buildSportsSidebarEntries(rows, vertical)
+
+      return {
+        data: findDefaultLandingHref(menuEntries),
+        error: null,
+      }
+    })
+  },
+
+  async getFuturesHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
+    'use cache'
+    cacheTag(cacheTags.eventsGlobal)
+
+    return runQuery(async () => {
+      const rows = await getCachedSportsMenuRows()
+      const menuEntries = buildSportsSidebarEntries(rows, vertical)
+
+      return {
+        data: findDefaultFuturesHref(menuEntries),
+        error: null,
+      }
+    })
+  },
+}
