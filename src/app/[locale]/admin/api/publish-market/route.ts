@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         .slice(0, 50)
 
       const conditionId = `pix_${safeSlug}_${Date.now()}`
-      
+
       // Criar Condição
       await db.insert(conditions).values({
         id: conditionId,
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       // Inserimos tanto nas colunas padrão (title, slug) quanto nas colunas legadas (titulo, categoria, status)
       // para garantir que a home (que usa listEvents com supabase puro) encontre os dados.
       const resolutionDate = new Date(eventData.endDate)
-      
+
       // @ts-ignore - Usando 'as any' para aceitar colunas que podem não estar no schema Drizzle mas existem no banco
       await db.insert(markets).values({
         condition_id: conditionId,

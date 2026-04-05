@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
-import { redirect } from '@/i18n/navigation'
+import { redirect } from 'next/navigation'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Chamada de API de sessao com Headers (exigencia do Better Auth no SSR)
