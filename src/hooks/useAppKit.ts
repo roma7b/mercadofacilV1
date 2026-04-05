@@ -1,10 +1,9 @@
 'use client'
 
-import type { OpenOptions, Views } from '@/hooks/useAppKitMock'
 import { createContext, use } from 'react'
 
 export interface AppKitValue {
-  open: (options?: OpenOptions<Views>) => Promise<void>
+  open: (options?: Record<string, unknown>) => Promise<void>
   close: () => Promise<void>
   isReady: boolean
 }
