@@ -4,7 +4,7 @@ import { mercadoTransactions } from '@/lib/db/schema/mercado_facil_tables'
 import { eq, and } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 
-export async function GET(req: NextRequest, { params }: { params: { orderId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   try {
     const session = await auth.api.getSession({
       headers: req.headers
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: { orderId: str
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { orderId } = params
+    const { orderId } = await params
 
     console.log(`[DEPOSIT_STATUS] Verificando status da transação ${orderId} para user ${session.user.id}`)
 
