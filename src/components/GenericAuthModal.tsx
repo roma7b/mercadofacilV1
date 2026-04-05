@@ -50,8 +50,6 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
           email,
           password,
           name: username, // Usar o nome como Display Name
-          username: username, // Salvar no adicional
-          settings: { cpf: cleanCpf }, // Armazenar o CPF via JSON no settings
         })
         if (signUpError) {
           setError(signUpError.message || 'Erro ao criar conta')
