@@ -34,7 +34,7 @@ export async function generateMarketContextAction(input: GenerateMarketContextIn
     const resolvedLocale = SUPPORTED_LOCALES.includes(locale as SupportedLocale)
       ? locale as SupportedLocale
       : DEFAULT_LOCALE
-    const { data: event, error } = await EventRepository.getEventBySlug(slug, '', resolvedLocale)
+    const { data: event, error } = await EventRepository.getEventBySlug(slug)
 
     if (error || !event) {
       console.error('Failed to fetch event for market context.', error)

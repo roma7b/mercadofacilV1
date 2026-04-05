@@ -1,4 +1,4 @@
-﻿import type { SupportedLocale } from '@/i18n/locales'
+import type { SupportedLocale } from '@/i18n/locales'
 import type { Event } from '@/types'
 import { Buffer } from 'node:buffer'
 import { ImageResponse } from 'next/og'
@@ -567,7 +567,7 @@ export async function GET(request: Request) {
 
   const [runtimeTheme, eventResult] = await Promise.all([
     loadRuntimeThemeState(),
-    EventRepository.getEventBySlug(slug, '', locale),
+    EventRepository.getEventBySlug(slug),
   ])
 
   if (eventResult.error || !eventResult.data) {
