@@ -16,7 +16,7 @@ export const MercadoFacilRepository = {
         return []
       }
 
-      return rows.map(row => this.mapToEvent(row))
+      return rows.map((row: any) => this.mapToEvent(row))
     }
     catch (error) {
       console.error('Failed to fetch Mercado Fácil live events:', error)
