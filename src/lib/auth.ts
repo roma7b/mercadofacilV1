@@ -184,7 +184,11 @@ export const auth = betterAuth({
     'http://localhost:3002',
     'http://localhost:3000',
     'http://192.168.15.50:3002',
+    'https://appmercadofacil.com',
+    'https://www.appmercadofacil.com',
+    'https://mercadofacil-v1.vercel.app',
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+    ...(process.env.NEXT_PUBLIC_SITE_URL ? [process.env.NEXT_PUBLIC_SITE_URL] : []),
   ],
   emailAndPassword: {
     enabled: true,
