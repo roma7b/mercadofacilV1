@@ -60,7 +60,18 @@ export default function AdminCreateEventForm({
   serverAssetPayload 
 }: { 
   initialData?: any,
-  serverAssetPayload?: any 
+  serverAssetPayload?: any,
+  // Props extras passadas pela page (ignoradas nesta implementação simplificada)
+  sportsSlugCatalog?: any,
+  creationMode?: string,
+  hasConfiguredServerSigners?: boolean,
+  initialDraftRecord?: any,
+  draftId?: string | null,
+  initialTitle?: string,
+  initialSlug?: string,
+  initialEndDateIso?: string,
+  allowPastResolutionDate?: boolean,
+  serverDraftPayload?: any,
 }) {
   const router = useRouter()
   // const { user } = useUser() // Removido por não estar sendo usado e causar erro de lint
