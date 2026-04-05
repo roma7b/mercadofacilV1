@@ -1,4 +1,4 @@
-﻿export interface Event {
+export interface Event {
   id: string
   slug: string
   title: string
@@ -48,6 +48,7 @@
   main_tag: string
   is_bookmarked: boolean
   is_trending: boolean
+  chance?: number
 }
 
 export interface EventSeriesEntry {
@@ -141,6 +142,7 @@ export interface Outcome {
   payout_value?: number
   buy_price?: number
   sell_price?: number
+  probability?: number
   created_at: string
   updated_at: string
 }

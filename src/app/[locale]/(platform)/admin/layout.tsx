@@ -15,13 +15,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!session?.user?.email) {
     console.log('SESSÃO NULL OU SEM EMAIL - REDIRECIONANDO PARA HOME')
-    redirect('/')
+    redirect('/' as any)
   }
 
   // Bypass direto para o seu e-mail
   if (session.user.email !== 'business.roma7b@gmail.com') {
     console.log('USUARIO LOGADO MAS NAO AUTORIZADO - REDIRECIONANDO PARA HOME')
-    redirect('/')
+    redirect('/' as any)
   }
 
   return (

@@ -52,7 +52,9 @@ async function run() {
 
   // 6. Check New Balance
   const { data: newWallet } = await db.from('wallets').select('saldo').eq('user_id', user_id).single()
-  console.log('Saldo Atual:', newWallet.saldo)
+  if (newWallet) {
+    console.log('Saldo Atual:', newWallet.saldo)
+  }
 }
 
 run().catch(console.error)
