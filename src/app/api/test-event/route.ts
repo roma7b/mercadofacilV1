@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   try {
     const route = await getEventRouteBySlug(id)
-    const pageData = await loadEventPagePublicContentData(id, 'pt-BR')
+    const pageData = await loadEventPagePublicContentData(id, 'pt')
     const rawData = await EventRepository.getEventBySlug(id)
     
     return NextResponse.json({
