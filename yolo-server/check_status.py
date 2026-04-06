@@ -1,0 +1,10 @@
+import paramiko
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect('69.62.89.218', username='root', password='v,Gq0dtCbyYN2#G3', timeout=30)
+stdin, stdout, stderr = client.exec_command('systemctl status yolo-server --no-pager')
+print('STDOUT:')
+print(stdout.read().decode())
+print('STDERR:')
+print(stderr.read().decode())
+client.close()

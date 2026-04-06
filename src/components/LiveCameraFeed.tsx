@@ -48,7 +48,6 @@ export default function LiveCameraFeed({
   onViewModeChange,
   isAdmin = false,
 }: LiveCameraFeedProps) {
-  const [status, setStatus] = useState<FeedStatus>('loading')
 
   // Se for o mercado de Bitcoin, renderiza o gráfico do TradingView
   if (liveId === 'live-btc-price-v2') {
@@ -63,9 +62,13 @@ export default function LiveCameraFeed({
       </div>
     )
   }
+  const [status, setStatus] = useState<FeedStatus>('loading')
   const [showPulse, setShowPulse] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [iaConnected, setIaConnected] = useState(false)
+  const [iaLoading, setIaLoading] = useState(false)
+  const [iaError, setIaError] = useState(false)
+  const iaRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [calibState, setCalibState] = useState<CalibrateState>('idle')
   const [toast, setToast] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'live' | 'ia'>('live')
@@ -75,6 +78,14 @@ export default function LiveCameraFeed({
       onViewModeChange(viewMode)
     }
   }, [viewMode, onViewModeChange])
+
+  // Reseta estado da IA ao entrar no modo IA
+  useEffect(() => {
+    if (viewMode === 'ia') {
+      setIaLoading(true)
+      setIaError(false)
+    }
+  }, [viewMode])
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -466,13 +477,51 @@ export default function LiveCameraFeed({
               poster="https://images.unsplash.com/photo-1545147986-a9d6f210df77?q=80&w=640&auto=format&fit=crop"
             />
           ) : (
-            <img
-              src={`${API_URL}/video-feed/${liveId}`}
-              className="w-full h-full object-cover"
-              alt="AI Perspective"
-              onError={() => setStatus('error')}
-              onLoad={() => setStatus('live')}
-            />
+            <div className="relative w-full h-full">
+              {iaLoading && !iaError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 z-10 gap-3">
+                  <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+                  <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Conectando à IA...</p>
+                  <p className="text-[9px] text-zinc-500">Aguardando primeiros frames do YOLO</p>
+                </div>
+              )}
+              {iaError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 z-10 gap-3">
+                  <div className="w-10 h-10 rounded-full border-2 border-rose-500 flex items-center justify-center">
+                    <span className="text-rose-500 text-lg">!</span>
+                  </div>
+                  <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">IA Indisponível</p>
+                  <button
+                    onClick={() => { setIaError(false); setIaLoading(true) }}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[9px] font-black rounded-full transition-all"
+                  >
+                    Tentar Novamente
+                  </button>
+                </div>
+              )}
+              {!iaError && (
+                <img
+                  key={iaLoading ? 'loading' : 'loaded'}
+                  src={`${API_URL}/video-feed/${liveId}?t=${Date.now()}`}
+                  className="w-full h-full object-cover"
+                  alt="AI Perspective"
+                  onError={() => {
+                    // Tenta reconectar automaticamente até 3x enquanto a câmera inicializa
+                    if (iaRetryRef.current) clearTimeout(iaRetryRef.current)
+                    iaRetryRef.current = setTimeout(() => {
+                      setIaLoading(false)
+                      setIaError(true)
+                    }, 8000)
+                  }}
+                  onLoad={() => {
+                    if (iaRetryRef.current) clearTimeout(iaRetryRef.current)
+                    setIaLoading(false)
+                    setIaError(false)
+                    setStatus('live')
+                  }}
+                />
+              )}
+            </div>
           )}
 
           {viewMode === 'live' && (

@@ -158,9 +158,15 @@ def process_stream(stream_id: str):
     print(f"[{stream_id}] Iniciando stream: {cam.stream_url}")
 
     while cam.running:
-        cap = cv2.VideoCapture(cam.stream_url)
+        # Configura o OpenCV para usar FFmpeg com suporte a HLS/HTTPS
+        cap = cv2.VideoCapture(cam.stream_url, cv2.CAP_FFMPEG)
+        # Parâmetros FFmpeg para streams HLS com TLS
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
+        cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 15000)
+        cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, 15000)
+        
         if not cap.isOpened():
-            print(f"[{stream_id}] Falha ao abrir stream. Tentando em 10s...")
+            print(f"[{stream_id}] Falha ao abrir stream com CAP_FFMPEG. Tentando em 10s...")
             time.sleep(10)
             continue
 
@@ -372,6 +378,20 @@ async def websocket_endpoint(websocket: WebSocket, stream_id: str):
 @app.on_event("startup")
 async def startup():
     global model, supabase
+
+    print("[Init] Corrigindo compatibilidade PyTorch 2.6...")
+    try:
+        import torch
+        # Monkeypatch: Força weights_only=False para suportar modelos legados do YOLO
+        _original_load = torch.load
+        def _patched_load(*args, **kwargs):
+            if 'weights_only' not in kwargs:
+                kwargs['weights_only'] = False
+            return _original_load(*args, **kwargs)
+        torch.load = _patched_load
+        print("[Init] Monkeypatch do Torch.load aplicado com sucesso.")
+    except Exception as e:
+        print(f"[Init] Aviso: Falha ao aplicar fix do Torch: {e}")
 
     print("[Init] Carregando modelo YOLO...")
     model = YOLO(MODEL_PATH)
