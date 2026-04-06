@@ -34,7 +34,7 @@ export function LiveChat({ events, className }: LiveChatProps) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [onlineCount, setOnlineCount] = useState(Math.floor(Math.random() * (900 - 600 + 1)) + 600);
+  const [onlineCount, setOnlineCount] = useState(654); 
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Online Count Fluctuation
