@@ -671,6 +671,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                         positionTags={positionTags}
                         openOrdersCount={openOrdersCountByCondition[market.condition_id] ?? 0}
                         onCashOut={handleCashOut}
+                        isMobile={isMobile}
                       />
                     )}
 

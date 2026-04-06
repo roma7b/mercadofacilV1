@@ -32,6 +32,7 @@ interface EventMarketCardProps {
   chanceHighlightKey: string
   positionTags?: MarketPositionTag[]
   openOrdersCount?: number
+  isMobile: boolean
   onCashOut?: (market: EventMarketRow['market'], tag: MarketPositionTag) => void
 }
 
@@ -48,6 +49,7 @@ function EventMarketCardComponent({
   positionTags = [],
   openOrdersCount = 0,
   onCashOut,
+  isMobile,
 }: EventMarketCardProps) {
   const t = useExtracted()
   const normalizeOutcomeLabel = useOutcomeLabel()
@@ -114,203 +116,101 @@ function EventMarketCardComponent({
     <div
       className={cn(
         `
-          group relative z-0 flex w-full cursor-pointer flex-col items-start py-3 pr-2 pl-4 transition-all duration-200
-          ease-in-out
-          before:pointer-events-none before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 before:rounded-lg
-          before:bg-black/5 before:opacity-0 before:transition-opacity before:duration-200 before:content-['']
-          hover:before:opacity-100
-          lg:flex-row lg:items-center lg:rounded-lg lg:px-0
-          dark:before:bg-white/5
+          group relative flex w-full cursor-pointer flex-col p-4 mb-2 rounded-xl border border-border/50 
+          bg-card/30 backdrop-blur-sm transition-all duration-300 ease-in-out
+          hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary),0.05)]
+          lg:flex-row lg:items-center lg:px-6
         `,
+        isExpanded && 'border-primary/30 bg-primary/5'
       )}
       role="button"
       tabIndex={0}
       aria-expanded={isExpanded}
       onClick={onToggle}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onToggle()
-        }
-      }}
     >
-      <div className="relative w-full">
-        <div className="w-full lg:hidden">
-          <div className="mb-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-start gap-3">
-                {shouldShowIcon && (
-                  <EventIconImage
-                    src={market.icon_url}
-                    alt={market.title}
-                    sizes="42px"
-                    containerClassName="size-[42px] shrink-0 rounded-md"
-                  />
-                )}
-                <div>
-                  <div className="text-sm font-bold underline-offset-2 group-hover:underline">
-                    {market.title}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    $
-                    {resolvedVolume?.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }) || '0.00'}
-                    {' '}
-                    Vol.
-                  </div>
-                </div>
-              </div>
-              <EventMarketChance
-                market={market}
-                chanceMeta={chanceMeta}
-                layout="mobile"
-                highlightKey={chanceHighlightKey}
-                showInReviewTag={showInReviewTag}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              size="outcomeLg"
-              variant="yes"
-              className={cn({
-                'bg-yes text-white': isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES,
-              })}
-              onClick={(event) => {
-                event.stopPropagation()
-                onBuy(market, OUTCOME_INDEX.YES, 'mobile')
-              }}
-            >
-              <span className="truncate opacity-70">
-                {yesOutcomeText}
-              </span>
-              <span className="shrink-0 text-base font-bold">
-                {formatCentsLabel(yesPriceValue)}
-              </span>
-            </Button>
-            <Button
-              size="outcomeLg"
-              variant="no"
-              className={cn({
-                'bg-no text-white': isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO,
-              })}
-              onClick={(event) => {
-                event.stopPropagation()
-                onBuy(market, OUTCOME_INDEX.NO, 'mobile')
-              }}
-            >
-              <span className="truncate opacity-70">
-                {noOutcomeText}
-              </span>
-              <span className="shrink-0 text-base font-bold">
-                {formatCentsLabel(noPriceValue)}
-              </span>
-            </Button>
-          </div>
-          {shouldShowTags && (
-            <div className="mt-2">
-              <PositionTags
-                tags={resolvedPositionTags}
-                openOrdersCount={openOrdersCount}
-                onCashOut={tag => onCashOut?.(market, tag)}
-              />
-            </div>
+      <div className="flex flex-1 flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        {/* Lado Esquerdo: Título e Volume */}
+        <div className="flex items-center gap-4 lg:w-1/3">
+          {shouldShowIcon && (
+            <EventIconImage
+              src={market.icon_url}
+              alt={market.title}
+              sizes="48px"
+              containerClassName="size-12 shrink-0 rounded-lg shadow-sm"
+            />
           )}
+          <div className="flex flex-col min-w-0">
+            <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors truncate">
+              {market.title}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                R$ {resolvedVolume?.toLocaleString('pt-BR') || '0,00'} Vol.
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="hidden w-full flex-col lg:flex">
-          <div className="flex w-full items-center">
-            <div className="flex w-2/5 flex-col gap-2">
-              <div className="flex items-start gap-3">
-                {shouldShowIcon && (
-                  <EventIconImage
-                    src={market.icon_url}
-                    alt={market.title}
-                    sizes="42px"
-                    containerClassName="size-[42px] shrink-0 rounded-md"
-                  />
-                )}
-                <div>
-                  <div className="font-semibold underline-offset-2 group-hover:underline">
-                    {market.title}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    $
-                    {resolvedVolume?.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }) || '0.00'}
-                    {' '}
-                    Vol.
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Centro: Probabilidade */}
+        <div className="flex items-center justify-center lg:w-1/4">
+          <EventMarketChance
+            market={market}
+            chanceMeta={chanceMeta}
+            layout="desktop"
+            highlightKey={chanceHighlightKey}
+            showInReviewTag={showInReviewTag}
+          />
+        </div>
 
-            <div className="flex w-1/5 justify-center">
-              <EventMarketChance
-                market={market}
-                chanceMeta={chanceMeta}
-                layout="desktop"
-                highlightKey={chanceHighlightKey}
-                showInReviewTag={showInReviewTag}
-              />
+        {/* Lado Direito: Botões de Compra */}
+        <div className="flex items-center gap-2 lg:w-1/3 lg:justify-end">
+          <Button
+            size="sm"
+            className={cn(
+              "flex-1 lg:flex-none lg:w-32 h-11 rounded-lg font-bold transition-all",
+              "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20",
+              isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES && "ring-2 ring-white ring-offset-2 ring-offset-emerald-500"
+            )}
+            onClick={(event) => {
+              event.stopPropagation()
+              onBuy(market, OUTCOME_INDEX.YES, isMobile ? 'mobile' : 'desktop')
+            }}
+          >
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] uppercase tracking-wider opacity-80">{t('Buy')} Sim</span>
+              <span className="text-base">{formatCentsLabel(yesPriceValue)}</span>
             </div>
+          </Button>
 
-            <div className="ms-auto flex items-center gap-2">
-              <Button
-                size="outcomeLg"
-                variant="yes"
-                className={cn({
-                  'bg-yes text-white': isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES,
-                }, 'w-34')}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onBuy(market, OUTCOME_INDEX.YES, 'desktop')
-                }}
-              >
-                <span className="truncate opacity-70">
-                  {yesOutcomeText}
-                </span>
-                <span className="shrink-0 text-base font-bold">
-                  {formatCentsLabel(yesPriceValue)}
-                </span>
-              </Button>
-
-              <Button
-                size="outcomeLg"
-                variant="no"
-                className={cn({
-                  'bg-no text-white': isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO,
-                }, 'w-34')}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onBuy(market, OUTCOME_INDEX.NO, 'desktop')
-                }}
-              >
-                <span className="truncate opacity-70">
-                  {noOutcomeText}
-                </span>
-                <span className="shrink-0 text-base font-bold">
-                  {formatCentsLabel(noPriceValue)}
-                </span>
-              </Button>
+          <Button
+            size="sm"
+            className={cn(
+              "flex-1 lg:flex-none lg:w-32 h-11 rounded-lg font-bold transition-all",
+              "bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20",
+              isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO && "ring-2 ring-red-500 ring-offset-2"
+            )}
+            onClick={(event) => {
+              event.stopPropagation()
+              onBuy(market, OUTCOME_INDEX.NO, isMobile ? 'mobile' : 'desktop')
+            }}
+          >
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] uppercase tracking-wider opacity-80">{t('Buy')} Não</span>
+              <span className="text-base">{formatCentsLabel(noPriceValue)}</span>
             </div>
-          </div>
-          {shouldShowTags && (
-            <div className="mt-2">
-              <PositionTags
-                tags={resolvedPositionTags}
-                openOrdersCount={openOrdersCount}
-                onCashOut={tag => onCashOut?.(market, tag)}
-              />
-            </div>
-          )}
+          </Button>
         </div>
       </div>
+      
+      {shouldShowTags && (
+        <div className="absolute -bottom-2 right-4 translate-y-1/2">
+          <PositionTags
+            tags={resolvedPositionTags}
+            openOrdersCount={openOrdersCount}
+            onCashOut={tag => onCashOut?.(market, tag)}
+          />
+        </div>
+      )}
     </div>
   )
 }

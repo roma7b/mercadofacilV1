@@ -5,7 +5,7 @@ import type { OddsFormat } from '@/lib/odds-format'
 import type { SafeTransactionRequestPayload } from '@/lib/safe/transactions'
 import type { Event, Market, Outcome, UserPosition } from '@/types'
 import { useAppKitAccount } from '@/hooks/useAppKitMock'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { CheckIcon, TriangleAlertIcon } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import Form from 'next/form'
@@ -223,10 +223,39 @@ export default function EventOrderPanelForm({
     () => resolveMarketOutcome(activeMarket, OUTCOME_INDEX.NO),
     [activeMarket],
   )
+
+  const fallbackPrices = useQuery({
+    queryKey: ['mercado-live-pool-fallback', activeMarket?.slug],
+    queryFn: async () => {
+      if (!activeMarket?.slug) return null
+      if (!activeMarket.slug.startsWith('poly-') && !activeMarket.slug.startsWith('live-')) return null
+      
+      try {
+        const res = await fetch(`/api/mercado/${activeMarket.slug}`)
+        const json = await res.json()
+        if (json.success && json.data) {
+           return {
+              sim: Number(json.data.total_sim) || null,
+              nao: Number(json.data.total_nao) || null
+           }
+        }
+      } catch (e) {
+        return null
+      }
+      return null
+    },
+    enabled: Boolean(activeMarket?.slug && (activeMarket.slug.startsWith('poly-') || activeMarket.slug.startsWith('live-')))
+  })
+
   const activeLiveYesPrice = hasMatchingStoreMarket ? liveYesPrice : null
   const activeLiveNoPrice = hasMatchingStoreMarket ? liveNoPrice : null
-  const yesPrice = activeLiveYesPrice ?? resolveFallbackOutcomeUnitPrice(activeMarket, yesOutcome)
-  const noPrice = activeLiveNoPrice ?? resolveFallbackOutcomeUnitPrice(activeMarket, noOutcome)
+  const isCategorical = activeMarket && activeMarket.outcomes.length > 2
+  const yesPrice = (isCategorical && activeOutcome)
+    ? (fallbackPrices.data?.sim ?? resolveFallbackOutcomeUnitPrice(activeMarket, activeOutcome))
+    : (activeLiveYesPrice ?? fallbackPrices.data?.sim ?? resolveFallbackOutcomeUnitPrice(activeMarket, yesOutcome))
+  const noPrice = isCategorical 
+    ? null 
+    : (activeLiveNoPrice ?? fallbackPrices.data?.nao ?? resolveFallbackOutcomeUnitPrice(activeMarket, noOutcome))
   const outcomeTokenId = activeOutcome?.token_id ? String(activeOutcome.token_id) : null
   const shouldLoadOrderBookSummary = Boolean(
     outcomeTokenId
@@ -719,9 +748,13 @@ export default function EventOrderPanelForm({
     ? sellOrderSnapshot.priceCents / 100
     : null
   const avgSellPriceLabel = formatCentsLabel(avgSellPriceDollars, { fallback: '—' })
-  const outcomeFallbackBuyPriceCents = typeof activeOutcome?.buy_price === 'number'
-    ? Number((activeOutcome.buy_price * 100).toFixed(1))
-    : null
+  const fallbackActivePrice = activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? fallbackPrices.data?.sim : Math.max(0, fallbackPrices.data?.nao ?? (fallbackPrices.data?.sim !== undefined && fallbackPrices.data?.sim !== null ? 1 - fallbackPrices.data.sim! : fallbackPrices.data?.nao!))
+
+  const outcomeFallbackBuyPriceCents = fallbackActivePrice != null 
+    ? Number((fallbackActivePrice * 100).toFixed(1))
+    : activeOutcome?.buy_price != null && !Number.isNaN(Number(activeOutcome.buy_price))
+      ? Number((Number(activeOutcome.buy_price) * 100).toFixed(1))
+      : null
   const currentBuyPriceCents = (() => {
     if (isLimitOrder && state.side === ORDER_SIDE.BUY) {
       return Number.parseFloat(state.limitPrice || '0') || 0
@@ -1413,20 +1446,27 @@ export default function EventOrderPanelForm({
     }
   }
 
-  const normalizedPrimaryOutcomeIndex
-    = primaryOutcomeIndex === OUTCOME_INDEX.NO || primaryOutcomeIndex === OUTCOME_INDEX.YES
-      ? primaryOutcomeIndex
-      : OUTCOME_INDEX.YES
+  const normalizedPrimaryOutcomeIndex = typeof primaryOutcomeIndex === 'number' 
+    ? primaryOutcomeIndex 
+    : (activeMarket?.outcomes[0]?.outcome_index ?? 0)
+
+  // isCategorical already declared above
+  
   const normalizedSecondaryOutcomeIndex
     = normalizedPrimaryOutcomeIndex === OUTCOME_INDEX.YES
       ? OUTCOME_INDEX.NO
-      : OUTCOME_INDEX.YES
+      : (isCategorical ? -1 : OUTCOME_INDEX.YES) // No secondary in categorical unless we pick one
+
   const primaryOutcome = activeMarket?.outcomes.find(
     outcome => outcome.outcome_index === normalizedPrimaryOutcomeIndex,
-  ) ?? activeMarket?.outcomes[normalizedPrimaryOutcomeIndex]
-  const secondaryOutcome = activeMarket?.outcomes.find(
-    outcome => outcome.outcome_index === normalizedSecondaryOutcomeIndex,
-  ) ?? activeMarket?.outcomes[normalizedSecondaryOutcomeIndex]
+  ) ?? activeMarket?.outcomes[0]
+
+  const secondaryOutcome = isCategorical 
+    ? null 
+    : activeMarket?.outcomes.find(
+        outcome => outcome.outcome_index === normalizedSecondaryOutcomeIndex,
+      ) ?? activeMarket?.outcomes[normalizedSecondaryOutcomeIndex]
+
   const primaryPrice = normalizedPrimaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
   const secondaryPrice = normalizedSecondaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
   function handleTypeChange(nextType: typeof state.type) {
@@ -1534,43 +1574,62 @@ export default function EventOrderPanelForm({
                 onFocusInput={focusInput}
               />
 
-              <div className="mb-2 flex gap-2">
-                <EventOrderPanelOutcomeButton
-                  variant="yes"
-                  price={primaryPrice}
-                  label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) ?? t('Yes')}
-                  isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
-                  oddsFormat={oddsFormat}
-                  styleVariant={outcomeButtonStyleVariant}
-                  onSelect={() => {
-                    if (!activeMarket || !primaryOutcome) {
-                      return
-                    }
-                    if (!state.market) {
-                      state.setMarket(activeMarket)
-                    }
-                    state.setOutcome(primaryOutcome)
-                    focusInput()
-                  }}
-                />
-                <EventOrderPanelOutcomeButton
-                  variant="no"
-                  price={secondaryPrice}
-                  label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) ?? t('No')}
-                  isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
-                  oddsFormat={oddsFormat}
-                  styleVariant={outcomeButtonStyleVariant}
-                  onSelect={() => {
-                    if (!activeMarket || !secondaryOutcome) {
-                      return
-                    }
-                    if (!state.market) {
-                      state.setMarket(activeMarket)
-                    }
-                    state.setOutcome(secondaryOutcome)
-                    focusInput()
-                  }}
-                />
+              <div className={cn("mb-2 flex", isCategorical ? "flex-col gap-1.5" : "gap-2")}>
+                {isCategorical ? (
+                  // For categorical, we show the active one specifically if needed, 
+                  // but usually we just want to show YES/NO for the SELECED candidate
+                  // Standard Polymarket style: Buy/Sell for the selected outcome
+                  <>
+                    <EventOrderPanelOutcomeButton
+                      variant="yes"
+                      price={yesPrice}
+                      label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) || t('Buy')}
+                      isSelected={true}
+                      oddsFormat={oddsFormat}
+                      styleVariant={outcomeButtonStyleVariant}
+                      onSelect={() => {}} // Already selected from URL/Home card
+                    />
+                  </>
+                ) : (
+                  <>
+                    <EventOrderPanelOutcomeButton
+                      variant="yes"
+                      price={primaryPrice}
+                      label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) ?? t('Yes')}
+                      isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
+                      oddsFormat={oddsFormat}
+                      styleVariant={outcomeButtonStyleVariant}
+                      onSelect={() => {
+                        if (!activeMarket || !primaryOutcome) {
+                          return
+                        }
+                        if (!state.market) {
+                          state.setMarket(activeMarket)
+                        }
+                        state.setOutcome(primaryOutcome)
+                        focusInput()
+                      }}
+                    />
+                    <EventOrderPanelOutcomeButton
+                      variant="no"
+                      price={secondaryPrice}
+                      label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) ?? t('No')}
+                      isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
+                      oddsFormat={oddsFormat}
+                      styleVariant={outcomeButtonStyleVariant}
+                      onSelect={() => {
+                        if (!activeMarket || !secondaryOutcome) {
+                          return
+                        }
+                        if (!state.market) {
+                          state.setMarket(activeMarket)
+                        }
+                        state.setOutcome(secondaryOutcome)
+                        focusInput()
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
               {isLimitOrder
@@ -1659,7 +1718,7 @@ export default function EventOrderPanelForm({
                           `}
                         >
                           <TriangleAlertIcon className="size-4" />
-                          {t('Market buys must be at least $1')}
+                          {t('Market buys must be at least R$5')}
                         </div>
                       )}
                       {showNoLiquidityWarning && (

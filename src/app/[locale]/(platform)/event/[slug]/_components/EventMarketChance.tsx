@@ -31,7 +31,7 @@ export default function EventMarketChance({
   const [poolChance, setPoolChance] = useState<number | null>(null)
 
   useEffect(() => {
-    if (!market.slug?.startsWith('live-')) return
+    if (!market.slug?.startsWith('live-') && !market.slug?.startsWith('poly-')) return
 
     const fetchPool = async () => {
       try {
@@ -43,9 +43,7 @@ export default function EventMarketChance({
           const total = totalSim + totalNao
           if (total > 0) {
             setPoolChance(Math.round((totalSim / total) * 100))
-          } else {
-            setPoolChance(50)
-          }
+          } 
         }
       } catch (err) {
         console.error('Erro ao buscar pool no EventMarketChance:', err)
@@ -57,7 +55,9 @@ export default function EventMarketChance({
     return () => clearInterval(interval)
   }, [market.slug])
 
-  const chanceDisplayValue = poolChance !== null ? `${poolChance}%` : (chanceMeta.chanceDisplay === '—' ? '50%' : chanceMeta.chanceDisplay)
+  const chanceDisplayValue = poolChance !== null 
+    ? `${poolChance}%` 
+    : (chanceMeta.chanceDisplay === '—' ? (market.price ? `${Math.round(market.price * 100)}%` : '—') : chanceMeta.chanceDisplay)
   const isSubOnePercent = poolChance !== null ? false : chanceMeta.isSubOnePercent
 
   const chanceChangeColorClass = chanceMeta.isChanceChangePositive ? 'text-yes' : 'text-no'
@@ -69,24 +69,25 @@ export default function EventMarketChance({
   )
 
   const baseClass = layout === 'mobile'
-    ? 'text-lg font-medium'
-    : 'text-3xl font-medium'
+    ? 'text-xl font-bold'
+    : 'text-3xl font-black tracking-tight'
 
   return (
     <div
       className={cn(
-        'flex flex-col items-end gap-1',
-        { 'flex-row items-center gap-2': layout === 'desktop' },
+        'flex flex-col items-center justify-center gap-0',
+        { 'gap-1': layout === 'desktop' },
       )}
     >
-      <div className="flex items-center justify-end gap-1.5">
+      <div className="flex items-center justify-center gap-1.5">
         <span
           key={`${layout}-chance-${highlightKey}`}
             className={cn(
             baseClass,
             isSubOnePercent ? 'text-muted-foreground' : 'text-foreground',
             'motion-safe:animate-[pulse_0.8s_ease-out] motion-reduce:animate-none',
-            'inline-block w-[4ch] text-right tabular-nums',
+            'tabular-nums transition-colors duration-500',
+            poolChance !== null && poolChance > 50 ? 'text-emerald-500' : poolChance !== null && poolChance < 50 ? 'text-red-500' : ''
           )}
         >
           {chanceDisplayValue}

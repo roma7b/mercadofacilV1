@@ -48,7 +48,7 @@ export default async function HomeContent({
   }
 
   return (
-    <main className="container grid gap-4 py-4">
+    <main className="mx-auto grid w-full max-w-[1332px] gap-4 px-4 py-4 md:px-6">
       <HomeClient
         initialEvents={initialEvents}
         initialCurrentTimestamp={initialCurrentTimestamp}

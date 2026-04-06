@@ -11,6 +11,7 @@ import { updateEventLivestreamUrlAction } from '@/app/[locale]/admin/events/_act
 import { updateEventSportsFinalStateAction } from '@/app/[locale]/admin/events/_actions/update-event-sports-final-state'
 import { updateEventSyncSettingsAction } from '@/app/[locale]/admin/events/_actions/update-event-sync-settings'
 import { updateEventVisibilityAction } from '@/app/[locale]/admin/events/_actions/update-event-visibility'
+import { deleteEventAction } from '@/app/[locale]/admin/events/_actions/delete-event'
 import { useAdminEventsColumns } from '@/app/[locale]/admin/events/_components/columns'
 import { useAdminEventsTable } from '@/app/[locale]/admin/events/_hooks/useAdminEvents'
 import { Button } from '@/components/ui/button'
@@ -142,6 +143,7 @@ export default function AdminEventsTable({
   } = useAdminEventsTable()
 
   const [pendingHiddenId, setPendingHiddenId] = useState<string | null>(null)
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set())
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [savedAutoDeployEnabled, setSavedAutoDeployEnabled] = useState(initialAutoDeployNewEventsEnabled)
   const [draftAutoDeployEnabled, setDraftAutoDeployEnabled] = useState(initialAutoDeployNewEventsEnabled)
@@ -182,6 +184,32 @@ export default function AdminEventsTable({
     }
     finally {
       setPendingHiddenId(null)
+    }
+  }, [queryClient, t])
+  
+  const handleDeleteEvent = useCallback(async (event: AdminEventRow) => {
+    if (!confirm(t('Are you sure you want to delete {name}?', { name: event.title }))) {
+      return
+    }
+
+    setPendingDeleteIds(prev => new Set(prev).add(event.id))
+    try {
+      const result = await deleteEventAction(event.id)
+      if (result.success) {
+        toast.success(t('{name} deleted successfully.', { name: event.title }))
+        void queryClient.invalidateQueries({ queryKey: ['admin-events'] })
+      } else {
+        toast.error(result.error || t('Failed to delete event'))
+      }
+    } catch (error) {
+       console.error('Failed to delete event', error)
+       toast.error(t('Failed to delete event'))
+    } finally {
+      setPendingDeleteIds(prev => {
+        const next = new Set(prev)
+        next.delete(event.id)
+        return next
+      })
     }
   }, [queryClient, t])
 
@@ -366,7 +394,9 @@ export default function AdminEventsTable({
     onToggleHidden: handleToggleHidden,
     onOpenLivestreamModal: handleOpenLivestreamModal,
     onOpenSportsFinalModal: handleOpenSportsFinalModal,
+    onDelete: handleDeleteEvent,
     isUpdatingHidden: eventId => pendingHiddenId === eventId,
+    isDeleting: eventId => pendingDeleteIds.has(eventId),
   })
 
   const settingsButton = (

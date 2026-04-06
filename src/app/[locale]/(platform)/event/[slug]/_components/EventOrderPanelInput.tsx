@@ -28,7 +28,7 @@ interface EventOrderPanelInputProps {
   shouldShake?: boolean
 }
 
-const BUY_CHIPS = ['+$1', '+$5', '+$10', '+$100']
+const BUY_CHIPS = ['+R$10', '+R$50', '+R$100', '+R$500']
 
 export default function EventOrderPanelInput({
   isMobile,
@@ -146,7 +146,7 @@ export default function EventOrderPanelInput({
         variant="outline"
         className="px-2 text-xs"
         onClick={() => {
-          const chipValue = Number.parseInt(chip.substring(2), 10)
+          const chipValue = Number.parseInt(chip.substring(3), 10)
           const newValue = amountNumber + chipValue
 
           const limitedValue = Math.min(newValue, MAX_AMOUNT_INPUT)
@@ -168,7 +168,7 @@ export default function EventOrderPanelInput({
   const formattedAmount = formatDisplayAmount(amount)
   const inputValue = side === ORDER_SIDE.SELL
     ? formattedAmount
-    : formattedAmount ? `$${formattedAmount}` : ''
+    : formattedAmount ? `R$${formattedAmount}` : ''
   return (
     <>
       {isMobile
@@ -197,7 +197,7 @@ export default function EventOrderPanelInput({
                       amountSizeClass,
                       { 'animate-order-shake': shouldShake },
                     )}
-                    placeholder={side === ORDER_SIDE.SELL ? '0' : '$0'}
+                    placeholder={side === ORDER_SIDE.SELL ? '0' : 'R$0'}
                     value={inputValue}
                     onChange={e => handleInputChange(e.target.value)}
                     onBlur={e => handleBlur(e.target.value)}
@@ -236,7 +236,7 @@ export default function EventOrderPanelInput({
                           >
                             {t('Balance')}
                             {' '}
-                            {areValuesHidden ? '****' : `$${formattedBalanceText}`}
+                            {areValuesHidden ? '****' : `R$${formattedBalanceText}`}
                           </button>
                         )}
                 </div>
@@ -256,7 +256,7 @@ export default function EventOrderPanelInput({
                     amountSizeClass,
                     { 'animate-order-shake': shouldShake },
                   )}
-                  placeholder={side === ORDER_SIDE.SELL ? '0' : '$0'}
+                  placeholder={side === ORDER_SIDE.SELL ? '0' : 'R$0'}
                   value={inputValue}
                   onChange={e => handleInputChange(e.target.value)}
                   onBlur={e => handleBlur(e.target.value)}

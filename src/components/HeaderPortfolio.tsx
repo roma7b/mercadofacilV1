@@ -7,8 +7,9 @@ import { useBalance } from '@/hooks/useBalance'
 import { usePendingUsdcDeposit } from '@/hooks/usePendingUsdcDeposit'
 import { usePortfolioValue } from '@/hooks/usePortfolioValue'
 import { usePortfolioValueVisibility } from '@/stores/usePortfolioValueVisibility'
+import { cn } from '@/lib/utils'
 
-export default function HeaderPortfolio() {
+export default function HeaderPortfolio({ className }: { className?: string }) {
   const { balance, isLoadingBalance } = useBalance()
   const { hasPendingDeposit } = usePendingUsdcDeposit()
   const { isLoading, value: positionsValue } = usePortfolioValue()
@@ -24,7 +25,7 @@ export default function HeaderPortfolio() {
     : '0,00'
 
   return (
-    <div className="grid grid-cols-2 gap-x-1">
+    <div className={cn('grid grid-cols-2 gap-x-1', className)}>
       <Button
         variant="ghost"
         size="header"

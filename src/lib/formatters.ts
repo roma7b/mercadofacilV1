@@ -1,11 +1,11 @@
-﻿import { MICRO_UNIT } from '@/lib/constants'
+import { MICRO_UNIT } from '@/lib/constants'
 
-const DEFAULT_LOCALE = 'en-US'
-const DEFAULT_CURRENCY = 'USD'
+const DEFAULT_LOCALE = 'pt-BR'
+const DEFAULT_CURRENCY = 'BRL'
 
 export const priceFormatter = new Intl.NumberFormat(DEFAULT_LOCALE, {
   minimumFractionDigits: 0,
-  maximumFractionDigits: 1,
+  maximumFractionDigits: 2,
 })
 
 export const sharesFormatter = new Intl.NumberFormat(DEFAULT_LOCALE, {
@@ -146,16 +146,16 @@ export function formatPercent(value: number, options: PercentFormatOptions = {})
 
 export function formatVolume(volume: number): string {
   if (!Number.isFinite(volume) || volume < 0) {
-    return '$0'
+    return 'R$0'
   }
 
   if (volume >= MICRO_UNIT) {
-    return `$${(volume / MICRO_UNIT).toFixed(1)}M`
+    return `R$${(volume / MICRO_UNIT).toFixed(1)}M`
   }
   if (volume >= 1_000) {
-    return `$${(volume / 1_000).toFixed(0)}k`
+    return `R$${(volume / 1_000).toFixed(0)}k`
   }
-  return `$${volume.toFixed(0)}`
+  return `R$${volume.toFixed(0)}`
 }
 
 const COMPACT_THRESHOLD = 100_000
@@ -163,7 +163,7 @@ const COMPACT_MILLION = 1_000_000
 
 export function formatCompactCount(value: number) {
   if (!Number.isFinite(value)) {
-    return 'â€”'
+    return '—'
   }
 
   const abs = Math.abs(value)
@@ -184,17 +184,17 @@ export function formatCompactCount(value: number) {
 
 export function formatCompactCurrency(value: number) {
   if (!Number.isFinite(value)) {
-    return 'â€”'
+    return '—'
   }
 
   const abs = Math.abs(value)
   if (abs >= COMPACT_MILLION) {
     const compact = (abs / COMPACT_MILLION).toFixed(1).replace(/\.0$/, '')
-    return `${value < 0 ? '-' : ''}$${compact}M`
+    return `${value < 0 ? '-' : ''}R$${compact}M`
   }
   if (abs >= COMPACT_THRESHOLD) {
     const compact = Math.round(abs / 1_000).toLocaleString(DEFAULT_LOCALE)
-    return `${value < 0 ? '-' : ''}$${compact}k`
+    return `${value < 0 ? '-' : ''}R$${compact}k`
   }
 
   return formatCurrency(value)
@@ -277,7 +277,7 @@ export function formatCentsLabel(
   value: number | string | null | undefined,
   options: CentsFormatOptions = {},
 ) {
-  const fallback = options.fallback ?? 'â€”'
+  const fallback = options.fallback ?? '—'
   if (value === null || value === undefined) {
     return fallback
   }
@@ -287,13 +287,8 @@ export function formatCentsLabel(
     return fallback
   }
 
-  if (numeric <= 1) {
-    const cents = toCents(numeric)
-    return cents === null ? fallback : `${priceFormatter.format(cents)}Â¢`
-  }
-
-  const cents = Number(numeric.toFixed(1))
-  return `${priceFormatter.format(cents)}Â¢`
+  // No Brasil não usamos 'Â¢', usamos R$ formatado
+  return formatCurrency(numeric)
 }
 
 interface SharePriceFormatOptions extends CentsFormatOptions {
@@ -304,7 +299,7 @@ export function formatSharePriceLabel(
   value: number | string | null | undefined,
   options: SharePriceFormatOptions = {},
 ) {
-  const fallback = options.fallback ?? '50.0Â¢'
+  const fallback = options.fallback ?? 'R$ 0,50'
 
   if (value === null || value === undefined) {
     return fallback
@@ -313,10 +308,6 @@ export function formatSharePriceLabel(
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) {
     return fallback
-  }
-
-  if (numeric < 1) {
-    return formatCentsLabel(toCents(numeric), { fallback })
   }
 
   const digits = options.currencyDigits ?? 2

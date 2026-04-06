@@ -19,17 +19,5 @@ export default async function EventLayout({ params, children }: LayoutProps<'/[l
     </main>
   )
 
-  if (isLiveMarket) {
-    return (
-      <MockTradingOnboardingProvider>
-        {content}
-      </MockTradingOnboardingProvider>
-    )
-  }
-
-  return (
-    <TradingOnboardingProvider>
-      {content}
-    </TradingOnboardingProvider>
-  )
+  return content
 }

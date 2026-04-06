@@ -38,8 +38,8 @@ export default function EventTabSelector({
   ]), [formattedCommentsCount, t])
 
   return (
-    <div className="mt-3 flex items-center justify-between border-b border-border">
-      <ul className="flex h-8 gap-8 text-sm font-medium">
+    <div className="mt-3 flex items-center justify-between overflow-x-auto border-b border-border scrollbar-hide">
+      <ul className="flex h-8 gap-4 text-sm font-medium md:gap-8">
         {eventTabs.map((tab, index) => (
           <li
             key={tab.key}

@@ -376,7 +376,7 @@ export default function EventContent({
         <Suspense fallback={null}>
           <EventOrderQuerySync event={event} marketSlug={marketSlug} isMobile={isMobile} />
         </Suspense>
-        <div className="grid gap-6 pt-5 pb-20 md:pb-0">
+        <div className="grid gap-6 px-4 pt-2 pb-20 md:px-0 md:pt-5 md:pb-0">
           <div className={cn(shouldHideChart ? 'grid gap-2' : 'grid gap-3')} ref={contentRef}>
             <EventHeader event={event} />
 
@@ -470,9 +470,9 @@ export default function EventContent({
             `}
           >
             <div className="grid gap-6">
-              {/* Se o slug é um UUID (mercado do MercadoFácil), usa o PainelApostas PT-BR */}
+               {/* Se o slug é um UUID (mercado do MercadoFácil) ou Polymarket Hype, usa o PainelApostas PT-BR */}
               {event.slug.startsWith('live-')
-                ? <PainelApostas marketId={event.slug.replace('live-', '')} />
+                ? <PainelApostas marketId={event.slug} />
                 : (
                     <>
                       <EventOrderPanelForm

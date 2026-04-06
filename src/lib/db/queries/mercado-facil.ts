@@ -60,13 +60,31 @@ export const MercadoFacilRepository = {
       }
     }
 
+    const options = (row.opcoes && typeof row.opcoes === 'object' && row.opcoes !== null) ? row.opcoes : { sim: 'Sim', nao: 'Não' }
+    const outcomes: any[] = Object.entries(options).map(([key, text], index) => {
+      // Tentar extrair o índice da chave (ex: op_2 -> 2) ou usar o index do loop
+      const extractedIdx = key.startsWith('op_') 
+        ? parseInt(key.replace('op_', '')) 
+        : key === 'nao' ? 1 : 0
+      
+      return {
+        condition_id: id,
+        outcome_text: String(text),
+        outcome_index: extractedIdx,
+        token_id: `${id}-${extractedIdx}`,
+        is_winning_outcome: false,
+        created_at: row.created_at || new Date().toISOString(),
+        updated_at: row.updated_at || new Date().toISOString(),
+      }
+    }).sort((a, b) => a.outcome_index - b.outcome_index)
+
     const markets: Market[] = [{
       condition_id: id,
       question_id: id,
       event_id: id,
       title: row.titulo,
       slug,
-      icon_url: getIconUrl(row.tipo_contagem),
+      icon_url: row.camera_url || getIconUrl(row.tipo_contagem),
       is_active: row.status === 'AO_VIVO',
       is_resolved: row.status === 'RESOLVIDO',
       block_number: 0,
@@ -77,31 +95,12 @@ export const MercadoFacilRepository = {
       updated_at: row.updated_at || new Date().toISOString(),
       price: 0.5,
       probability: 0.5,
-      outcomes: [
-        {
-          condition_id: id,
-          outcome_text: 'Sim',
-          outcome_index: 0,
-          token_id: `${id}-0`,
-          is_winning_outcome: false,
-          created_at: row.created_at || new Date().toISOString(),
-          updated_at: row.updated_at || new Date().toISOString(),
-        },
-        {
-          condition_id: id,
-          outcome_text: 'Não',
-          outcome_index: 1,
-          token_id: `${id}-1`,
-          is_winning_outcome: false,
-          created_at: row.created_at || new Date().toISOString(),
-          updated_at: row.updated_at || new Date().toISOString(),
-        },
-      ],
+      outcomes,
       condition: {
         id,
         oracle: 'Mercado Fácil AI',
         question_id: id,
-        outcome_slot_count: 2,
+        outcome_slot_count: outcomes.length,
         resolved: row.status === 'RESOLVIDO',
         volume: Number(row.volume || 0),
         open_interest: 0,
@@ -116,7 +115,7 @@ export const MercadoFacilRepository = {
       slug,
       title: row.titulo || 'Câmera Ao Vivo',
       creator: 'Mercado Fácil',
-      icon_url: getIconUrl(row.tipo_contagem),
+      icon_url: row.camera_url || getIconUrl(row.tipo_contagem),
       livestream_url: row.camera_url,
       show_market_icons: true,
       status: row.status === 'AO_VIVO' ? 'active' : row.status === 'RESOLVIDO' ? 'resolved' : 'draft',

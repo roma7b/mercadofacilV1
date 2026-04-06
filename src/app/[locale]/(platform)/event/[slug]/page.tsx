@@ -10,6 +10,10 @@ import { getEventRouteBySlug, loadEventPagePublicContentData } from '@/lib/event
 import { resolveEventBasePath, resolveEventPagePath } from '@/lib/events-routing'
 import { STATIC_PARAMS_PLACEHOLDER } from '@/lib/static-params'
 import { loadRuntimeThemeState } from '@/lib/theme-settings'
+import { db } from '@/lib/drizzle'
+import { eq } from 'drizzle-orm'
+import { events, markets, conditions } from '@/lib/db/schema/events/tables'
+import { syncSingleMarketAction } from '@/app/[locale]/admin/mercado-hype/_actions/sync-odds'
 
 export async function generateStaticParams() {
   return [{ slug: STATIC_PARAMS_PLACEHOLDER }]
@@ -40,6 +44,25 @@ async function CachedEventPageContent({
   const eventRoute = await getEventRouteBySlug(slug)
   if (!eventRoute) {
     notFound()
+  }
+
+  // PLATAFORMA VIVA: Sincronizar Odds em Tempo Real se for Polymarket
+  if (slug.includes('poly-')) {
+    try {
+      const match = await db.select()
+        .from(conditions)
+        .innerJoin(markets, eq(conditions.id, markets.condition_id))
+        .innerJoin(events, eq(markets.event_id, events.id))
+        .where(eq(events.slug, slug))
+        .limit(1)
+
+      if (match.length > 0 && match[0].conditions.question_id) {
+        // Dispara o sync individual sem travar o carregamento (background sync)
+        syncSingleMarketAction(match[0].conditions.question_id)
+      }
+    } catch (err) {
+      console.error('[LIVE_PLATFORM_SYNC_ERROR]', err)
+    }
   }
 
   const sportsPath = resolveEventBasePath(eventRoute)

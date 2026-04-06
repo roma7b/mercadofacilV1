@@ -56,7 +56,7 @@ export default function EventCard({
         const activeMarkets = event.markets.filter(market => !isMarketResolved(market))
         return activeMarkets.length > 0 ? activeMarkets : event.markets
       })()
-  const isSingleMarket = marketsToDisplay.length === 1
+  const isSingleMarket = marketsToDisplay.length === 1 && (marketsToDisplay[0]?.outcomes?.length ?? 0) <= 2
   const primaryMarket = marketsToDisplay[0]
   const originalMarketCount = Math.max(event.total_markets_count, event.markets.length)
   const shouldUsePrimaryMarketTitle = !isResolvedEvent && isSingleMarket && originalMarketCount > 1
@@ -125,7 +125,7 @@ export default function EventCard({
   return (
     <Card
       className={cn(`
-        group flex h-45 flex-col overflow-hidden rounded-xl shadow-md shadow-black/4 transition-all
+        group flex min-h-45 h-auto flex-col overflow-hidden rounded-xl shadow-md shadow-black/4 transition-all
         hover:-translate-y-0.5 hover:shadow-black/8
         dark:hover:bg-secondary
       `)}
@@ -174,6 +174,7 @@ export default function EventCard({
                 primaryMarket={primaryMarket}
                 isResolvedEvent={isResolvedEvent}
                 resolvedOutcomeIndexByConditionId={resolvedOutcomeIndexByConditionId}
+                primaryDisplayChance={roundedPrimaryDisplayChance}
               />
             )}
           </div>

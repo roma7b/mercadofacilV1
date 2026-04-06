@@ -1,4 +1,4 @@
-﻿import type { Market, OrderSide, Outcome, User } from '@/types'
+import type { Market, OrderSide, Outcome, User } from '@/types'
 import { ORDER_SIDE } from '@/lib/constants'
 
 export type OrderValidationError
@@ -129,7 +129,7 @@ export function validateOrder({
     return { ok: false, reason: 'INVALID_AMOUNT' }
   }
 
-  if (!isLimitOrder && side === ORDER_SIDE.BUY && amountNumber < 1) {
+  if (!isLimitOrder && side === ORDER_SIDE.BUY && amountNumber < 5) {
     return { ok: false, reason: 'MARKET_MIN_AMOUNT' }
   }
 

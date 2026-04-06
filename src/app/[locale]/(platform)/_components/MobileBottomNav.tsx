@@ -13,11 +13,13 @@ import {
   HouseIcon,
   InfoIcon,
   MenuIcon,
+  PlusCircleIcon,
   SearchIcon,
   SparkleIcon,
   TrophyIcon,
   UnplugIcon,
 } from 'lucide-react'
+import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import { useExtracted, useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
@@ -58,6 +60,8 @@ const { useSession } = authClient
 
 export default function MobileBottomNav() {
   const t = useExtracted()
+  const tradingOnboarding = useOptionalTradingOnboarding()
+  const startDepositFlow = tradingOnboarding?.startDepositFlow
   const pathname = usePathname()
   const router = useRouter()
   const { open } = useAppKit()
@@ -336,9 +340,20 @@ export default function MobileBottomNav() {
             supports-backdrop-filter:bg-background/90
           `}
         >
-          <div className="grid h-16.5 grid-cols-4">
+          <div className="grid h-16.5 grid-cols-5">
             <MobileNavLink href="/" label={t('Home')} active={pathname === '/'} icon={HouseIcon} />
             <MobileNavButton label={t('Search')} active={isSearchOpen} onClick={handleSearchAction} icon={SearchIcon} />
+            
+            <MobileNavButton 
+              label={t('Deposit')} 
+              active={false} 
+              onClick={() => {
+                if (startDepositFlow) startDepositFlow()
+                else setIsGuestMenuOpen(true)
+              }} 
+              icon={PlusCircleIcon} 
+            />
+
             <MobileNavLink href="/new" label={t('New')} active={pathname === '/new'} icon={SparkleIcon} />
             {isAuthenticated
               ? (

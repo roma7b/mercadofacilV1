@@ -143,9 +143,9 @@ export default function NavigationTabs() {
   }, [activeIndex])
 
   return (
-    <nav className="sticky top-15 z-20 bg-background md:top-17">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-border" />
-      <div className="container mx-auto flex w-full min-w-0">
+    <nav className="sticky top-15 z-20 w-full border-b border-border/10 bg-background/95 backdrop-blur-sm md:top-17">
+      <div className="mx-auto flex w-full max-w-[1332px] flex-col px-4 md:px-6">
+        <div className="flex w-full min-w-0">
         <div
           id="navigation-main-tags"
           ref={containerRef}
@@ -192,6 +192,7 @@ export default function NavigationTabs() {
           </div>
         </div>
       </div>
-    </nav>
+    </div>
+  </nav>
   )
 }

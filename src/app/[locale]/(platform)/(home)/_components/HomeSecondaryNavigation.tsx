@@ -187,7 +187,7 @@ export default function HomeSecondaryNavigation({
         <div
           ref={scrollContainerRef}
           className={cn(
-            'relative flex w-full max-w-full min-w-0 items-center gap-2 overflow-x-auto',
+            'relative flex w-full max-w-full min-w-0 items-center gap-2 overflow-x-auto px-4 scrollbar-hide',
             showLeftShadow && showRightShadow
             && `
               mask-[linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]

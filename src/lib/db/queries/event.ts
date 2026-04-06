@@ -1398,6 +1398,39 @@ export const EventRepository = {
         return { data: [], error: null }
       }
 
+      // Buscar os outcomes reais do banco para todos os markets encontrados
+      const allConditionIds = [...new Set(eventsWithMarketsRaw.map(r => r.marketConditionId).filter(Boolean))]
+      const outcomesByConditionId = new Map<string, any[]>()
+      if (allConditionIds.length > 0) {
+        const outcomeRows = await db
+          .select({
+            conditionId: outcomes.condition_id,
+            outcomeText: outcomes.outcome_text,
+            outcomeIndex: outcomes.outcome_index,
+            tokenId: outcomes.token_id,
+          })
+          .from(outcomes)
+          .where(inArray(outcomes.condition_id, allConditionIds))
+          .orderBy(asc(outcomes.outcome_index))
+
+        console.log('ALL CONDITION IDS =>', allConditionIds);
+        console.log('OUTCOME ROWS =>', outcomeRows);
+
+        for (const o of outcomeRows) {
+          const cId = (o.conditionId || '').trim();
+          if (!outcomesByConditionId.has(cId)) {
+            outcomesByConditionId.set(cId, [])
+          }
+          outcomesByConditionId.get(cId)!.push({
+            id: o.tokenId || `outcome-${o.conditionId}-${o.outcomeIndex}`,
+            outcome_text: o.outcomeText || `Opção ${o.outcomeIndex}`,
+            outcome_index: Number(o.outcomeIndex) || 0,
+            price: 0.5,
+            price_24h_ago: 0.5,
+          })
+        }
+      }
+
       // Agrupa por evento
       const eventMap = new Map<string, any>()
       for (const row of eventsWithMarketsRaw) {
@@ -1431,17 +1464,24 @@ export const EventRepository = {
 
         const event = eventMap.get(row.eventId)
         const isMarketActive = row.marketIsActive && !row.marketIsResolved
+        // Usa os outcomes reais do banco; fallback para Sim/Não apenas se não houver dados
+        const cleanMarketCondId = (row.marketConditionId || '').trim();
+        const realOutcomes = outcomesByConditionId.get(cleanMarketCondId)
+        const marketOutcomes = realOutcomes && realOutcomes.length > 0
+          ? realOutcomes
+          : [
+              { id: `yes-${row.marketConditionId}`, outcome_text: 'Sim', outcome_index: 0, price: 0.5, price_24h_ago: 0.5 },
+              { id: `no-${row.marketConditionId}`, outcome_text: 'Não', outcome_index: 1, price: 0.5, price_24h_ago: 0.5 },
+            ]
         event.markets.push({
           id: row.marketConditionId,
+          condition_id: row.marketConditionId,
           slug: row.marketSlug || row.marketConditionId,
           title: row.marketTitle || row.eventTitle || '—',
           status: isMarketActive ? 'active' : 'resolved',
           is_resolved: Boolean(row.marketIsResolved),
           volume: Number(row.marketVolume) || 0,
-          outcomes: [
-            { id: `yes-${row.marketConditionId}`, outcome_text: 'Sim', outcome_index: 0, price: 0.5, price_24h_ago: 0.5 },
-            { id: `no-${row.marketConditionId}`, outcome_text: 'Não', outcome_index: 1, price: 0.5, price_24h_ago: 0.5 },
-          ],
+          outcomes: marketOutcomes,
         })
       }
 

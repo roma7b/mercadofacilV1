@@ -61,23 +61,28 @@ function HeaderMenuClient() {
         defaultIsSignUp={authModalSignUp}
       />
       {isAuthenticated && (
-        <>
-          {!isMobile && <HeaderPortfolio />}
-          {!isMobile && (
-            startDepositFlow
-              ? (
-                  <Button size="headerCompact" onClick={startDepositFlow}>
-                    {t('Deposit')}
-                  </Button>
-                )
-              : (
+        <div className="flex items-center gap-2 md:gap-3">
+          <HeaderPortfolio className="hidden md:flex" />
+          {startDepositFlow
+            ? (
+                <Button 
+                  size="headerCompact" 
+                  onClick={startDepositFlow}
+                  className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20"
+                >
+                  {t('Deposit')}
+                </Button>
+              )
+            : (
+                <div className="hidden md:block">
                   <HeaderDepositButton />
-                )
-          )}
+                </div>
+              )
+          }
           <HeaderNotifications />
           <div className="-ml-1 hidden h-5 w-px bg-border md:block" aria-hidden="true" />
           <HeaderDropdownUserMenuAuth />
-        </>
+        </div>
       )}
 
       {shouldShowGuestActions && (

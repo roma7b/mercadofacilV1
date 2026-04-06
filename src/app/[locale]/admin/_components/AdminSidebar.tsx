@@ -2,7 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react'
 import type { Route } from 'next'
-import { BadgePercentIcon, CalendarIcon, LanguagesIcon, SettingsIcon, SwatchBookIcon, TagsIcon, TextSelectIcon, UsersIcon } from 'lucide-react'
+import { BadgePercentIcon, CalendarIcon, LanguagesIcon, SettingsIcon, SparklesIcon, SwatchBookIcon, TagsIcon, TextSelectIcon, UsersIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Link, usePathname } from '@/i18n/navigation'
@@ -22,6 +22,7 @@ export default function AdminSidebar() {
     { id: 'theme', label: t('Theme'), href: '/admin/theme' as Route, icon: SwatchBookIcon },
     { id: 'locales', label: t('Locales'), href: '/admin/locales' as Route, icon: LanguagesIcon },
     { id: 'categories', label: t('Categories'), href: '/admin/categories' as Route, icon: TagsIcon },
+    { id: 'mercado-hype', label: 'Hype Factory', href: '/admin/mercado-hype' as Route, icon: SparklesIcon },
     { id: 'market-context', label: t('Market Context'), href: '/admin/market-context' as Route, icon: TextSelectIcon },
     { id: 'affiliate', label: t('Affiliate'), href: '/admin/affiliate' as Route, icon: BadgePercentIcon },
     { id: 'events', label: t('Events'), href: '/admin/events' as Route, icon: CalendarIcon },

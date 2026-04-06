@@ -1,7 +1,8 @@
 'use client'
 
 import { useDisconnect } from '@/hooks/useAppKitMock'
-import { BadgePercentIcon, ChevronDownIcon, DownloadIcon, SettingsIcon, ShieldIcon, TrophyIcon, UnplugIcon } from 'lucide-react'
+import { BadgePercentIcon, ChevronDownIcon, DownloadIcon, PlusCircleIcon, SettingsIcon, ShieldIcon, TrophyIcon, UnplugIcon } from 'lucide-react'
+import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import { useExtracted } from 'next-intl'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
@@ -38,6 +39,8 @@ export default function HeaderDropdownUserMenuAuth() {
   const isAdmin = pathname.startsWith('/admin')
   const isMobile = useIsMobile()
   const enableHoverOpen = !isMobile
+  const tradingOnboarding = useOptionalTradingOnboarding()
+  const startDepositFlow = tradingOnboarding?.startDepositFlow
   const [menuOpen, setMenuOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -190,7 +193,7 @@ export default function HeaderDropdownUserMenuAuth() {
               ? (
                   <div
                     aria-hidden="true"
-                    className="aspect-square size-8 shrink-0 rounded-full"
+                    className="aspect-square size-10 shrink-0 rounded-full md:size-8"
                     style={placeholderStyle}
                   />
                 )
@@ -198,9 +201,9 @@ export default function HeaderDropdownUserMenuAuth() {
                   <Image
                     src={avatarUrl}
                     alt="User avatar"
-                    width={32}
-                    height={32}
-                    className="aspect-square shrink-0 rounded-full object-cover"
+                    width={40}
+                    height={40}
+                    className="aspect-square size-10 shrink-0 rounded-full object-cover md:size-8"
                   />
                 )}
             <ChevronDownIcon className={`
@@ -223,6 +226,21 @@ export default function HeaderDropdownUserMenuAuth() {
           <DropdownMenuItem asChild>
             <UserInfoSection />
           </DropdownMenuItem>
+
+          {startDepositFlow && (
+            <DropdownMenuItem 
+              className="py-2 text-sm font-semibold text-primary focus:text-primary"
+              onSelect={() => {
+                handleMenuClose()
+                startDepositFlow()
+              }}
+            >
+              <div className="flex w-full items-center gap-1.5">
+                <PlusCircleIcon className="size-4" />
+                {t('Deposit')}
+              </div>
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator />
 

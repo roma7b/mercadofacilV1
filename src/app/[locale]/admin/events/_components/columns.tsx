@@ -2,7 +2,16 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import type { AdminEventRow } from '@/app/[locale]/admin/events/_hooks/useAdminEvents'
-import { ArrowUpDownIcon, EyeIcon, EyeOffIcon, RadioIcon, RepeatIcon, TrophyIcon } from 'lucide-react'
+import { 
+  ArrowUpDownIcon, 
+  EyeIcon, 
+  EyeOffIcon, 
+  RadioIcon, 
+  RepeatIcon, 
+  TrophyIcon,
+  Trash2Icon,
+  Loader2
+} from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import EventIconImage from '@/components/EventIconImage'
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +25,9 @@ interface EventColumnOptions {
   onToggleHidden: (event: AdminEventRow, nextValue: boolean) => void
   onOpenLivestreamModal: (event: AdminEventRow) => void
   onOpenSportsFinalModal: (event: AdminEventRow) => void
+  onDelete: (event: AdminEventRow) => void
   isUpdatingHidden: (eventId: string) => boolean
+  isDeleting: (eventId: string) => boolean
 }
 
 function resolveStatusVariant(status: AdminEventRow['status']): 'default' | 'secondary' | 'outline' | 'destructive' {
@@ -49,7 +60,9 @@ export function useAdminEventsColumns({
   onToggleHidden,
   onOpenLivestreamModal,
   onOpenSportsFinalModal,
+  onDelete,
   isUpdatingHidden,
+  isDeleting,
 }: EventColumnOptions): ColumnDef<AdminEventRow>[] {
   const t = useExtracted()
 
@@ -286,6 +299,23 @@ export function useAdminEventsColumns({
               <TooltipContent>
                 {event.is_hidden ? t('Show event') : t('Hide event')}
               </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => onDelete(event)}
+                  disabled={isDeleting(event.id)}
+                  aria-label={t('Delete')}
+                >
+                  {isDeleting(event.id) ? <Loader2 className="size-4 animate-spin" /> : <Trash2Icon className="size-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('Delete')}</TooltipContent>
             </Tooltip>
           </div>
         )

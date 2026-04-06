@@ -24,6 +24,8 @@ interface EventChartHeaderProps {
   tweetMarketsFinal?: boolean
 }
 
+import { useQuery } from '@tanstack/react-query'
+
 export default function EventChartHeader({
   isSingleMarket,
   activeOutcomeIndex,
@@ -41,6 +43,27 @@ export default function EventChartHeader({
   tweetCountdownTargetMs = null,
   tweetMarketsFinal = false,
 }: EventChartHeaderProps) {
+  // Fallback para mercados importados ou live que não tem histórico de gráfico (CLOB) ainda
+  const fallbackQuery = useQuery({
+    queryKey: ['header-fallback', currentEventSlug],
+    queryFn: async () => {
+      if (!currentEventSlug) return null
+      const res = await fetch(`/api/mercado/${currentEventSlug}`)
+      const json = await res.json()
+      if (json.success && json.data) {
+        const sim = Number(json.data.total_sim) || 1
+        const nao = Number(json.data.total_nao) || 1
+        return (sim / (sim + nao)) * 100
+      }
+      return null
+    },
+    enabled: yesChanceValue === null && !!currentEventSlug && (currentEventSlug.startsWith('poly-') || currentEventSlug.startsWith('live-'))
+  })
+
+  const resolvedYesChance = yesChanceValue !== null 
+    ? yesChanceValue 
+    : (fallbackQuery.data ?? null);
+
   const seriesNavigation = showSeriesNavigation
     ? <EventSeriesPills currentEventSlug={currentEventSlug} seriesEvents={seriesEvents} />
     : null
@@ -121,10 +144,10 @@ export default function EventChartHeader({
               </span>
             )}
             <div className="inline-flex items-baseline gap-0 text-2xl leading-none font-semibold">
-              {typeof yesChanceValue === 'number'
+              {typeof resolvedYesChance === 'number'
                 ? (
                     <AnimatedCounter
-                      value={yesChanceValue}
+                      value={resolvedYesChance}
                       color="currentColor"
                       fontSize="24px"
                       includeCommas={false}

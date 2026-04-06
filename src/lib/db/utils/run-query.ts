@@ -1,4 +1,4 @@
-﻿import type { QueryResult } from '@/types'
+import type { QueryResult } from '@/types'
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 
 export async function runQuery<T>(queryFn: () => Promise<QueryResult<T>>): Promise<QueryResult<T>> {

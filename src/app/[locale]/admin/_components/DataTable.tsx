@@ -209,8 +209,8 @@ export function DataTable<TData, TValue>({
         searchInputClassName={searchInputClassName}
         searchLeadingIcon={searchLeadingIcon}
       />
-      <div className="overflow-x-auto rounded-md border">
-        <Table className="w-full">
+      <div className="overflow-x-auto rounded-md border bg-card">
+        <Table className="min-w-[1200px]">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>

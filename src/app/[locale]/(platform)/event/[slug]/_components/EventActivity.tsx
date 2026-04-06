@@ -277,11 +277,11 @@ export default function EventActivity({ event }: EventActivityProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">{t('None')}</SelectItem>
-            <SelectItem value="10">$10</SelectItem>
-            <SelectItem value="100">$100</SelectItem>
-            <SelectItem value="1000">$1,000</SelectItem>
-            <SelectItem value="10000">$10,000</SelectItem>
-            <SelectItem value="100000">$100,000</SelectItem>
+            <SelectItem value="10">R$10</SelectItem>
+            <SelectItem value="100">R$100</SelectItem>
+            <SelectItem value="1000">R$1,000</SelectItem>
+            <SelectItem value="10000">R$10,000</SelectItem>
+            <SelectItem value="100000">R$100,000</SelectItem>
           </SelectContent>
         </Select>
       </div>

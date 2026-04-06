@@ -91,13 +91,13 @@ export default function EventOrderPanelMobile({
       {shouldShowDefaultTrigger && (
         <DrawerTrigger asChild>
           <div
-            className="fixed inset-x-0 z-30 border-t bg-background p-4 lg:hidden"
+            className="fixed inset-x-0 z-30 border-t bg-background/95 backdrop-blur-md px-4 py-3 lg:hidden"
             style={{ bottom: MOBILE_BOTTOM_NAV_OFFSET }}
           >
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="yes"
-                size="outcomeLg"
+                className="h-12 flex-1 rounded-xl font-bold shadow-lg shadow-emerald-500/10 active:scale-95 transition-all"
                 onClick={() => {
                   if (!activeMarket || !buyYesOutcome) {
                     return
@@ -108,18 +108,18 @@ export default function EventOrderPanelMobile({
                   state.setIsMobileOrderPanelOpen(true)
                 }}
               >
-                <span className="truncate opacity-70">
-                  {t('Buy')}
-                  {' '}
-                  {buyYesOutcomeLabel}
-                </span>
-                <span className="shrink-0 font-bold">
-                  {yesPriceLabel}
-                </span>
+                <div className="flex w-full items-center justify-between px-1">
+                  <span className="truncate text-[13px] uppercase tracking-wider opacity-90">
+                    {t('Buy')} {buyYesOutcomeLabel}
+                  </span>
+                  <span className="ml-2 shrink-0 text-base font-black">
+                    {yesPriceLabel}
+                  </span>
+                </div>
               </Button>
               <Button
                 variant="no"
-                size="outcomeLg"
+                className="h-12 flex-1 rounded-xl font-bold shadow-lg shadow-red-500/10 active:scale-95 transition-all"
                 onClick={() => {
                   if (!activeMarket || !buyNoOutcome) {
                     return
@@ -130,14 +130,14 @@ export default function EventOrderPanelMobile({
                   state.setIsMobileOrderPanelOpen(true)
                 }}
               >
-                <span className="truncate opacity-70">
-                  {t('Buy')}
-                  {' '}
-                  {buyNoOutcomeLabel}
-                </span>
-                <span className="shrink-0 font-bold">
-                  {noPriceLabel}
-                </span>
+                <div className="flex w-full items-center justify-between px-1">
+                  <span className="truncate text-[13px] uppercase tracking-wider opacity-90">
+                    {t('Buy')} {buyNoOutcomeLabel}
+                  </span>
+                  <span className="ml-2 shrink-0 text-base font-black">
+                    {noPriceLabel}
+                  </span>
+                </div>
               </Button>
             </div>
           </div>

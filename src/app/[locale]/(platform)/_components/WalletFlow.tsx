@@ -217,13 +217,54 @@ export function WalletFlow({
   }
 
   if (withdrawOpen) {
+    const [withdrawAmount, setWithdrawAmount] = useState('10')
+    const [pixKey, setPixKey] = useState('')
+    const [pixType, setPixType] = useState('CPF')
+    const [withdrawing, setWithdrawing] = useState(false)
+
+    const handleWithdraw = async () => {
+      if (!withdrawAmount || Number(withdrawAmount) < 10) {
+        toast.error('Valor mínimo de R$ 10,00')
+        return
+      }
+      if (!pixKey) {
+        toast.error('Informe a chave PIX')
+        return
+      }
+
+      setWithdrawing(true)
+      try {
+        const res = await fetch('/api/mercado/withdraw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: Number(withdrawAmount),
+            pix_key: pixKey,
+            pix_type: pixType
+          })
+        })
+
+        const data = await res.json()
+        if (res.ok) {
+          toast.success('Saque solicitado com sucesso!')
+          onWithdrawOpenChange(false)
+        } else {
+          toast.error(data.error || 'Erro ao processar saque')
+        }
+      } catch (err) {
+        toast.error('Erro de conexão. Tente novamente.')
+      } finally {
+        setWithdrawing(false)
+      }
+    }
+
     return (
       <div
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
         onClick={() => onWithdrawOpenChange(false)}
       >
         <div
-          className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl relative"
+          className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative"
           onClick={e => e.stopPropagation()}
         >
           <button 
@@ -233,17 +274,71 @@ export function WalletFlow({
             <X className="size-5" />
           </button>
 
-          <h2 className="text-xl font-bold text-white mb-4">Solicitar Saque</h2>
-          <p className="text-sm text-zinc-400 mb-6 font-medium">
-            O fluxo de saque estÃ¡ sendo migrado para o novo motor da HorsePay e estarÃ¡ disponÃvel em breve.
-          </p>
-          <Button 
-            className="w-full" 
-            variant="secondary"
-            onClick={() => onWithdrawOpenChange(false)}
-          >
-            Entendido
-          </Button>
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-white mb-2">Solicitar Saque</h2>
+              <p className="text-sm text-zinc-400">Receba seus ganhos via PIX com seguranÃ§a.</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase mb-1.5 block">Valor do Saque</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white font-medium">R$</span>
+                  <Input
+                    type="number"
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    className="pl-12 h-12 bg-zinc-900 border-zinc-800 text-white"
+                    placeholder="0,00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase mb-1.5 block">Tipo de Chave PIX</label>
+                <select 
+                  value={pixType}
+                  onChange={(e) => setPixType(e.target.value)}
+                  className="w-full h-12 rounded-md bg-zinc-900 border border-zinc-800 text-white px-3 focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="CPF">CPF</option>
+                  <option value="EMAIL">E-mail</option>
+                  <option value="PHONE">Telefone</option>
+                  <option value="RANDOM">Chave AleatÃ³ria / EVP</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase mb-1.5 block">Sua Chave PIX</label>
+                <Input
+                  type="text"
+                  value={pixKey}
+                  onInput={(e) => setPixKey(e.currentTarget.value)}
+                  className="h-12 bg-zinc-900 border-zinc-800 text-white"
+                  placeholder="Digite sua chave aqui"
+                />
+              </div>
+
+              <div className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  * Saques via PIX costumam ser processados em atÃ© 24 horas. Certifique-se de que a chave estÃ¡ correta para evitar atrasos.
+                </p>
+              </div>
+
+              <Button 
+                className="w-full h-12 text-lg font-bold" 
+                onClick={handleWithdraw}
+                disabled={withdrawing}
+              >
+                {withdrawing ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" /> Processando...
+                  </span>
+                ) : 'Confirmar Saque PIX'}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     )

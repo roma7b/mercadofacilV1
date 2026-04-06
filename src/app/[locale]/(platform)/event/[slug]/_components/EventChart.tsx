@@ -51,7 +51,7 @@ import { useWindowSize } from '@/hooks/useWindowSize'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { fetchUserActivityData, mapDataApiActivityToActivityOrder } from '@/lib/data-api/user'
 import { formatCurrency, formatSharePriceLabel, formatSharesLabel, fromMicro } from '@/lib/formatters'
-import { resolveDisplayPrice } from '@/lib/market-chance'
+import { buildChanceByMarket, normalizeMarketPrice, resolveDisplayPrice } from '@/lib/market-chance'
 import { getUserPublicAddress } from '@/lib/user-address'
 import { cn } from '@/lib/utils'
 import { useIsSingleMarket } from '@/stores/useOrder'
@@ -409,6 +409,25 @@ function EventChartComponent({
   const updateMarketYesPrices = useUpdateMarketYesPrices()
   const updateMarketQuotes = useUpdateMarketQuotes()
   const updateOutcomeChanceChanges = useUpdateEventOutcomeChanceChanges()
+
+  const fallbackPrices = useQuery({
+    queryKey: ['mercado-live-pool-fallback', event.slug],
+    queryFn: async () => {
+      if (!event.slug?.startsWith('poly-') && !event.slug?.startsWith('live-')) return null
+      try {
+        const res = await fetch(`/api/mercado/${event.slug}`)
+        const json = await res.json()
+        if (json.success && json.data) {
+           return {
+              sim: Number(json.data.total_sim) || null,
+              nao: Number(json.data.total_nao) || null
+           }
+        }
+      } catch (e) { return null }
+      return null
+    },
+    enabled: Boolean(event.slug && (event.slug.startsWith('poly-') || event.slug.startsWith('live-')))
+  })
 
   const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('ALL')
   const [activeOutcomeIndex, setActiveOutcomeIndex] = useState<
@@ -1003,12 +1022,14 @@ function EventChartComponent({
     ? storedYesChance
     : (typeof latestYesChance === 'number' && Number.isFinite(latestYesChance)
         ? latestYesChance
-        : null)
+        : (primaryMarket?.price ? (normalizeMarketPrice(primaryMarket.price) || 0) * 100 : null))
+  const fallbackActivePrice = activeOutcomeIndex === OUTCOME_INDEX.YES ? fallbackPrices.data?.sim : Math.max(0, fallbackPrices.data?.nao ?? (fallbackPrices.data?.sim !== undefined && fallbackPrices.data?.sim !== null ? 1 - fallbackPrices.data.sim! : fallbackPrices.data?.nao!))
+
   const derivedActiveChance = typeof baseYesChance === 'number'
     ? (activeOutcomeIndex === OUTCOME_INDEX.NO
         ? Math.max(0, Math.min(100, 100 - baseYesChance))
         : baseYesChance)
-    : null
+    : fallbackActivePrice != null ? fallbackActivePrice * 100 : null
   const snapshotActiveChance = showBothOutcomes && activeSeriesKey
     ? (typeof latestSnapshot[activeSeriesKey] === 'number' ? latestSnapshot[activeSeriesKey] : null)
     : null

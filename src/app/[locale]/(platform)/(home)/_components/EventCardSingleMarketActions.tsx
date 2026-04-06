@@ -1,5 +1,6 @@
 import type { Market, Outcome } from '@/types'
 import { CheckIcon, XIcon } from 'lucide-react'
+import { useExtracted } from 'next-intl'
 import { resolveBinaryOutcomeByIndex } from '@/app/[locale]/(platform)/(home)/_utils/eventCardResolvedOutcome'
 import IntentPrefetchLink from '@/components/IntentPrefetchLink'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ interface EventCardSingleMarketActionsProps {
   primaryMarket: Market | undefined
   isResolvedEvent: boolean
   resolvedOutcomeIndexByConditionId: Partial<Record<string, typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO>>
+  primaryDisplayChance?: number
 }
 
 export default function EventCardSingleMarketActions({
@@ -28,7 +30,9 @@ export default function EventCardSingleMarketActions({
   primaryMarket,
   isResolvedEvent,
   resolvedOutcomeIndexByConditionId,
+  primaryDisplayChance = 0,
 }: EventCardSingleMarketActionsProps) {
+  const t = useExtracted()
   const normalizeOutcomeLabel = useOutcomeLabel()
   if (!primaryMarket) {
     return null
@@ -76,34 +80,73 @@ export default function EventCardSingleMarketActions({
     )
   }
 
+  const isCategorical = (primaryMarket.outcomes?.length ?? 0) > 2
+
+  if (isCategorical) {
+    return (
+      <div className="mt-auto mb-2 flex flex-wrap gap-1">
+        {primaryMarket.outcomes.map((outcome: Outcome, idx: number) => (
+          <Button
+            key={idx}
+            asChild
+            variant="secondary"
+            className="h-7 px-2 py-1 text-xs"
+          >
+            <IntentPrefetchLink
+              href={resolveEventOutcomePath(event, { outcomeIndex: outcome.outcome_index })}
+            >
+              <span className="truncate">{outcome.outcome_text}</span>
+            </IntentPrefetchLink>
+          </Button>
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="mt-auto mb-2 grid grid-cols-2 gap-2">
-      <Button
-        asChild
-        variant="yes"
-        size="outcome"
-      >
-        <IntentPrefetchLink
-          href={resolveEventOutcomePath(event, {
-            outcomeIndex: OUTCOME_INDEX.YES,
-          })}
+    <div className="mt-auto mb-2 flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-1 overflow-hidden rounded-lg border bg-muted/40 p-1.5 transition-colors hover:bg-muted/60 dark:bg-secondary/40 dark:hover:bg-secondary/60">
+        <div className="ml-2 flex flex-1 items-center gap-2 overflow-hidden">
+          <span className="truncate text-[13px] font-semibold text-foreground/90">
+            {normalizeOutcomeLabel(yesOutcome.outcome_text) || yesOutcome.outcome_text}
+          </span>
+          <span className="shrink-0 text-xs font-bold text-muted-foreground tabular-nums">
+            {primaryDisplayChance}%
+          </span>
+        </div>
+        <Button
+          asChild
+          variant="yes"
+          className="h-8 min-w-[70px] px-2 py-1 text-[11px] font-extrabold uppercase tracking-tight shadow-sm"
         >
-          <span className="truncate">{normalizeOutcomeLabel(yesOutcome.outcome_text) ?? yesOutcome.outcome_text}</span>
-        </IntentPrefetchLink>
-      </Button>
-      <Button
-        asChild
-        variant="no"
-        size="outcome"
-      >
-        <IntentPrefetchLink
-          href={resolveEventOutcomePath(event, {
-            outcomeIndex: OUTCOME_INDEX.NO,
-          })}
+          <IntentPrefetchLink
+            href={resolveEventOutcomePath(event, { outcomeIndex: OUTCOME_INDEX.YES })}
+          >
+            {t('Yes')}
+          </IntentPrefetchLink>
+        </Button>
+      </div>
+      <div className="flex items-center justify-between gap-1 overflow-hidden rounded-lg border bg-muted/40 p-1.5 transition-colors hover:bg-muted/60 dark:bg-secondary/40 dark:hover:bg-secondary/60">
+        <div className="ml-2 flex flex-1 items-center gap-2 overflow-hidden">
+          <span className="truncate text-[13px] font-semibold text-foreground/90">
+            {normalizeOutcomeLabel(noOutcome.outcome_text) || noOutcome.outcome_text}
+          </span>
+          <span className="shrink-0 text-xs font-bold text-muted-foreground tabular-nums">
+            {100 - primaryDisplayChance}%
+          </span>
+        </div>
+        <Button
+          asChild
+          variant="no"
+          className="h-8 min-w-[70px] px-2 py-1 text-[11px] font-extrabold uppercase tracking-tight shadow-sm"
         >
-          <span className="truncate">{normalizeOutcomeLabel(noOutcome.outcome_text) ?? noOutcome.outcome_text}</span>
-        </IntentPrefetchLink>
-      </Button>
+          <IntentPrefetchLink
+            href={resolveEventOutcomePath(event, { outcomeIndex: OUTCOME_INDEX.NO })}
+          >
+            {t('No')}
+          </IntentPrefetchLink>
+        </Button>
+      </div>
     </div>
   )
 }

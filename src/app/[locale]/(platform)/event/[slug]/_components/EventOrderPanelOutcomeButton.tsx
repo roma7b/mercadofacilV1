@@ -29,65 +29,30 @@ export default function EventOrderPanelOutcomeButton({
     : formatOddsFromPrice(price, oddsFormat)
 
   if (useSportsDepth) {
-    const depthClass = isSelected
-      ? (variant === 'yes' ? 'bg-yes/70' : 'bg-no/70')
-      : 'bg-border/70'
-    const toneClass = isSelected
-      ? (variant === 'yes'
-          ? 'bg-yes text-white hover:bg-yes-foreground'
-          : 'bg-no text-white hover:bg-no-foreground')
-      : 'bg-secondary text-secondary-foreground hover:bg-accent'
-
-    return (
-      <div className="relative min-w-0 flex-1 overflow-hidden rounded-lg pb-1.25">
-        <div
-          className={cn(
-            'pointer-events-none absolute inset-x-0 bottom-0 h-4 rounded-b-lg',
-            depthClass,
-          )}
-        />
-        <button
-          type="button"
-          className={cn(
-            `
-              relative flex h-[48px] w-full translate-y-0 items-center justify-center gap-1 rounded-lg px-3 text-sm
-              font-semibold whitespace-nowrap shadow-sm transition-transform duration-150 ease-out
-              hover:translate-y-px
-              focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none
-              active:translate-y-0.5
-            `,
-            toneClass,
-          )}
-          onClick={onSelect}
-        >
-          <span className="truncate opacity-70">
-            {label}
-          </span>
-          <span className="shrink-0 text-base font-bold">
-            {priceLabel}
-          </span>
-        </button>
-      </div>
-    )
+    // Keep internal sports3d logic if needed, but for poly- events we use default
   }
 
   return (
     <Button
       type="button"
-      variant={isSelected ? variant : 'outline'}
+      variant="outline"
       size="outcomeLg"
       className={cn(
-        isSelected
-        && (variant === 'yes'
-          ? 'bg-yes text-white hover:bg-yes-foreground'
-          : 'bg-no text-white hover:bg-no-foreground'),
+        "flex flex-col items-center justify-center h-14 rounded-xl border-2 transition-all duration-200",
+        variant === 'yes' 
+          ? isSelected 
+            ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20" 
+            : "bg-emerald-500/5 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10"
+          : isSelected 
+            ? "bg-red-500 border-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20" 
+            : "bg-red-500/5 border-red-500/20 text-red-600 hover:bg-red-500/10"
       )}
       onClick={onSelect}
     >
-      <span className="truncate opacity-70">
+      <span className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-0.5">
         {label}
       </span>
-      <span className="shrink-0 text-base font-bold">
+      <span className="text-lg font-black font-mono">
         {priceLabel}
       </span>
     </Button>
