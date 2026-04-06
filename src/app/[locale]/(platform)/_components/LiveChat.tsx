@@ -86,7 +86,7 @@ export function LiveChat({ events, className }: LiveChatProps) {
       subscription = supabase
         .channel('public:chat_messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-          async (payload) => {
+          async (payload: any) => {
              let username = 'Anônimo';
              if (payload.new.is_bot) {
                username = payload.new.bot_name;
@@ -245,7 +245,7 @@ export function LiveChat({ events, className }: LiveChatProps) {
           <div className="w-full bg-secondary/50 border border-border rounded-xl py-5 px-4 text-center">
             <p className="text-[11px] text-muted-foreground mb-3 font-medium">Faça login para participar do chat</p>
             <Button 
-                variant="primary" 
+                variant="default" 
                 size="sm" 
                 className="w-full font-bold text-[10px] uppercase tracking-widest"
                 onClick={() => window.location.href = '/login'}
