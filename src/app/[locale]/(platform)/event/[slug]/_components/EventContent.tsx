@@ -402,7 +402,7 @@ export default function EventContent({
             <div className={cn(shouldHideChart ? 'grid gap-2' : 'grid gap-3')} ref={contentRef}>
               <EventHeader event={event} />
 
-              <div className={cn(shouldHideChart ? 'w-full' : 'min-h-[500px] w-full')}>
+              <div className={cn(shouldHideChart ? 'w-full' : 'min-h-[300px] md:min-h-[500px] w-full')}>
                 {event.slug.startsWith('live-') ? (
                   <div className="flex flex-col gap-6">
                     <LiveCameraFeed
@@ -410,7 +410,7 @@ export default function EventContent({
                       originalStreamUrl={event.livestream_url || ''}
                       className="w-full rounded-2xl border border-white/10 shadow-2xl"
                     />
-                    {isMobile && <div>{painelDeApostas}</div>}
+                    {isMobile && <div className="hidden">{painelDeApostas}</div>}
                   </div>
                 ) : usesLiveSeriesChart ? (
                   <EventLiveSeriesChart
@@ -435,7 +435,7 @@ export default function EventContent({
                 {event.total_markets_count === 1 && singleMarket && (
                   <div className="grid gap-6">
                     {event.slug.startsWith('live-') ? (
-                       <div className="rounded-2xl border border-white/5 bg-card/30 backdrop-blur-md p-6">
+                       <div className="hidden md:block rounded-2xl border border-white/5 bg-card/30 backdrop-blur-md p-6">
                           <EventMarketCard
                             row={{
                               market: singleMarket,
