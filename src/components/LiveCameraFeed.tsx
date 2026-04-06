@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'motion/react'
 import Hls from 'hls.js'
 import { cn } from '@/lib/utils'
 
-const WS_URL = 'wss://mercado-facil-live-production.up.railway.app'
-const API_URL = 'https://mercado-facil-live-production.up.railway.app'
+const WS_URL = 'ws://69.62.89.218:8000'
+const API_URL = 'http://69.62.89.218:8000'
 
 const FLASH_DURATION_MS = 1600
 

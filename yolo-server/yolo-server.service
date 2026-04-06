@@ -1,0 +1,17 @@
+[Unit]
+Description=Mercado Facil YOLO Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/yolo-server
+EnvironmentFile=/opt/yolo-server/.env
+ExecStart=/opt/yolo-server/venv/bin/python server.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
