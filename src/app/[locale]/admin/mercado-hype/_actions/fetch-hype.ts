@@ -3,8 +3,52 @@
 import { db } from '@/lib/drizzle'
 import { mercadosLive } from '@/lib/db/schema'
 import { desc, eq } from 'drizzle-orm'
+import { translateTexts } from '@/lib/ai/translate'
+import fs from 'fs'
+import path from 'path'
 
 const POLYMARKET_GAMMA_API = 'https://gamma-api.polymarket.com'
+
+// Cache em disco: persiste entre hot-reloads e restarts do servidor
+const CACHE_DIR = path.join(process.cwd(), '.cache')
+const GLOBAL_CACHE_FILE = path.join(CACHE_DIR, 'hype-global.json')
+const BRAZIL_CACHE_FILE = path.join(CACHE_DIR, 'hype-brazil.json')
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 // 24 horas
+
+interface DiskCache {
+  timestamp: number
+  data: PolyHypeItem[]
+}
+
+function ensureCacheDir() {
+  if (!fs.existsSync(CACHE_DIR)) {
+    fs.mkdirSync(CACHE_DIR, { recursive: true })
+  }
+}
+
+function readDiskCache(filePath: string): DiskCache | null {
+  try {
+    if (!fs.existsSync(filePath)) return null
+    const raw = fs.readFileSync(filePath, 'utf-8')
+    const parsed: DiskCache = JSON.parse(raw)
+    if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
+      return parsed
+    }
+    return null // expirado
+  } catch {
+    return null
+  }
+}
+
+function writeDiskCache(filePath: string, data: PolyHypeItem[]) {
+  try {
+    ensureCacheDir()
+    const cache: DiskCache = { timestamp: Date.now(), data }
+    fs.writeFileSync(filePath, JSON.stringify(cache, null, 2), 'utf-8')
+  } catch (err) {
+    console.error('[CACHE_WRITE_ERROR]', err)
+  }
+}
 
 export interface PolyHypeItem {
   id: string
@@ -24,8 +68,6 @@ function mapEvent(item: any): PolyHypeItem {
 
   // Se tem múltiplos mercados, provavelmente cada um é um candidato (ex: Eleição)
   if (ms.length > 1) {
-    // Pegamos o título do mercado como o outcome (ex: "Lula", "Bolsonaro")
-    // E o preço da opção [0] (Sim/Yes) como o preço
     outcomesArr = ms.map((m: any) => m.groupItemTitle || m.title || 'Opção')
     prices = ms.map((m: any) => {
       const ps = Array.isArray(m.outcomePrices) ? m.outcomePrices : JSON.parse(m.outcomePrices || '["0.5", "0.5"]')
@@ -39,7 +81,6 @@ function mapEvent(item: any): PolyHypeItem {
         const p = activeMarket.outcomePrices
         prices = Array.isArray(p) ? p : JSON.parse(p || '["0.5", "0.5"]')
       }
-      
       if (activeMarket?.outcomes) {
         const o = activeMarket.outcomes
         outcomesArr = Array.isArray(o) ? o : JSON.parse(o || '["Sim", "Não"]')
@@ -65,30 +106,71 @@ function mapEvent(item: any): PolyHypeItem {
   }
 }
 
-/**
- * Busca os mercados mais recentes da Polymarket (API pública, sem autenticação necessária)
- */
-export async function getPolymarketHypeAction(limit = 15): Promise<{ success: boolean; data?: PolyHypeItem[]; error?: string }> {
+async function translateHypeItems(items: PolyHypeItem[]): Promise<PolyHypeItem[]> {
   try {
+    const batchedTexts: string[] = []
+
+    for (const item of items) {
+      batchedTexts.push(item.question)
+      batchedTexts.push(item.description || '')
+      item.outcomes.forEach(o => batchedTexts.push(o))
+    }
+
+    const translated = await translateTexts(batchedTexts, 'Portuguese')
+
+    if (translated.length === batchedTexts.length) {
+      let currentIndex = 0
+      for (const item of items) {
+        item.question = translated[currentIndex++]
+        item.description = translated[currentIndex++]
+        for (let i = 0; i < item.outcomes.length; i++) {
+          item.outcomes[i] = translated[currentIndex++]
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[TRANSLATE_HYPE_ERROR]', err)
+  }
+
+  return items
+}
+
+/**
+ * Busca os mercados mais recentes da Polymarket.
+ * Resultado fica em cache em disco por 24h — traduz só uma vez.
+ */
+export async function getPolymarketHypeAction(limit = 40): Promise<{ success: boolean; data?: PolyHypeItem[]; error?: string }> {
+  try {
+    // Tenta cache em disco primeiro
+    const cached = readDiskCache(GLOBAL_CACHE_FILE)
+    if (cached) {
+      console.log('[HYPE_GLOBAL] Servindo do cache em disco')
+      return { success: true, data: cached.data }
+    }
+
+    console.log('[HYPE_GLOBAL] Cache expirado ou ausente. Buscando e traduzindo...')
     const url = `${POLYMARKET_GAMMA_API}/events?active=true&closed=false&limit=${limit}`
-    
-    const res = await fetch(url, { 
+
+    const res = await fetch(url, {
       cache: 'no-store',
-      headers: { 
+      headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (compatible; KuestBot/1.0)'
       }
     })
-    
+
     if (!res.ok) throw new Error(`Polymarket API retornou ${res.status}: ${res.statusText}`)
     const data = await res.json()
 
     if (!Array.isArray(data)) return { success: true, data: [] }
 
-    return {
-      success: true,
-      data: data.map(mapEvent)
-    }
+    let mappedData = data.map(mapEvent)
+    mappedData = await translateHypeItems(mappedData)
+
+    // Salva no disco para próximas requisições
+    writeDiskCache(GLOBAL_CACHE_FILE, mappedData)
+
+    return { success: true, data: mappedData }
   } catch (error: any) {
     console.error('[FETCH_HYPE_ERROR]', error.message)
     return { success: false, error: error.message }
@@ -96,40 +178,60 @@ export async function getPolymarketHypeAction(limit = 15): Promise<{ success: bo
 }
 
 /**
- * Busca mercados relacionados ao Brasil ou América Latina
+ * Busca mercados relacionados ao Brasil ou América Latina.
+ * Resultado fica em cache em disco por 24h — traduz só uma vez.
  */
-export async function getBrazillianHypeAction(limit = 10): Promise<{ success: boolean; data?: PolyHypeItem[]; error?: string }> {
+export async function getBrazillianHypeAction(limit = 30): Promise<{ success: boolean; data?: PolyHypeItem[]; error?: string }> {
   try {
-    const keywords = ['Brazilian', 'Real Madrid', 'Bolsonaro', 'South America', 'Lula', 'Petrobras']
+    // Tenta cache em disco primeiro
+    const cached = readDiskCache(BRAZIL_CACHE_FILE)
+    if (cached) {
+      console.log('[HYPE_BRAZIL] Servindo do cache em disco')
+      return { success: true, data: cached.data }
+    }
+
+    console.log('[HYPE_BRAZIL] Cache expirado ou ausente. Buscando e traduzindo...')
+
+    // "Brazil" é o keyword principal — captura tudo: "Brazil Presidential", "Bank of Brazil", etc.
+    const keywords = [
+      'Brazil',
+      'Lula',
+      'Bolsonaro',
+      'STF',            // Supremo Tribunal Federal
+      'Selic',          // Taxa de juros
+      'Neymar',
+      'Petrobras',
+      'Brazilian Real', // Câmbio
+    ]
     const allResults: any[] = []
 
     for (const keyword of keywords) {
       try {
-        const url = `${POLYMARKET_GAMMA_API}/events?active=true&closed=false&search=${encodeURIComponent(keyword)}`
-        const res = await fetch(url, { 
+        const url = `${POLYMARKET_GAMMA_API}/events?active=true&closed=false&search=${encodeURIComponent(keyword)}&limit=20`
+        const res = await fetch(url, {
           cache: 'no-store',
-          headers: { 
+          headers: {
             'Accept': 'application/json',
             'User-Agent': 'Mozilla/5.0 (compatible; KuestBot/1.0)'
           }
         })
         if (res.ok) {
           const data = await res.json()
-          if (Array.isArray(data)) {
-            // Filtrar para garantir que o termo de busca realmente aparece ou é relevante
-            allResults.push(...data)
-          }
+          if (Array.isArray(data)) allResults.push(...data)
         }
       } catch { /* ignora keywords que falham individualmente */ }
     }
 
-    // Remover duplicados e ordenar por volume se disponível
+    // Remover duplicados
     const unique = Array.from(new Map(allResults.map(m => [m.id, m])).values())
 
-    return {
-      success: true,
-      data: unique.slice(0, limit).map(mapEvent)
-    }
+    let mappedData = unique.slice(0, limit).map(mapEvent)
+    mappedData = await translateHypeItems(mappedData)
+
+    // Salva no disco para próximas requisições
+    writeDiskCache(BRAZIL_CACHE_FILE, mappedData)
+
+    return { success: true, data: mappedData }
   } catch (error: any) {
     return { success: false, error: error.message }
   }

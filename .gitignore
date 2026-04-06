@@ -59,3 +59,5 @@ next-env.d.ts
 /playwright/.cache/
 docs2
 
+# AI translation cache (gerado automaticamente, não precisa ir pro git)
+/.cache/

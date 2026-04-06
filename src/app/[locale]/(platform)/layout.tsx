@@ -14,6 +14,7 @@ import { TradingOnboardingProvider } from '@/app/[locale]/(platform)/_providers/
 import { cacheTags } from '@/lib/cache-tags'
 import { TagRepository } from '@/lib/db/queries/tag'
 import { buildChildParentMap, buildPlatformNavigationTags } from '@/lib/platform-navigation'
+import { LiveChat } from './_components/LiveChat'
 
 export default async function PlatformLayout({ params, children }: LayoutProps<'/[locale]'>) {
   const { locale } = await params
@@ -37,7 +38,21 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
           <PlatformNavigationProvider tags={tags} childParentMap={childParentMap}>
             <Header />
             <NavigationTabs />
-            {children}
+            <div className="mx-auto flex w-full max-w-[1550px] gap-2 px-4 md:px-6"> 
+              <div className="flex-1 min-w-0">
+                {children}
+              </div>
+              <aside className="hidden w-[320px] shrink-0 xl:block py-4 relative">
+                <div className="flex flex-col gap-4 sticky top-28 max-h-[calc(100vh-120px)]">
+                  {/* Slot dinâmico para o Painel de Apostas em páginas de evento */}
+                  <div id="dynamic-sidebar-top" className="empty:hidden" />
+                  
+                  <div className="flex-1 rounded-2xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-md min-h-0">
+                    <LiveChat events={[]} />
+                  </div>
+                </div>
+              </aside>
+            </div>
             <MobileBottomNav />
             <AffiliateQueryHandler />
           </PlatformNavigationProvider>

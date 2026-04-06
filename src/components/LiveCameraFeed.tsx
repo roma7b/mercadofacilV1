@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { RefreshCw, AlertCircle, Wifi, Cpu, Car, Pencil, X, CheckCircle2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import Hls from 'hls.js'
+import { cn } from '@/lib/utils'
 
 const WS_URL = 'wss://mercado-facil-live-production.up.railway.app'
 const API_URL = 'https://mercado-facil-live-production.up.railway.app'
@@ -48,6 +49,20 @@ export default function LiveCameraFeed({
   isAdmin = false,
 }: LiveCameraFeedProps) {
   const [status, setStatus] = useState<FeedStatus>('loading')
+
+  // Se for o mercado de Bitcoin, renderiza o gráfico do TradingView
+  if (liveId === 'live-btc-price-v2') {
+    return (
+      <div className={cn("w-full h-[450px] bg-[#131722] rounded-2xl overflow-hidden border border-white/5 shadow-2xl relative", className)}>
+        <iframe
+          src={`https://s.tradingview.com/widgetembed/?frameElementId=tradingview_btc&symbol=BINANCE:BTCUSDT&interval=1&hidesidetoolbar=1&hidetoptoolbar=1&hidelegend=1&symboledit=0&saveimage=0&toolbarbg=131722&studies=[]&theme=dark&style=1&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=br&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=BINANCE:BTCUSDT#%7B%22interval%22%3A%221%22%2C%22range%22%3A%2215m%22%7D`}
+          style={{ width: '100%', height: '100%', border: 'none' }}
+        />
+        {/* Camada invisível para evitar que o usuário saia arrastando sem querer (foco passivo) */}
+        <div className="absolute inset-0 z-10 pointer-events-none" />
+      </div>
+    )
+  }
   const [showPulse, setShowPulse] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [iaConnected, setIaConnected] = useState(false)

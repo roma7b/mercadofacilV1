@@ -5,7 +5,8 @@ import { ArrowUpIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import EventHeader from '@/app/[locale]/(platform)/event/[slug]/_components/EventHeader'
 import EventMarketChannelProvider from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketChannelProvider'
 import EventMarkets from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarkets'
@@ -19,6 +20,7 @@ import EventSingleMarketOrderBook from '@/app/[locale]/(platform)/event/[slug]/_
 import EventTabs from '@/app/[locale]/(platform)/event/[slug]/_components/EventTabs'
 import ResolutionTimelinePanel from '@/app/[locale]/(platform)/event/[slug]/_components/ResolutionTimelinePanel'
 import { resolveEventOrderBootstrapSelection } from '@/app/[locale]/(platform)/event/[slug]/_utils/event-order-bootstrap-selection'
+import EventMarketCard from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketCard'
 import {
   resolveEventResolvedOutcomeIndex,
   toResolutionTimelineOutcome,
@@ -213,6 +215,22 @@ export default function EventContent({
   const clientUser = useUser()
   const prevUserIdRef = useRef<string | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!isMobile) {
+      // Pequeno timeout para garantir que o layout global já montou o aside
+      const timer = setTimeout(() => {
+        const el = document.getElementById('dynamic-sidebar-top')
+        if (el) setPortalTarget(el)
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isMobile])
+
+  const painelDeApostas = (
+    <PainelApostas marketId={event.slug.startsWith('live-') ? event.slug.replace('live-', '') : event.slug} />
+  )
   const eventMarketsRef = useRef<HTMLDivElement | null>(null)
   const appliedMarketSlugRef = useRef<string | null>(null)
   const appliedEventIdRef = useRef<string | null>(null)
@@ -376,149 +394,182 @@ export default function EventContent({
         <Suspense fallback={null}>
           <EventOrderQuerySync event={event} marketSlug={marketSlug} isMobile={isMobile} />
         </Suspense>
-        <div className="grid gap-6 px-4 pt-2 pb-20 md:px-0 md:pt-5 md:pb-0">
-          <div className={cn(shouldHideChart ? 'grid gap-2' : 'grid gap-3')} ref={contentRef}>
-            <EventHeader event={event} />
 
-            <div className={cn(shouldHideChart ? 'w-full' : 'min-h-96 w-full')}>
-              {event.slug.startsWith('live-') ? (
-                <LiveCameraFeed
-                  liveId={event.id}
-                  originalStreamUrl={event.livestream_url || ''}
-                  className="aspect-video w-full rounded-2xl border border-white/10 shadow-2xl"
-                />
-              ) : usesLiveSeriesChart ? (
-                <EventLiveSeriesChart
-                  event={event}
-                  isMobile={isMobile}
-                  seriesEvents={seriesEvents}
-                  config={liveChartConfig!}
-                />
-              ) : (
-                <EventChart event={event} isMobile={isMobile} seriesEvents={seriesEvents} />
-              )}
-            </div>
+        <div className={cn(event.slug.startsWith('live-') ? "max-w-none w-full lg:grid-cols-[2fr_21.25rem]" : "container lg:grid-cols-[1fr_21.25rem]", "mx-auto grid gap-8 px-4 pt-2 pb-20 md:px-0 md:pt-5 md:pb-0 items-start")}>
+          {portalTarget && createPortal(painelDeApostas, portalTarget)}
+          
+          <div className="flex flex-col gap-6 min-w-0">
+            <div className={cn(shouldHideChart ? 'grid gap-2' : 'grid gap-3')} ref={contentRef}>
+              <EventHeader event={event} />
 
-            <div className="grid gap-6">
-              <div
-                ref={eventMarketsRef}
-                id="event-markets"
-                className="min-w-0 overflow-x-hidden lg:overflow-x-visible"
-              >
-                {event.total_markets_count > 1 && <EventMarkets event={event} isMobile={isMobile} />}
-              </div>
-              {event.total_markets_count === 1 && singleMarket && (
-                <div className="grid gap-6">
-                  {currentUser && (
-                    <EventMarketPositions
-                      market={singleMarket}
-                      eventId={event.id}
-                      eventSlug={event.slug}
-                      isNegRiskEnabled={isNegRiskEnabled}
-                      isNegRiskAugmented={Boolean(event.neg_risk_augmented)}
-                      eventOutcomes={event.markets.map(market => ({
-                        conditionId: market.condition_id,
-                        questionId: market.question_id,
-                        label: market.short_title || market.title,
-                        iconUrl: market.icon_url,
-                      }))}
-                      negRiskMarketId={event.neg_risk_market_id}
+              <div className={cn(shouldHideChart ? 'w-full' : 'min-h-[500px] w-full')}>
+                {event.slug.startsWith('live-') ? (
+                  <div className="flex flex-col gap-6">
+                    <LiveCameraFeed
+                      liveId={event.id}
+                      originalStreamUrl={event.livestream_url || ''}
+                      className="w-full rounded-2xl border border-white/10 shadow-2xl"
                     />
-                  )}
-                  {!isSingleMarketResolved && !event.slug.startsWith('live-') && (
-                    <EventSingleMarketOrderBook
-                      market={singleMarket}
-                      eventSlug={event.slug}
-                      showCompactVolume={usesLiveSeriesChart}
-                    />
-                  )}
-                  {currentUser && <EventMarketOpenOrders market={singleMarket} eventSlug={event.slug} />}
-                  {currentUser && <EventMarketHistory market={singleMarket} />}
-                </div>
-              )}
-              {marketContextEnabled && <EventMarketContext event={event} />}
-              <EventRules event={event} />
-              {event.total_markets_count === 1
-                && selectedMarket
-                && shouldDisplayResolutionTimeline(selectedMarket) && (
-                <div className="rounded-xl border bg-background p-4">
-                  <ResolutionTimelinePanel
-                    market={selectedMarket}
-                    settledUrl={null}
-                    outcomeOverride={selectedMarketTimelineOutcome}
-                    showLink={false}
+                    {isMobile && <div>{painelDeApostas}</div>}
+                  </div>
+                ) : usesLiveSeriesChart ? (
+                  <EventLiveSeriesChart
+                    event={event}
+                    isMobile={isMobile}
+                    seriesEvents={seriesEvents}
+                    config={liveChartConfig!}
                   />
+                ) : (
+                  <EventChart event={event} isMobile={isMobile} seriesEvents={seriesEvents} />
+                )}
+              </div>
+
+              <div className="grid gap-6">
+                <div
+                  ref={eventMarketsRef}
+                  id="event-markets"
+                  className="min-w-0 overflow-x-hidden lg:overflow-x-visible"
+                >
+                  {event.total_markets_count > 1 && <EventMarkets event={event} isMobile={isMobile} />}
+                </div>
+                {event.total_markets_count === 1 && singleMarket && (
+                  <div className="grid gap-6">
+                    {event.slug.startsWith('live-') ? (
+                       <div className="rounded-2xl border border-white/5 bg-card/30 backdrop-blur-md p-6">
+                          <EventMarketCard
+                            row={{
+                              market: singleMarket,
+                              yesOutcome: singleMarket.outcomes[0],
+                              noOutcome: singleMarket.outcomes[1],
+                              yesPriceValue: 0.5,
+                              noPriceValue: 0.5,
+                              yesPriceCentsOverride: 50,
+                              chanceMeta: {
+                                chanceDisplay: '50%',
+                                normalizedChance: 50,
+                                isSubOnePercent: false,
+                                shouldShowChanceChange: false,
+                                chanceChangeLabel: '',
+                                isChanceChangePositive: false,
+                              }
+                            }}
+                            showMarketIcon={true}
+                            isExpanded={true}
+                            isActiveMarket={true}
+                            activeOutcomeIndex={null}
+                            chanceHighlightKey="initial"
+                            onToggle={() => {}}
+                            onBuy={(m: any, idx: number, source: string) => {
+                                // Sincroniza com a store do order panel se houver
+                            }}
+                            isMobile={isMobile}
+                          />
+                       </div>
+                    ) : (currentUser && (
+                      <EventMarketPositions
+                        market={singleMarket}
+                        eventId={event.id}
+                        eventSlug={event.slug}
+                        isNegRiskEnabled={isNegRiskEnabled}
+                        isNegRiskAugmented={Boolean(event.neg_risk_augmented)}
+                        eventOutcomes={event.markets.map(market => ({
+                          conditionId: market.condition_id,
+                          questionId: market.condition_id,
+                          label: market.short_title || market.title,
+                          iconUrl: market.icon_url,
+                        }))}
+                        negRiskMarketId={event.neg_risk_market_id}
+                      />
+                    ))}
+                    
+                    {!isSingleMarketResolved && !event.slug.startsWith('live-') && (
+                      <EventSingleMarketOrderBook
+                        market={singleMarket}
+                        eventSlug={event.slug}
+                        showCompactVolume={usesLiveSeriesChart}
+                      />
+                    )}
+                    {currentUser && <EventMarketOpenOrders market={singleMarket} eventSlug={event.slug} />}
+                    {currentUser && <EventMarketHistory market={singleMarket} />}
+                  </div>
+                )}
+                {marketContextEnabled && <EventMarketContext event={event} />}
+                <EventRules event={event} />
+                {event.total_markets_count === 1
+                  && selectedMarket
+                  && shouldDisplayResolutionTimeline(selectedMarket) && (
+                  <div className="rounded-xl border bg-background p-4">
+                    <ResolutionTimelinePanel
+                      market={selectedMarket}
+                      settledUrl={null}
+                      outcomeOverride={selectedMarketTimelineOutcome}
+                      showLink={false}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {shouldRenderMobileRelated && !event.slug.startsWith('live-') && (
+                <div className="grid gap-4 lg:hidden">
+                  <h3 className="text-base font-medium">{t('Related')}</h3>
+                  <EventRelated event={event} />
                 </div>
               )}
+              <EventTabs event={event} user={currentUser} />
             </div>
+          </div>
 
-            {shouldRenderMobileRelated && (
-              <div className="grid gap-4 lg:hidden">
-                <h3 className="text-base font-medium">{t('Related')}</h3>
-                <EventRelated event={event} />
+          {!isMobile && !event.slug.startsWith('live-') && (
+            <aside
+              className={`
+                hidden gap-4
+                lg:sticky lg:top-38 lg:grid lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto
+              `}
+            >
+              <div className="grid gap-6">
+                <EventOrderPanelForm
+                  event={event}
+                  isMobile={false}
+                  initialMarket={initialMarket}
+                  initialOutcome={initialOutcome}
+                />
+                <EventOrderPanelTermsDisclaimer />
+                <span className="border border-dashed"></span>
+                {shouldRenderDesktopRelated ? <EventRelated event={event} /> : <EventRelatedSkeleton />}
               </div>
-            )}
-            <EventTabs event={event} user={currentUser} />
-          </div>
+            </aside>
+          )}
+
+          {!isMobile && showBackToTop && backToTopBounds && (
+            <div
+              className="pointer-events-none fixed bottom-6 hidden md:flex"
+              style={{ left: `${backToTopBounds.left}px`, width: `${backToTopBounds.width}px` }}
+            >
+              <div className="grid w-full grid-cols-3 items-center px-4">
+                <div />
+                <button
+                  type="button"
+                  onClick={handleBackToTop}
+                  className={`
+                    pointer-events-auto justify-self-center rounded-full border bg-background/90 px-4 py-2 text-sm
+                    font-medium text-foreground shadow-lg backdrop-blur-sm transition-colors
+                    hover:text-muted-foreground
+                  `}
+                  aria-label={t('Back to top')}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    {t('Back to top')}
+                    <ArrowUpIcon className="size-4" />
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isMobile
+            ? <EventOrderPanelMobile event={event} initialMarket={initialMarket} initialOutcome={initialOutcome} />
+            : null}
         </div>
-
-        {!isMobile && (
-          <aside
-            className={`
-              hidden gap-4
-              lg:sticky lg:top-38 lg:grid lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto
-            `}
-          >
-            <div className="grid gap-6">
-               {/* Se o slug é um UUID (mercado do MercadoFácil) ou Polymarket Hype, usa o PainelApostas PT-BR */}
-              {event.slug.startsWith('live-')
-                ? <PainelApostas marketId={event.slug} />
-                : (
-                    <>
-                      <EventOrderPanelForm
-                        event={event}
-                        isMobile={false}
-                        initialMarket={initialMarket}
-                        initialOutcome={initialOutcome}
-                      />
-                      <EventOrderPanelTermsDisclaimer />
-                    </>
-                  )}
-              <span className="border border-dashed"></span>
-              {shouldRenderDesktopRelated ? <EventRelated event={event} /> : <EventRelatedSkeleton />}
-            </div>
-          </aside>
-        )}
-
-        {!isMobile && showBackToTop && backToTopBounds && (
-          <div
-            className="pointer-events-none fixed bottom-6 hidden md:flex"
-            style={{ left: `${backToTopBounds.left}px`, width: `${backToTopBounds.width}px` }}
-          >
-            <div className="grid w-full grid-cols-3 items-center px-4">
-              <div />
-              <button
-                type="button"
-                onClick={handleBackToTop}
-                className={`
-                  pointer-events-auto justify-self-center rounded-full border bg-background/90 px-4 py-2 text-sm
-                  font-medium text-foreground shadow-lg backdrop-blur-sm transition-colors
-                  hover:text-muted-foreground
-                `}
-                aria-label={t('Back to top')}
-              >
-                <span className="inline-flex items-center gap-2">
-                  {t('Back to top')}
-                  <ArrowUpIcon className="size-4" />
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {isMobile
-          ? <EventOrderPanelMobile event={event} initialMarket={initialMarket} initialOutcome={initialOutcome} />
-          : null}
       </EventOutcomeChanceProvider>
     </EventMarketChannelProvider>
   )

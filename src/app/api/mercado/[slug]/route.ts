@@ -18,14 +18,18 @@ export async function GET(
       .single()
 
     let targetId = slug
+    if (slug.startsWith('live-')) {
+      targetId = slug.replace('live-', '')
+    }
+    
     let conditionId: string | null = null
 
     if (eventData) {
       targetId = eventData.id
       // Pegar o condition_id do primeiro mercado associado se existir
-      const markets = eventData.condition_id as any[]
-      if (markets && markets.length > 0) {
-        conditionId = markets[0].condition_id
+      const marketsArray = eventData.condition_id as any[]
+      if (marketsArray && marketsArray.length > 0) {
+        conditionId = marketsArray[0].condition_id
       }
     }
 

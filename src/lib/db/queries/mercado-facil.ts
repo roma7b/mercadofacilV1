@@ -115,7 +115,7 @@ export const MercadoFacilRepository = {
       slug,
       title: row.titulo || 'Câmera Ao Vivo',
       creator: 'Mercado Fácil',
-      icon_url: row.camera_url || getIconUrl(row.tipo_contagem),
+      icon_url: row.imagem_url || row.camera_url || getIconUrl(row.tipo_contagem),
       livestream_url: row.camera_url,
       show_market_icons: true,
       status: row.status === 'AO_VIVO' ? 'active' : row.status === 'RESOLVIDO' ? 'resolved' : 'draft',
@@ -132,6 +132,7 @@ export const MercadoFacilRepository = {
       is_bookmarked: false,
       is_trending: true,
       end_date: null,
+      imagem_url: row.imagem_url,
     } as any
   },
 }

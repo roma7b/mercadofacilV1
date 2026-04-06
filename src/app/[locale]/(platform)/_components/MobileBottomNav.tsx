@@ -13,12 +13,14 @@ import {
   HouseIcon,
   InfoIcon,
   MenuIcon,
+  MessageCircleIcon,
   PlusCircleIcon,
   SearchIcon,
   SparkleIcon,
   TrophyIcon,
   UnplugIcon,
 } from 'lucide-react'
+import { LiveChat } from '@/app/[locale]/(platform)/_components/LiveChat'
 import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import { useExtracted, useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
@@ -73,6 +75,7 @@ export default function MobileBottomNav() {
   const [searchFocusTrigger, setSearchFocusTrigger] = useState(0)
   const [isGuestMenuOpen, setIsGuestMenuOpen] = useState(false)
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   const isAuthenticated = Boolean(session?.user) || Boolean(user) || isConnected
 
@@ -354,7 +357,13 @@ export default function MobileBottomNav() {
               icon={PlusCircleIcon} 
             />
 
-            <MobileNavLink href="/new" label={t('New')} active={pathname === '/new'} icon={SparkleIcon} />
+            <MobileNavButton 
+              label="Chat" 
+              active={isChatOpen} 
+              onClick={() => setIsChatOpen(true)} 
+              icon={MessageCircleIcon} 
+            />
+
             {isAuthenticated
               ? (
                   <MobilePortfolioNavLink active={pathname.startsWith('/portfolio')} />
@@ -370,8 +379,18 @@ export default function MobileBottomNav() {
           </div>
         </div>
       </nav>
-    </>
-  )
+
+      <Drawer open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <DrawerContent className="h-[95dvh] pt-0 border-none rounded-t-[2rem] overflow-hidden bg-background">
+          <DrawerHeader className="sr-only">
+             <DrawerTitle>Chat ao Vivo</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex-1 min-h-0">
+             <LiveChat events={[]} className="border-l-0" />
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>  )
 }
 
 interface MobileNavLinkProps {

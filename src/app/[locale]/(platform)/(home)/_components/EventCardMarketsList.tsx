@@ -46,6 +46,10 @@ export default function EventCardMarketsList({
         .map(item => item.market)
     : markets
 
+  const MAX_DISPLAYED_ITEMS = 3
+  const displayedMarkets = marketsToRender.slice(0, MAX_DISPLAYED_ITEMS)
+  const hiddenMarketsCount = marketsToRender.length - MAX_DISPLAYED_ITEMS
+
   return (
     <div
       className={cn(
@@ -53,7 +57,7 @@ export default function EventCardMarketsList({
         isResolvedEvent ? 'mb-1' : 'mb-2',
       )}
     >
-      {marketsToRender.map((market) => {
+      {displayedMarkets.map((market) => {
         const resolvedOutcomeIndex = isResolvedEvent
           ? resolvedOutcomeIndexByConditionId[market.condition_id] ?? null
           : null
@@ -73,7 +77,7 @@ export default function EventCardMarketsList({
 
           return (
             <div key={market.condition_id} className="w-full space-y-2.5 pt-1">
-              {market.outcomes.map((outcome) => {
+              {market.outcomes.slice(0, MAX_DISPLAYED_ITEMS).map((outcome) => {
                 const probability = typeof outcome.probability === 'number' 
                   ? outcome.probability
                   : fallbackOutcomeChance
@@ -127,6 +131,17 @@ export default function EventCardMarketsList({
                   </div>
                 )
               })}
+              
+              {market.outcomes.length > MAX_DISPLAYED_ITEMS && (
+                <div className="pt-2 text-center">
+                  <IntentPrefetchLink
+                    href={resolveEventMarketPath(event, market.slug)}
+                    className="inline-block px-3 py-1 rounded-full bg-secondary/50 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200"
+                  >
+                    + {market.outcomes.length - MAX_DISPLAYED_ITEMS} opções
+                  </IntentPrefetchLink>
+                </div>
+              )}
             </div>
           )
         }
@@ -217,6 +232,17 @@ export default function EventCardMarketsList({
           </div>
         )
       })}
+
+      {hiddenMarketsCount > 0 && (
+        <div className="pt-2 text-center">
+          <IntentPrefetchLink
+            href={`/event/${event.slug}`}
+            className="inline-block px-3 py-1 rounded-full bg-secondary/50 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200"
+          >
+            + {hiddenMarketsCount} mercado{hiddenMarketsCount !== 1 ? 's' : ''}
+          </IntentPrefetchLink>
+        </div>
+      )}
     </div>
   )
 }

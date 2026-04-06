@@ -2,6 +2,7 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
+require('dotenv').config()
 const postgres = require('postgres')
 const { resolveSiteUrl } = require('../src/lib/site-url')
 

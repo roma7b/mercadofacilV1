@@ -17,8 +17,8 @@ export default function MercadoHypePage() {
   async function loadData() {
     setLoading(true)
     try {
-      const gRes = await getPolymarketHypeAction(15)
-      const bRes = await getBrazillianHypeAction(15)
+      const gRes = await getPolymarketHypeAction()
+      const bRes = await getBrazillianHypeAction()
       const pRes = await getPublishedMercadosAction()
       
       if (gRes.success) setGlobalHype(gRes.data || [])
