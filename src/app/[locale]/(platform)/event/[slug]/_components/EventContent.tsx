@@ -395,7 +395,7 @@ export default function EventContent({
           <EventOrderQuerySync event={event} marketSlug={marketSlug} isMobile={isMobile} />
         </Suspense>
 
-        <div className={cn(event.slug.startsWith('live-') ? "max-w-none w-full lg:grid-cols-[2fr_21.25rem]" : "container lg:grid-cols-[1fr_21.25rem]", "mx-auto grid gap-8 px-4 pt-2 pb-20 md:px-0 md:pt-5 md:pb-0 items-start")}>
+        <div className={cn("container mx-auto grid gap-8 px-4 pt-2 pb-20 md:px-0 md:pt-5 md:pb-0 items-start", !event.slug.startsWith('live-') && "lg:grid-cols-[1fr_21.25rem]")}>
           {portalTarget && createPortal(painelDeApostas, portalTarget)}
           
           <div className="flex flex-col gap-6 min-w-0">
