@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'motion/react'
 import Hls from 'hls.js'
 import { cn } from '@/lib/utils'
 
-const WS_URL = 'ws://69.62.89.218:8000'
-const API_URL = 'http://69.62.89.218:8000'
+const BASE_URL = process.env.NEXT_PUBLIC_YOLO_SERVICE_URL || 'http://localhost:8000'
+const API_URL = BASE_URL.replace(/\/$/, '')
+const WS_URL = API_URL.replace(/^http/, 'ws')
 
 const FLASH_DURATION_MS = 1600
 
