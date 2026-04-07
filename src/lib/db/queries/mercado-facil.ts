@@ -26,6 +26,7 @@ export const MercadoFacilRepository = {
 
   async getEventById(id: string): Promise<Event | null> {
     try {
+      console.log(`[MercadoFacilRepository] Buscando id bruto: "${id}"`)
       const { data: row, error } = await supabase
         .from('mercados_live')
         .select('*')
