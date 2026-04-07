@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
 import { setRequestLocale } from 'next-intl/server'
@@ -29,20 +30,8 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/event/[s
   })
 }
 
-async function CachedEventPageContent({
-  locale,
-  slug,
-}: {
-  locale: SupportedLocale
-  slug: string
-}) {
-
-  const eventRoute = await getEventRouteBySlug(slug)
-  if (!eventRoute) {
-    notFound()
-  }
-
-  // PLATAFORMA VIVA: Sincronizar Odds em Tempo Real se for Polymarket
+// Componente dinâmico que faz o db.select (roda só em runtime, nunca no build)
+async function LiveSyncContent({ slug }: { slug: string }) {
   if (slug.includes('poly-')) {
     try {
       const match = await db.select()
@@ -59,6 +48,21 @@ async function CachedEventPageContent({
       console.error('[NEXT_JS_DB_SYNC_ERROR]', err)
       // Não trava a renderização por erro de sync
     }
+  }
+  return null
+}
+
+async function CachedEventPageContent({
+  locale,
+  slug,
+}: {
+  locale: SupportedLocale
+  slug: string
+}) {
+
+  const eventRoute = await getEventRouteBySlug(slug)
+  if (!eventRoute) {
+    notFound()
   }
 
   const sportsPath = resolveEventBasePath(eventRoute)
@@ -121,6 +125,9 @@ export default async function EventPage({ params }: PageProps<'/[locale]/event/[
 
   return (
     <>
+      <Suspense fallback={null}>
+        <LiveSyncContent slug={slug} />
+      </Suspense>
       <CachedEventPageContent locale={resolvedLocale} slug={slug} />
     </>
   )
