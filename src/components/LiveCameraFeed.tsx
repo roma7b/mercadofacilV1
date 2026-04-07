@@ -72,7 +72,7 @@ export default function LiveCameraFeed({
   const iaRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [calibState, setCalibState] = useState<CalibrateState>('idle')
   const [toast, setToast] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'live' | 'ia'>('live')
+  const [viewMode, setViewMode] = useState<'live' | 'ia'>('ia')
 
   useEffect(() => {
     if (onViewModeChange) {
@@ -549,17 +549,12 @@ export default function LiveCameraFeed({
       )}
 
       <div className="absolute bottom-3 left-3 z-30 flex gap-2">
-        <button
-          onClick={() => setViewMode(v => (v === 'live' ? 'ia' : 'live'))}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-black transition-all border shadow-lg ${
-            viewMode === 'ia'
-              ? 'bg-purple-600 border-purple-400 text-white animate-pulse'
-              : 'bg-zinc-900/80 backdrop-blur-md border-white/10 text-white/70 hover:bg-zinc-800'
-          }`}
+        <div
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-black transition-all border shadow-lg bg-emerald-600 border-emerald-400 text-white animate-pulse"
         >
           <Cpu className="w-3.5 h-3.5" />
-          {viewMode === 'ia' ? 'SAIR DA VISÃO IA' : 'VISÃO IA (SINCRO)'}
-        </button>
+          VISÃO IA (SINCRO)
+        </div>
 
         {isAdmin && calibState === 'idle' && (
           <button

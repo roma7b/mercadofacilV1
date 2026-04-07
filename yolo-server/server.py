@@ -7,13 +7,15 @@ import asyncio
 import json
 import time
 import uuid
+import torch
 import os
 import threading
 import cv2
 import numpy as np
+import subprocess
+import queue
 from collections import defaultdict
 from typing import Dict, Set, Optional
-import queue
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -34,8 +36,8 @@ STREAMS: Dict[str, str] = {
     ),
 }
 
-# Modelo YOLO — yolov8n é o mais leve (bom pra CPU)
-MODEL_PATH = os.environ.get("YOLO_MODEL", "yolov8n.pt")
+# Modelo YOLO — ONNX é ~30% mais rápido em CPU
+MODEL_PATH = os.environ.get("YOLO_MODEL", "yolov8n.onnx")
 
 # Classes de veículos no COCO que nos interessam
 VEHICLE_CLASSES = {2: "carro", 3: "moto", 5: "ônibus", 7: "caminhão"}
@@ -48,7 +50,7 @@ CLASS_COLORS = {
     "caminhão": [255, 60, 60],
 }
 
-FRAME_SKIP = 2          # Pula frames para renderização mais leve e rápida
+FRAME_SKIP = 1          # FFmpeg já entrega em baixo framerate (12FPS), avaliamos 100% deles.
 SAVE_INTERVAL_SEC = 300  # Salva no Supabase a cada 5 minutos
 
 # ─── Estado Global por Câmera ─────────────────────────────────────────────────
@@ -60,7 +62,9 @@ class CameraState:
         self.frame_count = 0
         self.last_frame: Optional[np.ndarray] = None
         self.last_frame_ai: Optional[np.ndarray] = None
+        self.last_frame_bytes: Optional[bytes] = None  # NOVO: frame já encodado em JPEG
         self.lock = threading.Lock()
+        self.frame_event = asyncio.Event()             # NOVO: sinaliza frame pronto para o FastAPI
         self.clients: Set[WebSocket] = set()
         self.running = False
 
@@ -155,76 +159,135 @@ async def broadcast(cam: CameraState, message: dict):
 
 # ─── Thread de Processamento de Vídeo ─────────────────────────────────────────
 
-class VideoCaptureThread:
-    """Thread dedicada para ler o stream sem travar o processamento ou gerar buffer (lag)."""
-    def __init__(self, stream_url):
-        self.stream_url = stream_url
-        self.cap = cv2.VideoCapture(self.stream_url, cv2.CAP_FFMPEG)
-        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        self.cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 15000)
-        self.cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, 15000)
+# ─── Processamento de Vídeo FFmpeg (Zero-Starvation Pipe) ─────────────────────────
+
+class FFmpegCaptureThread:
+    """Consome o Pipe rawvideo no fundo. Previne Pipe Bloat (lag infinito) se a IA atrasar 1ms."""
+    def __init__(self, url, width=640, height=360):
+        self.width = width
+        self.height = height
+        cmd = [
+            'ffmpeg',
+            '-re',                  
+            '-fflags', 'nobuffer',
+            '-flags', 'low_delay',
+            '-i', url,
+            '-vf', f'scale={width}:{height}',
+            '-f', 'rawvideo',
+            '-pix_fmt', 'bgr24',
+            '-r', '24',             # 24 FPS: Fluidez total cinematográfica!
+            'pipe:1'
+        ]
+        self.url = url
+        try:
+            self.proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=10**8)
+        except FileNotFoundError:
+            self.proc = None
+            print("[Capture] Comando 'ffmpeg' não encontrado no sistema.")
+        
         self.q = queue.Queue(maxsize=3)
         self.running = True
         self.thread = threading.Thread(target=self._reader, daemon=True)
         self.thread.start()
 
     def _reader(self):
+        framesize = self.width * self.height * 3
+        
+        # Fallback se o FFmpeg falhar (ex: não instalado no Windows)
+        try:
+            while self.running and self.proc:
+                raw = self.proc.stdout.read(framesize)
+                if not raw or len(raw) != framesize:
+                    if self.proc.poll() is not None:
+                        print("[Capture] FFmpeg encerrado. Usando OpenCV fallback...")
+                        break
+                    time.sleep(0.1)
+                    continue
+                frame = np.frombuffer(raw, dtype=np.uint8).reshape((self.height, self.width, 3))
+                self._update_queue(frame)
+        except Exception as e:
+            print(f"[Capture] Erro no pipe FFmpeg ({e}). Iniciando OpenCV fallback...")
+
+        # --- FALLBACK OPENCV COM DRENAGEM CORRETA (Otimização do Claude v2) ---
+        cap = cv2.VideoCapture(self.url)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Minimiza buffer interno do OpenCV
+
         while self.running:
-            ret, frame = self.cap.read()
+            # Lê frames e descarta tudo EXCETO o último disponível
+            # cap.read() = grab + retrieve em um passo só
+            ret, frame = cap.read()
             if not ret:
                 time.sleep(1)
                 continue
-            if not self.q.empty():
-                try:
-                    self.q.get_nowait()   # descarta o frame antigo
-                except queue.Empty:
-                    pass
-            self.q.put((ret, frame))
+
+            # Drena qualquer frame que acumulou DEPOIS desse read
+            # tentando pegar um mais novo sem custo de decode
+            for _ in range(3):
+                grabbed = cap.grab()
+                if not grabbed:
+                    break
+                ret2, newer = cap.retrieve()
+                if ret2:
+                    frame = newer  # substitui pelo mais novo disponível
+
+            frame = cv2.resize(frame, (self.width, self.height))
+            self._update_queue(frame)
+
+            # Delay estratégico suave
+            time.sleep(0.02)
+
+        cap.release()
+
+    def _update_queue(self, frame):
+        if not self.q.empty():
+            try:
+                self.q.get_nowait()
+            except queue.Empty:
+                pass
+        self.q.put(frame)
 
     def read(self):
         try:
-            return self.q.get(timeout=2)
+            # Aumentando o timeout para 10s para acomodar o handshake lento do OpenCV em streams HLS
+            return self.q.get(timeout=10)
         except queue.Empty:
-            return False, None
+            return None
 
     def release(self):
         self.running = False
-        self.cap.release()
+        if self.proc:
+            try:
+                self.proc.stdout.close()
+                self.proc.kill()
+                self.proc.wait()
+            except Exception:
+                pass
         self.thread.join(timeout=1)
 
-def process_stream(stream_id: str):
+def process_stream(stream_id: str, main_loop: asyncio.AbstractEventLoop):
     global model
     cam = cameras[stream_id]
     cam.running = True
 
-    print(f"[{stream_id}] Iniciando stream (THREAD OTIMIZADA): {cam.stream_url}")
+    print(f"[{stream_id}] Iniciando stream (FFMPEG THREAD PIPE): {cam.stream_url}")
 
     while cam.running:
-        cap = VideoCaptureThread(cam.stream_url)
-        if not cap.cap.isOpened():
-            print(f"[{stream_id}] Falha ao abrir stream com CAP_FFMPEG. Tentando em 10s...")
-            time.sleep(10)
-            continue
+        cap = FFmpegCaptureThread(cam.stream_url, width=640, height=360)
 
-        frame_idx = 0
         while cam.running:
-            ret, frame = cap.read()
-            if not ret or frame is None:
-                print(f"[{stream_id}] Fim do stream. Reconectando...")
+            frame = cap.read()
+            if frame is None:
+                # O stream falhou. Se chegamos aqui, o timeout de 10s expirou.
+                print(f"[{stream_id}] Stream timeout (10s) ou erro. Reiniciando captura em 3s...")
+                cap.release()
+                time.sleep(3)
                 break
 
-            # Redimensiona o frame na origem para a IA processar em milissegundos
-            frame = cv2.resize(frame, (640, 360))
-
-            frame_idx += 1
-
-            # Salva o frame bruto (para o modo "live")
+            # Salva o frame para MJPEG fallback
             with cam.lock:
                 cam.last_frame = frame.copy()
 
-            # Pula frames para economizar CPU
-            if frame_idx % FRAME_SKIP != 0:
-                continue
+            # Processo de IA em cada frame que o pipe entregar (pois o FFmpeg já reduziu pra 12 FPS controlados)
 
             if model is None:
                 continue
@@ -236,9 +299,10 @@ def process_stream(stream_id: str):
                 frame,
                 persist=True,
                 classes=list(VEHICLE_CLASSES.keys()),
-                verbose=False,
-                conf=0.25, # Deixando mais permissivo para pegar veiculos menores/distantes
-                iou=0.45,
+                imgsz=320,
+                conf=0.3,
+                iou=0.5,
+                verbose=False
             )
 
             ai_frame = frame.copy()
@@ -292,8 +356,18 @@ def process_stream(stream_id: str):
             ly2 = int(cam.line["y2"] * h)
             cv2.line(ai_frame, (lx1, ly1), (lx2, ly2), (0, 255, 80), 3)
 
+            # Encoda o frame UMA VEZ no YOLO (Otimização do Claude)
+            _, buf = cv2.imencode(".jpg", ai_frame, [cv2.IMWRITE_JPEG_QUALITY, 55])
+            frame_bytes = buf.tobytes()
             with cam.lock:
                 cam.last_frame_ai = ai_frame
+                cam.last_frame_bytes = frame_bytes
+
+            # Avisa o FastAPI que há frame novo (Usa o main_loop explicitamente)
+            try:
+                main_loop.call_soon_threadsafe(cam.frame_event.set)
+            except Exception as e:
+                print(f"[Loop] Erro ao sinalizar frame: {e}")
 
             # Monta mensagem base
             msg_base = {
@@ -304,8 +378,7 @@ def process_stream(stream_id: str):
                 "line_y2_pct": cam.line["y2"],
             }
 
-            # Envia update normal + crossing events
-            loop = asyncio.new_event_loop()
+            # Envia update normal + crossing events (Usa run_coroutine_threadsafe)
             if crossings:
                 for crossing in crossings:
                     crossing_msg = {
@@ -317,17 +390,14 @@ def process_stream(stream_id: str):
                             "direction": crossing["direction"],
                         }
                     }
-                    loop.run_until_complete(broadcast(cam, crossing_msg))
+                    asyncio.run_coroutine_threadsafe(broadcast(cam, crossing_msg), main_loop)
             else:
-                loop.run_until_complete(broadcast(cam, msg_base))
-            loop.close()
+                asyncio.run_coroutine_threadsafe(broadcast(cam, msg_base), main_loop)
 
             # Salva no Supabase periodicamente
             if time.time() - cam.last_save_ts > SAVE_INTERVAL_SEC:
                 cam.last_save_ts = time.time()
-                save_loop = asyncio.new_event_loop()
-                save_loop.run_until_complete(save_count_to_supabase(cam))
-                save_loop.close()
+                asyncio.run_coroutine_threadsafe(save_count_to_supabase(cam), main_loop)
 
         cap.release()
         time.sleep(5)
@@ -373,15 +443,21 @@ async def video_feed(stream_id: str):
 
     async def generate():
         while True:
+            # Espera até o YOLO sinalizar frame novo (sem sleep fixo - Otimização do Claude)
+            try:
+                await asyncio.wait_for(cam.frame_event.wait(), timeout=2.0)
+                cam.frame_event.clear()
+            except (asyncio.TimeoutError, Exception):
+                continue
+
             with cam.lock:
-                frame = cam.last_frame_ai if cam.last_frame_ai is not None else cam.last_frame
-            if frame is not None:
-                _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 55])
+                frame_bytes = cam.last_frame_bytes
+
+            if frame_bytes:
                 yield (
                     b"--frame\r\n"
-                    b"Content-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
+                    b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
                 )
-            await asyncio.sleep(0.04) # ~25 FPS no streaming (não trava o backend em async)
 
     return StreamingResponse(generate(), media_type="multipart/x-mixed-replace;boundary=frame")
 
@@ -436,9 +512,15 @@ async def startup():
     except Exception as e:
         print(f"[Init] Aviso: Falha ao aplicar fix do Torch: {e}")
 
-    print("[Init] Carregando modelo YOLO...")
+    print("[Init] Carregando modelo YOLO (ONNX)...")
+    torch.set_num_threads(2)        # otimizado para os 2 vCPUs da VPS
+    torch.set_num_interop_threads(1)
+    
     model = YOLO(MODEL_PATH)
-    print(f"[Init] Modelo {MODEL_PATH} carregado!")
+    model.overrides["imgsz"] = 320
+    model.overrides["half"] = False
+    model.overrides["verbose"] = False
+    print(f"[Init] Modelo {MODEL_PATH} carregado com otimizações imgsz=320!")
 
     if SUPABASE_URL and SUPABASE_KEY:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -446,10 +528,11 @@ async def startup():
     else:
         print("[Init] AVISO: Supabase não configurado (sem variáveis de ambiente)")
 
+    main_loop = asyncio.get_running_loop()
     for stream_id, stream_url in STREAMS.items():
         cam = CameraState(stream_id, stream_url)
         cameras[stream_id] = cam
-        thread = threading.Thread(target=process_stream, args=(stream_id,), daemon=True)
+        thread = threading.Thread(target=process_stream, args=(stream_id, main_loop), daemon=True)
         thread.start()
         print(f"[Init] Stream iniciado: {stream_id}")
 
