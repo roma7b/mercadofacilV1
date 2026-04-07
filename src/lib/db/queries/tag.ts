@@ -1,3 +1,4 @@
+'use cache'
 import type { NonDefaultLocale, SupportedLocale } from '@/i18n/locales'
 import type { PlatformCategorySidebarItem, PlatformNavigationChild } from '@/lib/platform-navigation'
 import { createHash } from 'node:crypto'

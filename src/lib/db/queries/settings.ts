@@ -1,3 +1,4 @@
+'use cache'
 import type { QueryResult } from '@/types'
 import { sql } from 'drizzle-orm'
 import { cacheTag, updateTag } from 'next/cache'
@@ -8,7 +9,7 @@ import { db } from '@/lib/drizzle'
 
 export const SettingsRepository = {
   async getSettings(): Promise<QueryResult<Record<string, Record<string, { value: string, updated_at: string }>>>> {
-    
+    'use cache'
     cacheTag(cacheTags.settings)
 
     // MercadoFácil: No settings table, returning empty defaults

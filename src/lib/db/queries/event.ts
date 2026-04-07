@@ -1,3 +1,4 @@
+'use cache'
 import type { SQL } from 'drizzle-orm'
 import type { SupportedLocale } from '@/i18n/locales'
 import type { conditions } from '@/lib/db/schema/events/tables'

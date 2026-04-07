@@ -1,3 +1,4 @@
+'use cache'
 import type { SportsMenuEntry } from '@/lib/sports-menu-types'
 import type { SportsSlugMappingEntry } from '@/lib/sports-slug-mapping'
 import type { SportsVertical } from '@/lib/sports-vertical'

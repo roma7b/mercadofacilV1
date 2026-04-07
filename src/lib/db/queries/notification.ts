@@ -1,3 +1,4 @@
+'use cache'
 import type { QueryResult } from '@/types'
 import { and, desc, eq } from 'drizzle-orm'
 import { cacheTag, updateTag } from 'next/cache'
