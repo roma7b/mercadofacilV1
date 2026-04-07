@@ -23,10 +23,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from ultralytics import YOLO
 from supabase import create_client, Client
+from dotenv import load_dotenv
+
+# Carrega .env se existir (útil para VPS e dev local)
+load_dotenv()
 
 # ─── Configuração ─────────────────────────────────────────────────────────────
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+# Suporta nomes padrão ou os nomes usados pela Vercel/Supabase Dashboard
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
 # Mapa de câmeras ativas: id -> url do stream
 STREAMS: Dict[str, str] = {
