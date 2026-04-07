@@ -57,11 +57,11 @@ async function CachedEventPageContent({
         .limit(1)
 
       if (match.length > 0 && match[0].conditions.question_id) {
-        // Dispara o sync individual sem travar o carregamento (background sync)
         syncSingleMarketAction(match[0].conditions.question_id)
       }
     } catch (err) {
-      console.error('[LIVE_PLATFORM_SYNC_ERROR]', err)
+      console.error('[NEXT_JS_DB_SYNC_ERROR]', err)
+      // Não trava a renderização por erro de sync
     }
   }
 
@@ -73,33 +73,46 @@ async function CachedEventPageContent({
     })
   }
 
-  const [eventPageData, runtimeTheme] = await Promise.all([
-    loadEventPagePublicContentData(slug, locale),
-    loadRuntimeThemeState(),
-  ])
-  if (!eventPageData) {
+  try {
+    const [eventPageData, runtimeTheme] = await Promise.all([
+      loadEventPagePublicContentData(slug, locale).catch(e => {
+        console.error('[SSR_DATA_LOAD_ERROR]', e)
+        return null
+      }),
+      loadRuntimeThemeState().catch(e => {
+        console.error('[SSR_THEME_LOAD_ERROR]', e)
+        return { site: { name: 'Mercado Fácil' } } as any
+      }),
+    ])
+
+    if (!eventPageData) {
+      console.warn('[SSR] Evento não encontrado ou erro no Supabase:', slug)
+      notFound()
+    }
+
+    return (
+      <>
+        <EventStructuredData
+          event={eventPageData.event}
+          locale={locale}
+          pagePath={resolveEventPagePath(eventPageData.event)}
+          site={runtimeTheme.site}
+        />
+        <EventContent
+          event={eventPageData.event}
+          changeLogEntries={eventPageData.changeLogEntries}
+          user={null}
+          marketContextEnabled={eventPageData.marketContextEnabled}
+          seriesEvents={eventPageData.seriesEvents}
+          liveChartConfig={eventPageData.liveChartConfig}
+          key={`is-bookmarked-${eventPageData.event.is_bookmarked}`}
+        />
+      </>
+    )
+  } catch (criticalError) {
+    console.error('[CRITICAL_SSR_ERROR]', criticalError)
     notFound()
   }
-
-  return (
-    <>
-      <EventStructuredData
-        event={eventPageData.event}
-        locale={locale}
-        pagePath={resolveEventPagePath(eventPageData.event)}
-        site={runtimeTheme.site}
-      />
-      <EventContent
-        event={eventPageData.event}
-        changeLogEntries={eventPageData.changeLogEntries}
-        user={null}
-        marketContextEnabled={eventPageData.marketContextEnabled}
-        seriesEvents={eventPageData.seriesEvents}
-        liveChartConfig={eventPageData.liveChartConfig}
-        key={`is-bookmarked-${eventPageData.event.is_bookmarked}`}
-      />
-    </>
-  )
 }
 
 export default async function EventPage({ params }: PageProps<'/[locale]/event/[slug]'>) {
