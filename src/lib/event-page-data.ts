@@ -62,7 +62,10 @@ export async function getEventRouteBySlug(eventSlug: string) {
   const isMercadoFacilLive = eventSlug.startsWith('live-');
 
   if (isMercadoFacilLive) {
-    const id = eventSlug.replace('live-', '')
+    // IMPORTANTE: Remove apenas o prefixo 'live-' do início (\^) para evitar bug
+    // Ex: 'live-live-cam-sp008-km095' -> 'live-cam-sp008-km095' (ID real no Supabase)
+    const id = eventSlug.replace(/^live-/, '')
+    console.log('[getEventRouteBySlug] Slug live detectado:', { slug: eventSlug, id })
     return { id, slug: eventSlug } as any
   }
 
@@ -94,8 +97,11 @@ export async function loadEventPagePublicContentData(
   const isMercadoFacilLive = eventSlug.startsWith('live-');
 
   if (isMercadoFacilLive) {
-    const id = eventSlug.replace('live-', '')
+    // Mesmo fix: remove só o prefixo inicial 'live-'
+    const id = eventSlug.replace(/^live-/, '')
+    console.log('[loadEventPagePublicContentData] Buscando live event com id:', id)
     const liveEvent = await MercadoFacilRepository.getEventById(id)
+    console.log('[loadEventPagePublicContentData] Resultado live event:', { found: !!liveEvent, id })
     eventResult = { data: liveEvent, error: liveEvent ? null : 'Not found' }
   }
   else {
