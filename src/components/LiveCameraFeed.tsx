@@ -71,9 +71,6 @@ export default function LiveCameraFeed({
     )
   }
   const [status, setStatus] = useState<FeedStatus>('loading')
-  if (typeof window !== 'undefined') {
-    console.log('[LiveCameraFeed] Render liveId:', liveId, 'viewMode:', viewMode)
-  }
   const [showPulse, setShowPulse] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [iaConnected, setIaConnected] = useState(false)
@@ -84,6 +81,10 @@ export default function LiveCameraFeed({
   const [calibState, setCalibState] = useState<CalibrateState>('idle')
   const [toast, setToast] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'live' | 'ia'>('ia')
+
+  if (typeof window !== 'undefined') {
+    console.log('[LiveCameraFeed] Render liveId:', liveId, 'viewMode:', viewMode)
+  }
 
   useEffect(() => {
     if (onViewModeChange) {
