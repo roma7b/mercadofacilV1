@@ -67,6 +67,12 @@ export async function generateStaticParams() {
   return [{ locale: 'en' }]
 }
 
+async function getCachedThemeState() {
+  'use cache'
+  cacheTag(cacheTags.settings)
+  return await loadRuntimeThemeState()
+}
+
 export default async function LocaleLayout({ params, children }: LayoutProps<'/[locale]'>) {
   const { locale } = await params
 
@@ -79,8 +85,7 @@ export default async function LocaleLayout({ params, children }: LayoutProps<'/[
     notFound()
   }
 
-  const runtimeTheme = await loadRuntimeThemeState()
-  cacheTag(cacheTags.settings)
+  const runtimeTheme = await getCachedThemeState()
 
   setRequestLocale(locale)
 

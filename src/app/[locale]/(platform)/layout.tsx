@@ -16,11 +16,17 @@ import { TagRepository } from '@/lib/db/queries/tag'
 import { buildChildParentMap, buildPlatformNavigationTags } from '@/lib/platform-navigation'
 import { LiveChat } from './_components/LiveChat'
 
+async function getCachedPlatformLayoutData(locale: SupportedLocale) {
+  'use cache'
+  cacheTag(cacheTags.mainTags(locale))
+  return null // O layout atual usa mocks locais, mas mantemos o padrão de tag
+}
+
 export default async function PlatformLayout({ params, children }: LayoutProps<'/[locale]'>) {
   const { locale } = await params
   const resolvedLocale = locale as SupportedLocale
   setRequestLocale(resolvedLocale)
-  cacheTag(cacheTags.mainTags(resolvedLocale))
+  await getCachedPlatformLayoutData(resolvedLocale)
   const t = await getExtracted()
   const tags = [
     { id: 'trending', slug: 'trending', name: 'Destaques', childs: [], sidebarItems: [] },

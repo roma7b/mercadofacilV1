@@ -19,6 +19,12 @@ interface SportsContentProps {
   sportsSection?: SportsSection | null
 }
 
+async function getCachedSportsEvents(params: Parameters<typeof EventRepository.listEvents>[0]) {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+  return await EventRepository.listEvents(params)
+}
+
 export default async function SportsContent({
   locale,
   initialTag = 'sports',
@@ -27,7 +33,6 @@ export default async function SportsContent({
   sportsSportSlug = null,
   sportsSection = null,
 }: SportsContentProps) {
-  cacheTag(cacheTags.eventsGlobal)
   const resolvedLocale = locale as SupportedLocale
 
   let initialEvents: Event[] = []
@@ -38,7 +43,7 @@ export default async function SportsContent({
     : ''
 
   try {
-    const { data: events, error } = await EventRepository.listEvents({
+    const { data: events, error } = await getCachedSportsEvents({
       tag: initialTag,
       search: '',
       userId: '',

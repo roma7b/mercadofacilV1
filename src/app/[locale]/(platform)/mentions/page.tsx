@@ -12,16 +12,21 @@ export const metadata: Metadata = {
   title: 'Mentions',
 }
 
+async function getCachedMentions(locale: SupportedLocale) {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+  return await EventRepository.listEvents({
+    tag: 'mentions',
+    locale,
+  })
+}
+
 export default async function MentionsPage({ params }: PageProps<'/[locale]/mentions'>) {
   const { locale } = await params
   setRequestLocale(locale)
-  cacheTag(cacheTags.eventsGlobal)
   const resolvedLocale = locale as SupportedLocale
 
-  const { data, error } = await EventRepository.listEvents({
-    tag: 'mentions',
-    locale: resolvedLocale,
-  })
+  const { data, error } = await getCachedMentions(resolvedLocale)
 
   const content = (
     <div className="flex flex-col gap-6 md:gap-8">

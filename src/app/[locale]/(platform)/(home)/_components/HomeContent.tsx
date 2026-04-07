@@ -12,12 +12,17 @@ interface HomeContentProps {
   initialMainTag?: string
 }
 
+async function getCachedHomeEvents(params: Parameters<typeof listHomeEventsPage>[0]) {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+  return await listHomeEventsPage(params)
+}
+
 export default async function HomeContent({
   locale,
   initialTag,
   initialMainTag,
 }: HomeContentProps) {
-  cacheTag(cacheTags.eventsGlobal)
   const resolvedLocale = locale as SupportedLocale
   const initialTagSlug = initialTag ?? 'trending'
   const initialMainTagSlug = initialMainTag ?? initialTagSlug
@@ -26,7 +31,7 @@ export default async function HomeContent({
   let initialEvents: Event[] = []
 
   try {
-    const { data: events, error, currentTimestamp } = await listHomeEventsPage({
+    const { data: events, error, currentTimestamp } = await getCachedHomeEvents({
       tag: initialTagSlug,
       mainTag: initialMainTagSlug,
       search: '',
