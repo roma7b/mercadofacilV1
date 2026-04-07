@@ -37,7 +37,6 @@ async function CachedEventPageContent({
   locale: SupportedLocale
   slug: string
 }) {
-  'use cache'
 
   const eventRoute = await getEventRouteBySlug(slug)
   if (!eventRoute) {
