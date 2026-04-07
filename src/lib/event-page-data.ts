@@ -48,7 +48,9 @@ export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLo
   }
 
   if (isLive) {
-    const id = eventSlug.replace('live-', '')
+    // noStore() obrigatório aqui também (chamado pelo generateMetadata)
+    noStore()
+    const id = eventSlug.replace(/^live-/, '')
     const event = await MercadoFacilRepository.getEventById(id)
     return event?.title ?? null
   }
