@@ -1,4 +1,6 @@
 
+'use cache'
+
 import { setRequestLocale } from 'next-intl/server'
 import HomeContent from '@/app/[locale]/(platform)/(home)/_components/HomeContent'
 
