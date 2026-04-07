@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 from collections import defaultdict
 from typing import Dict, Set, Optional
+import queue
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -27,7 +28,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 
 # Mapa de câmeras ativas: id -> url do stream
 STREAMS: Dict[str, str] = {
-    "live-cam-rodovia-sp": os.environ.get(
+    "live-cam-sp008-km095": os.environ.get(
         "CAMERA_URL_RODOVIA",
         "https://34.104.32.249.nip.io/SP008-KM095/stream.m3u8"
     ),
@@ -47,7 +48,7 @@ CLASS_COLORS = {
     "caminhão": [255, 60, 60],
 }
 
-FRAME_SKIP = 2          # Processa 1 a cada N frames (economiza CPU)
+FRAME_SKIP = 2          # Pula frames para renderização mais leve e rápida
 SAVE_INTERVAL_SEC = 300  # Salva no Supabase a cada 5 minutos
 
 # ─── Estado Global por Câmera ─────────────────────────────────────────────────
@@ -69,6 +70,9 @@ class CameraState:
         # Rastreamento de IDs para evitar dupla contagem
         self.tracked_ids: Dict[int, dict] = {}
         self.crossed_ids: Set[int] = set()
+        
+        # Histórico recente de cruzamentos para destacar na UI (visível por 1.5s)
+        self.recent_crossings: Dict[int, float] = {}
 
         # Última vez que salvou no Supabase
         self.last_save_ts = time.time()
@@ -150,22 +154,54 @@ async def broadcast(cam: CameraState, message: dict):
 
 
 # ─── Thread de Processamento de Vídeo ─────────────────────────────────────────
+
+class VideoCaptureThread:
+    """Thread dedicada para ler o stream sem travar o processamento ou gerar buffer (lag)."""
+    def __init__(self, stream_url):
+        self.stream_url = stream_url
+        self.cap = cv2.VideoCapture(self.stream_url, cv2.CAP_FFMPEG)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 15000)
+        self.cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, 15000)
+        self.q = queue.Queue(maxsize=3)
+        self.running = True
+        self.thread = threading.Thread(target=self._reader, daemon=True)
+        self.thread.start()
+
+    def _reader(self):
+        while self.running:
+            ret, frame = self.cap.read()
+            if not ret:
+                time.sleep(1)
+                continue
+            if not self.q.empty():
+                try:
+                    self.q.get_nowait()   # descarta o frame antigo
+                except queue.Empty:
+                    pass
+            self.q.put((ret, frame))
+
+    def read(self):
+        try:
+            return self.q.get(timeout=2)
+        except queue.Empty:
+            return False, None
+
+    def release(self):
+        self.running = False
+        self.cap.release()
+        self.thread.join(timeout=1)
+
 def process_stream(stream_id: str):
     global model
     cam = cameras[stream_id]
     cam.running = True
 
-    print(f"[{stream_id}] Iniciando stream: {cam.stream_url}")
+    print(f"[{stream_id}] Iniciando stream (THREAD OTIMIZADA): {cam.stream_url}")
 
     while cam.running:
-        # Configura o OpenCV para usar FFmpeg com suporte a HLS/HTTPS
-        cap = cv2.VideoCapture(cam.stream_url, cv2.CAP_FFMPEG)
-        # Parâmetros FFmpeg para streams HLS com TLS
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
-        cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 15000)
-        cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, 15000)
-        
-        if not cap.isOpened():
+        cap = VideoCaptureThread(cam.stream_url)
+        if not cap.cap.isOpened():
             print(f"[{stream_id}] Falha ao abrir stream com CAP_FFMPEG. Tentando em 10s...")
             time.sleep(10)
             continue
@@ -173,9 +209,12 @@ def process_stream(stream_id: str):
         frame_idx = 0
         while cam.running:
             ret, frame = cap.read()
-            if not ret:
+            if not ret or frame is None:
                 print(f"[{stream_id}] Fim do stream. Reconectando...")
                 break
+
+            # Redimensiona o frame na origem para a IA processar em milissegundos
+            frame = cv2.resize(frame, (640, 360))
 
             frame_idx += 1
 
@@ -198,12 +237,19 @@ def process_stream(stream_id: str):
                 persist=True,
                 classes=list(VEHICLE_CLASSES.keys()),
                 verbose=False,
-                conf=0.35,
+                conf=0.25, # Deixando mais permissivo para pegar veiculos menores/distantes
                 iou=0.45,
             )
 
             ai_frame = frame.copy()
             crossings = []
+            
+            # Limpa highlights velhos (> 0.7 segundos para aparecer e sumir rápido)
+            now = time.time()
+            with cam.lock:
+                keys_to_remove = [k for k, v in cam.recent_crossings.items() if now - v > 0.7]
+                for k in keys_to_remove:
+                    del cam.recent_crossings[k]
 
             if results[0].boxes.id is not None:
                 boxes = results[0].boxes.xyxy.cpu().numpy()
@@ -217,25 +263,27 @@ def process_stream(stream_id: str):
                     class_name = VEHICLE_CLASSES.get(class_id, "veículo")
                     color = CLASS_COLORS.get(class_name, [255, 255, 255])
 
-                    # Desenha bounding box no frame de IA
-                    cv2.rectangle(ai_frame, (x1, y1), (x2, y2), color[::-1], 2)
-                    cv2.putText(
-                        ai_frame, f"{class_name} #{track_id}",
-                        (x1, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                        color[::-1], 1, cv2.LINE_AA
-                    )
-
                     # Verifica cruzamento
                     direction = check_crossing(cam, track_id, cx, cy, w, h)
-                    if direction:
-                        with cam.lock:
+                    with cam.lock:
+                        if direction:
                             cam.total_count += 1
-                        crossings.append({
-                            "track_id": track_id,
-                            "class_name": class_name,
-                            "color": color,
-                            "direction": direction,
-                        })
+                            cam.recent_crossings[track_id] = now
+                            crossings.append({
+                                "track_id": track_id,
+                                "class_name": class_name,
+                                "color": color,
+                                "direction": direction,
+                            })
+                            
+                        # Desenha bounding box SOMENTE se ele cruzou a linha recentemente
+                        if track_id in cam.recent_crossings:
+                            cv2.rectangle(ai_frame, (x1, y1), (x2, y2), color[::-1], 2)
+                            cv2.putText(
+                                ai_frame, f"{class_name} #{track_id}",
+                                (x1, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                                color[::-1], 1, cv2.LINE_AA
+                            )
 
             # Desenha linha no frame de IA
             lx1 = int(cam.line["x1"] * w)
@@ -243,11 +291,6 @@ def process_stream(stream_id: str):
             lx2 = int(cam.line["x2"] * w)
             ly2 = int(cam.line["y2"] * h)
             cv2.line(ai_frame, (lx1, ly1), (lx2, ly2), (0, 255, 80), 3)
-            cv2.putText(
-                ai_frame, f"TOTAL: {cam.total_count}",
-                (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
-                (0, 255, 80), 2, cv2.LINE_AA
-            )
 
             with cam.lock:
                 cam.last_frame_ai = ai_frame
@@ -328,17 +371,17 @@ async def video_feed(stream_id: str):
     if not cam:
         return JSONResponse({"error": "Camera not found"}, status_code=404)
 
-    def generate():
+    async def generate():
         while True:
             with cam.lock:
                 frame = cam.last_frame_ai if cam.last_frame_ai is not None else cam.last_frame
             if frame is not None:
-                _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 55])
                 yield (
                     b"--frame\r\n"
                     b"Content-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
                 )
-            time.sleep(0.1)
+            await asyncio.sleep(0.04) # ~25 FPS no streaming (não trava o backend em async)
 
     return StreamingResponse(generate(), media_type="multipart/x-mixed-replace;boundary=frame")
 

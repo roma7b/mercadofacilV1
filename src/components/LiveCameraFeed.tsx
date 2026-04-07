@@ -68,6 +68,7 @@ export default function LiveCameraFeed({
   const [iaConnected, setIaConnected] = useState(false)
   const [iaLoading, setIaLoading] = useState(false)
   const [iaError, setIaError] = useState(false)
+  const [totalCount, setTotalCount] = useState<number>(0)
   const iaRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [calibState, setCalibState] = useState<CalibrateState>('idle')
   const [toast, setToast] = useState<string | null>(null)
@@ -357,6 +358,7 @@ export default function LiveCameraFeed({
           if (onCountUpdate) {
             onCountUpdate(countValue)
           }
+          setTotalCount(countValue)
 
           if (lastCountRef.current !== null && countValue > lastCountRef.current) {
             setShowPulse(true)
@@ -453,7 +455,8 @@ export default function LiveCameraFeed({
   }, [originalStreamUrl])
 
   return (
-    <div className={`relative bg-zinc-950 overflow-hidden group ${className}`}>
+    <div className={`flex flex-col bg-zinc-950 border border-zinc-800/50 rounded-2xl overflow-hidden ${className}`}>
+      <div className="relative flex-grow overflow-hidden group">
       {imgError ? (
         <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 gap-3">
           <AlertCircle size={32} className="text-rose-500" />
@@ -628,6 +631,25 @@ export default function LiveCameraFeed({
           <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
         </div>
       )}
+      </div>
+
+      {/* Roda-pé de Contagem em Tempo Real (fora do video) */}
+      <div className="flex items-center justify-between px-5 py-3 bg-zinc-900/50 border-t border-zinc-800/80">
+        <div className="flex flex-col">
+           <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+             Tráfego Atual
+           </span>
+           <span className="text-xs text-white/80 font-medium">Contagem por IA (YOLOv8)</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-zinc-500 text-xs font-bold tracking-widest">TOTAL</span>
+          <div className="bg-emerald-500/10 border border-emerald-500/30 px-4 py-1 rounded-lg">
+             <span className="text-2xl font-mono text-emerald-400 tracking-tighter">
+                {totalCount}
+             </span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
