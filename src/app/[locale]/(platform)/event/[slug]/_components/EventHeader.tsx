@@ -196,7 +196,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
 
           <h1 className={cn(
             'min-w-0 leading-tight! font-semibold text-pretty transition-all ease-in-out',
-            scrolled ? 'text-sm lg:text-base' : 'text-xl lg:text-2xl',
+            scrolled ? 'text-sm lg:text-base' : 'text-lg md:text-xl lg:text-2xl',
           )}
           >
             {event.title}

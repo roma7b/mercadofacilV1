@@ -546,9 +546,9 @@ export default function LiveCameraFeed({
 
       <div className="absolute bottom-3 left-3 z-30 flex gap-2">
         <div
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-black transition-all border shadow-lg bg-emerald-600 border-emerald-400 text-white animate-pulse"
+          className="flex items-center gap-1 px-2 py-1.5 md:px-3 md:py-2 rounded-lg text-[9px] md:text-[10px] font-black transition-all border shadow-lg bg-emerald-600 border-emerald-400 text-white animate-pulse"
         >
-          <Cpu className="w-3.5 h-3.5" />
+          <Cpu className="w-3 md:w-3.5 h-3 md:h-3.5" />
           VISÃO IA (SINCRO)
         </div>
 
@@ -603,15 +603,15 @@ export default function LiveCameraFeed({
       </AnimatePresence>
 
       <div className="absolute top-2 left-2 flex items-center gap-2 z-10 pointer-events-none">
-        <div className="flex items-center gap-1.5 bg-zinc-900/80 px-2 py-1 rounded-full shadow border border-zinc-700">
-          <Wifi size={10} className={status === 'live' ? 'text-emerald-400 animate-pulse' : 'text-zinc-500'} />
-          <span className="text-[9px] font-black text-white uppercase tracking-widest">
+        <div className="flex items-center gap-1 bg-zinc-900/80 px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shadow border border-zinc-700">
+          <Wifi size={9} className={status === 'live' ? 'text-emerald-400 animate-pulse' : 'text-zinc-500'} />
+          <span className="text-[8px] md:text-[9px] font-black text-white uppercase tracking-widest">
             {status === 'live' ? 'DER-SP' : 'Conectando'}
           </span>
         </div>
-        <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur px-2 py-1 rounded-full border border-white/10">
-          <Cpu size={10} className={iaConnected ? 'text-amber-400 animate-pulse' : 'text-zinc-500'} />
-          <span className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">
+        <div className="flex items-center gap-1 bg-black/60 backdrop-blur px-1.5 py-0.5 md:px-2 md:py-1 rounded-full border border-white/10">
+          <Cpu size={9} className={iaConnected ? 'text-amber-400 animate-pulse' : 'text-zinc-500'} />
+          <span className="text-[8px] md:text-[9px] font-black text-zinc-300 uppercase tracking-widest">
             {iaConnected ? 'IA Online' : 'IA Offline'}
           </span>
         </div>
@@ -625,17 +625,17 @@ export default function LiveCameraFeed({
       </div>
 
       {/* Roda-pé de Contagem em Tempo Real (fora do video) */}
-      <div className="flex items-center justify-between px-5 py-3 bg-zinc-900/50 border-t border-zinc-800/80">
+      <div className="flex items-center justify-between px-4 py-2.5 md:px-5 md:py-3 bg-zinc-900/50 border-t border-zinc-800/80">
         <div className="flex flex-col">
-           <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+           <span className="text-[8px] md:text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
              Tráfego Atual
            </span>
-           <span className="text-xs text-white/80 font-medium">Contagem por IA (YOLOv8)</span>
+           <span className="text-[10px] md:text-xs text-white/80 font-medium whitespace-nowrap">Contagem por IA (YOLOv8)</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-zinc-500 text-xs font-bold tracking-widest">TOTAL</span>
-          <div className="bg-emerald-500/10 border border-emerald-500/30 px-4 py-1 rounded-lg">
-             <span className="text-2xl font-mono text-emerald-400 tracking-tighter">
+        <div className="flex items-center gap-2 md:gap-3">
+          <span className="text-zinc-500 text-[10px] md:text-xs font-bold tracking-widest">TOTAL</span>
+          <div className="bg-emerald-500/10 border border-emerald-500/30 px-3 py-0.5 md:px-4 md:py-1 rounded-lg">
+             <span className="text-xl md:text-2xl font-mono text-emerald-400 tracking-tighter">
                 {totalCount}
              </span>
           </div>

@@ -408,7 +408,7 @@ export default function EventContent({
                     <LiveCameraFeed
                       liveId={event.id}
                       originalStreamUrl={event.livestream_url || ''}
-                      className="w-full aspect-video min-h-[300px] md:min-h-[500px] rounded-2xl border border-white/10 shadow-2xl"
+                      className="w-full aspect-video min-h-[210px] md:min-h-[500px] rounded-2xl border border-white/10 shadow-2xl"
                     />
                     {isMobile && <div className="hidden">{painelDeApostas}</div>}
                   </div>
