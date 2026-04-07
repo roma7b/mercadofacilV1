@@ -66,7 +66,7 @@ export default function LiveCameraFeed({
       </div>
     )
   }
-  const [status, setStatus] = useState<FeedStatus>('loading')
+  const [status, setStatus] = useState<FeedStatus>('live')
   const [showPulse, setShowPulse] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [iaConnected, setIaConnected] = useState(false)
