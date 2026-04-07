@@ -13,10 +13,6 @@ const API_URL =  typeof window !== 'undefined' && window.location.protocol === '
 
 const WS_URL = API_URL.replace(/^https/, 'wss').replace(/^http/, 'ws')
 
-if (typeof window !== 'undefined') {
-  console.log('[LiveCameraFeed] Config:', { BASE_URL, API_URL, WS_URL, windowProtocol: window.location.protocol })
-}
-
 const FLASH_DURATION_MS = 1600
 
 interface LiveCameraFeedProps {
@@ -82,9 +78,7 @@ export default function LiveCameraFeed({
   const [toast, setToast] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'live' | 'ia'>('ia')
 
-  if (typeof window !== 'undefined') {
-    console.log('[LiveCameraFeed] Render liveId:', liveId, 'viewMode:', viewMode)
-  }
+
 
   useEffect(() => {
     if (onViewModeChange) {
@@ -95,7 +89,6 @@ export default function LiveCameraFeed({
   // Reseta estado da IA ao entrar no modo IA
   useEffect(() => {
     if (viewMode === 'ia') {
-      setIaLoading(true)
       setIaError(false)
     }
   }, [viewMode])
@@ -342,6 +335,7 @@ export default function LiveCameraFeed({
 
       ws.onopen = () => {
         setIaConnected(true)
+        setStatus('live') // Remove tela de loading forçada da frente!
         reconnectAttempts = 0
         keepAlive = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
@@ -351,10 +345,12 @@ export default function LiveCameraFeed({
       }
 
       ws.onmessage = (evt) => {
-        if (evt.data === 'pong') {
-          return
-        }
+        if (evt.data === 'pong') return
+        
         try {
+          // Força "live" ao primeiro sinal de vida caso imagem não mande onload
+          if (status === 'loading') setStatus('live') 
+          
           const ev = JSON.parse(evt.data)
 
           if (ev.line_x1_pct !== undefined) {
@@ -493,48 +489,36 @@ export default function LiveCameraFeed({
             />
           ) : (
             <div className="relative w-full h-full">
-              {iaLoading && !iaError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 z-10 gap-3">
-                  <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
-                  <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Conectando à IA...</p>
-                  <p className="text-[9px] text-zinc-500">Aguardando primeiros frames do YOLO</p>
-                </div>
-              )}
-              {iaError && (
+              {!iaError ? (
+                <img
+                  src={`${API_URL}/video-feed/${liveId}`}
+                  className="w-full h-full object-cover"
+                  alt="AI Perspective"
+                  onLoad={() => {
+                    setStatus('live')
+                    setIaError(false)
+                  }}
+                  onError={() => {
+                    // Esperar um pouco em caso de queda de rede na rota de stream, mas focar exibição.
+                    if (iaRetryRef.current) clearTimeout(iaRetryRef.current)
+                    iaRetryRef.current = setTimeout(() => {
+                      setIaError(true)
+                    }, 5000)
+                  }}
+                />
+              ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 z-10 gap-3">
                   <div className="w-10 h-10 rounded-full border-2 border-rose-500 flex items-center justify-center">
                     <span className="text-rose-500 text-lg">!</span>
                   </div>
-                  <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">IA Indisponível</p>
+                  <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Feed de IA Off</p>
                   <button
-                    onClick={() => { setIaError(false); setIaLoading(true) }}
-                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[9px] font-black rounded-full transition-all"
+                    onClick={() => { setIaError(false); setStatus('live'); }}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[9px] font-black rounded-full transition-all shadow-lg"
                   >
-                    Tentar Novamente
+                    Reconectar Câmera
                   </button>
                 </div>
-              )}
-              {!iaError && (
-                <img
-                  key={iaLoading ? 'loading' : 'loaded'}
-                  src={`${API_URL}/video-feed/${liveId}?t=${Date.now()}`}
-                  className="w-full h-full object-cover"
-                  alt="AI Perspective"
-                  onError={() => {
-                    // Tenta reconectar automaticamente até 3x enquanto a câmera inicializa
-                    if (iaRetryRef.current) clearTimeout(iaRetryRef.current)
-                    iaRetryRef.current = setTimeout(() => {
-                      setIaLoading(false)
-                      setIaError(true)
-                    }, 8000)
-                  }}
-                  onLoad={() => {
-                    if (iaRetryRef.current) clearTimeout(iaRetryRef.current)
-                    setIaLoading(false)
-                    setIaError(false)
-                    setStatus('live')
-                  }}
-                />
               )}
             </div>
           )}
