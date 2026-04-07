@@ -74,22 +74,24 @@ async function CachedEventPageContent({
   }
 
   try {
+    console.log('[SSR_DEBUG] Loading data for slug:', slug)
     const [eventPageData, runtimeTheme] = await Promise.all([
       loadEventPagePublicContentData(slug, locale).catch(e => {
-        console.error('[SSR_DATA_LOAD_ERROR]', e)
+        console.error('[SSR_DEBUG_DATA_ERROR]', e)
         return null
       }),
       loadRuntimeThemeState().catch(e => {
-        console.error('[SSR_THEME_LOAD_ERROR]', e)
+        console.error('[SSR_DEBUG_THEME_ERROR]', e)
         return { site: { name: 'Mercado Fácil' } } as any
       }),
     ])
 
     if (!eventPageData) {
-      console.warn('[SSR] Evento não encontrado ou erro no Supabase:', slug)
+      console.warn('[SSR_DEBUG] Event page data is null for:', slug)
       notFound()
     }
 
+    console.log('[SSR_DEBUG] Data loaded successfully for:', slug)
     return (
       <>
         <EventStructuredData
@@ -109,9 +111,9 @@ async function CachedEventPageContent({
         />
       </>
     )
-  } catch (criticalError) {
-    console.error('[CRITICAL_SSR_ERROR]', criticalError)
-    notFound()
+  } catch (criticalError: any) {
+    console.error('[SSR_CRITICAL_DEBUG_ERROR]', criticalError.message, criticalError.stack)
+    throw criticalError // Permite que a Vercel logue o erro real
   }
 }
 
