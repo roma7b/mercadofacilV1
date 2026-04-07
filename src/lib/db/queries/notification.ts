@@ -1,4 +1,3 @@
-'use cache'
 import type { QueryResult } from '@/types'
 import { and, desc, eq } from 'drizzle-orm'
 import { cacheTag, updateTag } from 'next/cache'
@@ -9,7 +8,7 @@ import { db } from '@/lib/drizzle'
 
 export const NotificationRepository = {
   async getByUserId(user_id: string): Promise<QueryResult<typeof notifications.$inferSelect[]>> {
-    
+    'use cache'
     cacheTag(cacheTags.notifications(user_id))
 
     return runQuery(async () => {

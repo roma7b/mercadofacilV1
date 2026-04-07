@@ -1,4 +1,3 @@
-'use cache'
 import type { NonDefaultLocale, SupportedLocale } from '@/i18n/locales'
 import type { PlatformCategorySidebarItem, PlatformNavigationChild } from '@/lib/platform-navigation'
 import { createHash } from 'node:crypto'
@@ -327,7 +326,7 @@ async function getVisibleActiveEventCountsByTagSlugs(tagSlugs: string[]): Promis
 
 export const TagRepository = {
   async getMainTags(locale: SupportedLocale = DEFAULT_LOCALE): Promise<MainTagsResult> {
-    
+    'use cache'
     cacheTag(cacheTags.mainTags(locale))
     const { data: mainTagsResult, error } = await runQuery(async () => {
       const result = await db
@@ -601,7 +600,7 @@ export const TagRepository = {
     error: string | null
     totalCount: number
   }> {
-    
+    'use cache'
     cacheTag(cacheTags.adminCategories)
 
     const cappedLimit = Math.min(Math.max(limit, 1), 100)

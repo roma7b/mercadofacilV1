@@ -1,4 +1,3 @@
-'use cache'
 import type { SportsMenuEntry } from '@/lib/sports-menu-types'
 import type { SportsSlugMappingEntry } from '@/lib/sports-slug-mapping'
 import type { SportsVertical } from '@/lib/sports-vertical'
@@ -347,7 +346,7 @@ export async function getSportsCountsBySlugFromDb() {
 
 export const SportsMenuRepository = {
   async getMenuEntries(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuEntry[]>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
 
     return runQuery(async () => {
@@ -361,7 +360,7 @@ export const SportsMenuRepository = {
   },
 
   async getLayoutData(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuLayoutData>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
 
     return runQuery(async () => {
@@ -387,7 +386,7 @@ export const SportsMenuRepository = {
   },
 
   async resolveCanonicalSlugByAlias(alias: string): Promise<QueryResult<string | null>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
 
     return runQuery(async () => {
@@ -401,7 +400,7 @@ export const SportsMenuRepository = {
   },
 
   async getLandingHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
 
     return runQuery(async () => {
@@ -416,7 +415,7 @@ export const SportsMenuRepository = {
   },
 
   async getFuturesHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
 
     return runQuery(async () => {

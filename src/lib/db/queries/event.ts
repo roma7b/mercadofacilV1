@@ -1,4 +1,3 @@
-'use cache'
 import type { SQL } from 'drizzle-orm'
 import type { SupportedLocale } from '@/i18n/locales'
 import type { conditions } from '@/lib/db/schema/events/tables'
@@ -1498,7 +1497,7 @@ export const EventRepository = {
     sportsSportSlug = '',
     status = 'active',
   }: ListEventMarketSlugsProps): Promise<QueryResult<string[]>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
 
     return await runQuery(async () => {
@@ -2200,7 +2199,7 @@ export const EventRepository = {
     slug: string,
     locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<QueryResult<{ title: string }>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
     cacheTag(cacheTags.event(slug))
 
@@ -2245,7 +2244,7 @@ export const EventRepository = {
     sports_section: 'games' | 'props' | null
     tags: Array<{ slug: string }>
   }>> {
-    
+    'use cache'
     cacheTag(cacheTags.eventsGlobal)
     cacheTag(cacheTags.event(slug))
 
