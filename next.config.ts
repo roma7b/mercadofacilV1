@@ -11,7 +11,6 @@ const optimizedImageHostPatterns = getOptimizedImageHostPatterns(process.env)
 
 const config: NextConfig = {
   output: process.env.VERCEL_ENV ? undefined : 'standalone',
-  cacheComponents: true,
   typedRoutes: false,
   reactStrictMode: false,
   images: {
