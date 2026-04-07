@@ -6,7 +6,7 @@ import type {
   EventLiveChartConfig,
   EventSeriesEntry,
 } from '@/types'
-import { cacheTag } from 'next/cache'
+import { cacheTag, unstable_noStore as noStore } from 'next/cache'
 import { loadMarketContextSettings } from '@/lib/ai/market-context-config'
 import { cacheTags } from '@/lib/cache-tags'
 import { EventRepository } from '@/lib/db/queries/event'
@@ -62,8 +62,9 @@ export async function getEventRouteBySlug(eventSlug: string) {
   const isMercadoFacilLive = eventSlug.startsWith('live-');
 
   if (isMercadoFacilLive) {
-    // IMPORTANTE: Remove apenas o prefixo 'live-' do início (\^) para evitar bug
-    // Ex: 'live-live-cam-sp008-km095' -> 'live-cam-sp008-km095' (ID real no Supabase)
+    // noStore() impede o Next.js de pré-renderizar/cachear — obrigatório para Supabase fetch()
+    noStore()
+    // Remove apenas o prefixo 'live-' do início
     const id = eventSlug.replace(/^live-/, '')
     console.log('[getEventRouteBySlug] Slug live detectado:', { slug: eventSlug, id })
     return { id, slug: eventSlug } as any
@@ -97,7 +98,9 @@ export async function loadEventPagePublicContentData(
   const isMercadoFacilLive = eventSlug.startsWith('live-');
 
   if (isMercadoFacilLive) {
-    // Mesmo fix: remove só o prefixo inicial 'live-'
+    // noStore() é ESSENCIAL aqui — sem isso o Next.js tenta pré-renderizar e o
+    // prerenderer cancela o fetch() do Supabase antes de completar (erro 500)
+    noStore()
     const id = eventSlug.replace(/^live-/, '')
     console.log('[loadEventPagePublicContentData] Buscando live event com id:', id)
     const liveEvent = await MercadoFacilRepository.getEventById(id)
