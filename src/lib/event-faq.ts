@@ -1,4 +1,4 @@
-﻿import type { Event, Market, Outcome } from '@/types'
+import type { Event, Market, Outcome } from '@/types'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { formatCompactCount, formatDate } from '@/lib/formatters'
 
@@ -40,7 +40,7 @@ function clampCents(value: number) {
 }
 
 function formatFaqCents(value: number) {
-  return `${CENTS_FORMATTER.format(clampCents(value))}Â¢`
+  return `${CENTS_FORMATTER.format(clampCents(value))}¢`
 }
 
 function formatPercentFromCents(cents: number) {
@@ -258,14 +258,14 @@ function buildPriceMeaningBinaryAnswer(event: Event, siteName: string) {
   const yesSelection = resolveBinarySelection(event)
   const profitCents = clampCents(100 - yesSelection.cents)
 
-  return `On ${siteName}, the price of "Yes" or "No" represents the market's implied probability. A "Yes" price of ${formatFaqCents(yesSelection.cents)} for ${quoteLabel(event.title)} means traders collectively believe there is a ${formatPercentFromCents(yesSelection.cents)} chance this event will happen. If you buy "Yes" at ${formatFaqCents(yesSelection.cents)} and the event does happen, you receive $1.00 per share â€” a profit of ${formatFaqCents(profitCents)} per share. If the event doesn't happen, those shares are worth $0.`
+  return `On ${siteName}, the price of "Yes" or "No" represents the market's implied probability. A "Yes" price of ${formatFaqCents(yesSelection.cents)} for ${quoteLabel(event.title)} means traders collectively believe there is a ${formatPercentFromCents(yesSelection.cents)} chance this event will happen. If you buy "Yes" at ${formatFaqCents(yesSelection.cents)} and the event does happen, you receive $1.00 per share — a profit of ${formatFaqCents(profitCents)} per share. If the event doesn't happen, those shares are worth $0.`
 }
 
 function buildPriceMeaningMultiAnswer(event: Event, siteName: string) {
   const selection = resolvePrimarySelection(event)
   const profitCents = clampCents(100 - selection.cents)
 
-  return `On ${siteName}, the price of each outcome represents the market's implied probability. A price of ${formatFaqCents(selection.cents)} for ${quoteLabel(selection.label)} in the ${quoteLabel(event.title)} market means traders collectively believe there is roughly a ${formatPercentFromCents(selection.cents)} chance that ${quoteLabel(selection.label)} will be the correct result. If you buy "Yes" shares at ${formatFaqCents(selection.cents)} and the outcome is correct, you receive $1.00 per share â€” a profit of ${formatFaqCents(profitCents)} per share. If incorrect, those shares are worth $0.`
+  return `On ${siteName}, the price of each outcome represents the market's implied probability. A price of ${formatFaqCents(selection.cents)} for ${quoteLabel(selection.label)} in the ${quoteLabel(event.title)} market means traders collectively believe there is roughly a ${formatPercentFromCents(selection.cents)} chance that ${quoteLabel(selection.label)} will be the correct result. If you buy "Yes" shares at ${formatFaqCents(selection.cents)} and the outcome is correct, you receive $1.00 per share — a profit of ${formatFaqCents(profitCents)} per share. If incorrect, those shares are worth $0.`
 }
 
 function buildCloseAnswer(event: Event) {

@@ -1,4 +1,4 @@
-﻿export const cacheTags = {
+export const cacheTags = {
   notifications: (key: string) => `notifications:${key}`,
   activity: (key: string) => `activity:${key}`,
   holders: (key: string) => `holders:${key}`,

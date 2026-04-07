@@ -1,4 +1,4 @@
-﻿const DIACRITICS_PATTERN = /[\u0300-\u036F]/g
+const DIACRITICS_PATTERN = /[\u0300-\u036F]/g
 
 export function stripDiacritics(value: string) {
   return value.normalize('NFKD').replace(DIACRITICS_PATTERN, '')

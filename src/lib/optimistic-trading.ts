@@ -1,4 +1,4 @@
-﻿import type { InfiniteData, QueryClient, QueryKey } from '@tanstack/react-query'
+import type { InfiniteData, QueryClient, QueryKey } from '@tanstack/react-query'
 import type { SharesByCondition } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useUserShareBalances'
 import type { PortfolioUserOpenOrder } from '@/app/[locale]/(platform)/portfolio/_types/PortfolioOpenOrdersTypes'
 import type { PublicPosition } from '@/app/[locale]/(platform)/profile/_components/PublicPositionItem'

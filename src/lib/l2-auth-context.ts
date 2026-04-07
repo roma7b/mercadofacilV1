@@ -1,4 +1,4 @@
-﻿import { createHash } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { generateRandomString } from 'better-auth/crypto'
 
 export const L2_AUTH_CONTEXT_PREFIX = 'l2_'

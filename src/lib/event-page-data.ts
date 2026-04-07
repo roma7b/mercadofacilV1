@@ -38,10 +38,6 @@ export async function resolveCanonicalEventSlugFromSportsPath(sportSlug: string,
 }
 
 export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLocale) {
-  'use cache'
-  cacheTag(cacheTags.eventsGlobal)
-  cacheTag(cacheTags.event(eventSlug))
-
   // Mercados customizados do Supabase usam UUID como slug - buscar título diretamente
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug)
   const isLive = eventSlug.startsWith('live-')
@@ -62,9 +58,6 @@ export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLo
 }
 
 export async function getEventRouteBySlug(eventSlug: string) {
-  'use cache'
-  cacheTag(cacheTags.eventsGlobal)
-  cacheTag(cacheTags.event(eventSlug))
 
   const isMercadoFacilLive = eventSlug.startsWith('live-');
 
@@ -90,9 +83,6 @@ export async function loadEventPagePublicContentData(
   eventSlug: string,
   locale: SupportedLocale,
 ): Promise<EventPageContentData | null> {
-  'use cache'
-  cacheTag(cacheTags.eventsGlobal)
-  cacheTag(cacheTags.event(eventSlug))
 
   const marketContextSettings = await loadMarketContextSettings()
 
@@ -190,10 +180,6 @@ export async function loadEventPageShellData(
   eventSlug: string,
   locale: SupportedLocale,
 ): Promise<EventPageShellData> {
-  'use cache'
-  cacheTag(cacheTags.eventsGlobal)
-  cacheTag(cacheTags.event(eventSlug))
-  cacheTag(cacheTags.settings)
 
   const [route, title, runtimeTheme] = await Promise.all([
     getEventRouteBySlug(eventSlug),

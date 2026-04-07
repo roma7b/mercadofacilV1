@@ -1,4 +1,4 @@
-﻿import type { ActivityOrder } from '@/types'
+import type { ActivityOrder } from '@/types'
 
 export function filterActivitiesByMinAmount(
   activities: ActivityOrder[],

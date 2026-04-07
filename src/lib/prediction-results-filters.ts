@@ -1,4 +1,4 @@
-﻿import type { EventListSortBy } from '@/lib/event-list-filters'
+import type { EventListSortBy } from '@/lib/event-list-filters'
 
 export const PREDICTION_RESULTS_SORT_PARAM = '_sort'
 export const PREDICTION_RESULTS_STATUS_PARAM = '_status'

@@ -1,1 +1,1 @@
-﻿export const STATIC_PARAMS_PLACEHOLDER = '__placeholder__'
+export const STATIC_PARAMS_PLACEHOLDER = '__placeholder__'

@@ -1,4 +1,4 @@
-﻿import type { CLOB_ORDER_TYPE } from '@/lib/constants'
+import type { CLOB_ORDER_TYPE } from '@/lib/constants'
 import type { BlockchainOrder, OrderSide, OrderType, Outcome } from '@/types'
 import { storeOrderAction } from '@/app/[locale]/(platform)/event/[slug]/_actions/store-order'
 import { MICRO_UNIT, ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'

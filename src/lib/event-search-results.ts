@@ -1,4 +1,4 @@
-﻿import type { Event } from '@/types'
+import type { Event } from '@/types'
 import { isEventResolvedLike } from '@/lib/home-events'
 
 function toTimestamp(value: string | null | undefined) {

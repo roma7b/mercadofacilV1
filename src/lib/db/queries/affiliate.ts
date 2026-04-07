@@ -1,4 +1,4 @@
-﻿import type { QueryResult } from '@/types'
+import type { QueryResult } from '@/types'
 import { randomBytes } from 'node:crypto'
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { affiliate_referrals } from '@/lib/db/schema/affiliates/tables'
@@ -154,7 +154,7 @@ export const AffiliateRepository = {
   },
 
   async getAffiliateByCode(code: string): Promise<QueryResult<AffiliateUser | null>> {
-    'use cache'
+    
 
     return runQuery(async () => {
       const result = await db
@@ -250,7 +250,7 @@ export const AffiliateRepository = {
   },
 
   async getUserAffiliateStats(userId: string): Promise<QueryResult<AffiliateStats>> {
-    'use cache'
+    
 
     return runQuery(async () => {
       const result = await db.execute(
@@ -272,7 +272,7 @@ export const AffiliateRepository = {
   },
 
   async listAffiliateOverview(): Promise<QueryResult<AffiliateOverview[]>> {
-    'use cache'
+    
 
     return runQuery(async () => {
       const result = await db.execute(
@@ -288,7 +288,7 @@ export const AffiliateRepository = {
   },
 
   async getAffiliateProfiles(userIds: string[]): Promise<QueryResult<AffiliateProfile[]>> {
-    'use cache'
+    
 
     return runQuery(async () => {
       if (!userIds.length) {
@@ -321,7 +321,7 @@ export const AffiliateRepository = {
   },
 
   async listReferralsByAffiliate(affiliateUserId: string, limit = 20): Promise<QueryResult<ReferralList[]>> {
-    'use cache'
+    
 
     return runQuery(async () => {
       const result = await db

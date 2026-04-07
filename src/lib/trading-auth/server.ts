@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import type { L2AuthContextRecord } from '@/lib/l2-auth-context'
 import { eq } from 'drizzle-orm'

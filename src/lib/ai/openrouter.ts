@@ -1,4 +1,4 @@
-﻿import { loadRuntimeThemeSiteName } from '@/lib/theme-settings'
+import { loadRuntimeThemeSiteName } from '@/lib/theme-settings'
 
 export interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant'

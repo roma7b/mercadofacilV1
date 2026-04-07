@@ -1,4 +1,4 @@
-﻿import type { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { loader } from 'fumadocs-core/source'
 import { docs } from 'fumadocs-mdx:collections/server'
 import { openapiPlugin } from 'fumadocs-openapi/server'

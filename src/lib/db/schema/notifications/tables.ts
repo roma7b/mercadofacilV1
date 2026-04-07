@@ -1,4 +1,4 @@
-﻿import { sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { char, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { users } from '@/lib/db/schema/auth/tables'
 

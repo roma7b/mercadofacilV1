@@ -1,4 +1,4 @@
-﻿import type { ActivityOrder, UserPosition } from '@/types'
+import type { ActivityOrder, UserPosition } from '@/types'
 import { MICRO_UNIT } from '@/lib/constants'
 import { buildDataApiUrl } from '@/lib/data-api/client'
 

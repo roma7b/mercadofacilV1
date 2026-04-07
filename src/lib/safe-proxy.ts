@@ -1,4 +1,4 @@
-﻿import type { Address, TypedDataDomain } from 'viem'
+import type { Address, TypedDataDomain } from 'viem'
 import { createPublicClient, http } from 'viem'
 import { defaultNetwork } from '@/lib/appkit'
 import { SAFE_PROXY_FACTORY_ADDRESS, ZERO_ADDRESS } from '@/lib/contracts'

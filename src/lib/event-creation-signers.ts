@@ -1,4 +1,4 @@
-﻿import { privateKeyToAccount } from 'viem/accounts'
+import { privateKeyToAccount } from 'viem/accounts'
 import 'server-only'
 
 export interface EventCreationSigner {

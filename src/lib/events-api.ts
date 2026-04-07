@@ -1,4 +1,4 @@
-﻿import type { EventListSortBy, EventListStatusFilter } from '@/lib/event-list-filters'
+import type { EventListSortBy, EventListStatusFilter } from '@/lib/event-list-filters'
 import type { Event } from '@/types'
 
 export type EventListFrequency = 'all' | 'daily' | 'weekly' | 'monthly'

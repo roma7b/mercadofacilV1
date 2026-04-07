@@ -1,4 +1,4 @@
-﻿import type { TypedDataDomain } from 'viem'
+import type { TypedDataDomain } from 'viem'
 import { defaultNetwork } from '@/lib/appkit'
 
 export const TRADING_AUTH_DOMAIN_NAME = 'ClobAuthDomain'

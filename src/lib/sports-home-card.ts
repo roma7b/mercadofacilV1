@@ -1,4 +1,4 @@
-﻿import type { Event, Market, Outcome, SportsTeam } from '@/types'
+import type { Event, Market, Outcome, SportsTeam } from '@/types'
 import { resolveUniqueBinaryWinningOutcomeIndexFromPayoutNumerators } from '@/lib/binary-outcome-resolution'
 import {
   doesTextMatchTeam,

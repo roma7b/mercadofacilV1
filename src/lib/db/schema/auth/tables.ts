@@ -1,4 +1,4 @@
-﻿import {
+import {
   boolean,
   integer,
   jsonb,

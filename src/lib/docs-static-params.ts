@@ -1,4 +1,4 @@
-﻿import { DEFAULT_LOCALE } from '@/i18n/locales'
+import { DEFAULT_LOCALE } from '@/i18n/locales'
 import { source } from '@/lib/source'
 
 interface DocsStaticParam {

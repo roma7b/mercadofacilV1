@@ -1,4 +1,4 @@
-﻿import type { ClassValue } from 'clsx'
+import type { ClassValue } from 'clsx'
 import confetti from 'canvas-confetti'
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'

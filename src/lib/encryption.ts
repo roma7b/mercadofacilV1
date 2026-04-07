@@ -1,4 +1,4 @@
-﻿import { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto'
 
 const PREFIX = 'enc.v1.'

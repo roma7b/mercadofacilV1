@@ -1,4 +1,4 @@
-﻿import { normalizeAddress } from '@/lib/wallet'
+import { normalizeAddress } from '@/lib/wallet'
 
 const DATA_API_URL = process.env.DATA_URL!
 

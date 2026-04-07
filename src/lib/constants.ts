@@ -1,4 +1,4 @@
-﻿import { defaultNetwork } from '@/lib/appkit'
+import { defaultNetwork } from '@/lib/appkit'
 import { CTF_EXCHANGE_ADDRESS, NEG_RISK_CTF_EXCHANGE_ADDRESS } from '@/lib/contracts'
 
 export const DEFAULT_ERROR_MESSAGE = 'Internal server error. Try again in a few moments.'

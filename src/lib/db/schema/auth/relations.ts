@@ -1,4 +1,4 @@
-﻿import { relations } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import { bookmarks } from '@/lib/db/schema/bookmarks/tables'
 import { notifications } from '@/lib/db/schema/notifications/tables'
 import { orders } from '@/lib/db/schema/orders/tables'

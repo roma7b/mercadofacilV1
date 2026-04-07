@@ -1,4 +1,4 @@
-﻿import { buildDataApiUrl, getDataApiUrl, normalizeDataApiAddress } from '@/lib/data-api/client'
+import { buildDataApiUrl, getDataApiUrl, normalizeDataApiAddress } from '@/lib/data-api/client'
 import { normalizeAddress } from '@/lib/wallet'
 
 export interface ProfileLinkStats {

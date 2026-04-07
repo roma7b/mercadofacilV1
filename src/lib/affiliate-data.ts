@@ -1,4 +1,4 @@
-﻿import { formatCurrency, formatPercent } from '@/lib/formatters'
+import { formatCurrency, formatPercent } from '@/lib/formatters'
 
 export interface AffiliateSettingsResponse {
   tradeFeePercent: number

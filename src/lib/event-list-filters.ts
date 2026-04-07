@@ -1,4 +1,4 @@
-﻿export const EVENT_LIST_SORT_OPTIONS = [
+export const EVENT_LIST_SORT_OPTIONS = [
   'trending',
   'volume',
   'created_at',

@@ -1,4 +1,4 @@
-﻿export type SportsEventMarketViewKey = 'gameLines' | 'exactScore' | 'goalscorers' | 'halftimeResult'
+export type SportsEventMarketViewKey = 'gameLines' | 'exactScore' | 'goalscorers' | 'halftimeResult'
 
 export const SPORTS_EVENT_MARKET_VIEW_LABELS: Record<SportsEventMarketViewKey, string> = {
   gameLines: 'Game Lines',

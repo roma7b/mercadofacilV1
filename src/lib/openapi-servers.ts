@@ -1,4 +1,4 @@
-﻿function resolveServerUrl(envValue: string | undefined): string | undefined {
+function resolveServerUrl(envValue: string | undefined): string | undefined {
   const value = envValue?.trim()
 
   if (!value) {

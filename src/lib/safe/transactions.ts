@@ -1,4 +1,4 @@
-﻿import type { Address, Hex, TypedDataDomain } from 'viem'
+import type { Address, Hex, TypedDataDomain } from 'viem'
 import {
   concatHex,
   encodeFunctionData,

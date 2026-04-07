@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
 import type { Event } from '@/types'
 import { notFound } from 'next/navigation'

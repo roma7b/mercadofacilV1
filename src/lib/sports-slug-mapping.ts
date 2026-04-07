@@ -1,4 +1,4 @@
-﻿import { normalizeAliasKey, normalizeComparableValue, stripDiacritics } from '@/lib/slug'
+import { normalizeAliasKey, normalizeComparableValue, stripDiacritics } from '@/lib/slug'
 
 export interface SportsSlugSectionConfig {
   gamesEnabled: boolean

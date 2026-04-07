@@ -1,4 +1,4 @@
-﻿import { getRoundedCents } from '@/lib/clob'
+import { getRoundedCents } from '@/lib/clob'
 import { MICRO_UNIT, ORDER_SIDE } from '@/lib/constants'
 
 export function normalizeShares(value?: number) {

@@ -1,4 +1,4 @@
-﻿type ThemeTokenTuple = readonly [
+type ThemeTokenTuple = readonly [
   'yes',
   'yes-foreground',
   'no',

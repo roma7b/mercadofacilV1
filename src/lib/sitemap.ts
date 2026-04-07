@@ -1,4 +1,4 @@
-﻿import { and, desc, eq, exists, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, exists, inArray, sql } from 'drizzle-orm'
 import { cacheTag } from 'next/cache'
 import { loadEnabledLocales } from '@/i18n/locale-settings'
 import { DEFAULT_LOCALE } from '@/i18n/locales'
@@ -184,7 +184,7 @@ export async function getDynamicSitemapEntriesById(id: string): Promise<SitemapR
 }
 
 async function getCategorySitemapEntries(): Promise<SitemapRouteEntry[]> {
-  'use cache'
+  
 
   cacheTag(cacheTags.mainTags(DEFAULT_LOCALE))
   const fallbackDate = formatDateForSitemap(new Date())
@@ -213,7 +213,7 @@ async function getCategorySitemapEntries(): Promise<SitemapRouteEntry[]> {
 }
 
 async function getPredictionSitemapEntries(): Promise<SitemapRouteEntry[]> {
-  'use cache'
+  
 
   cacheTag(cacheTags.eventsGlobal)
 
@@ -284,7 +284,7 @@ async function getPredictionSitemapEntries(): Promise<SitemapRouteEntry[]> {
 }
 
 async function getDynamicEventSitemaps(): Promise<DynamicEventSitemaps> {
-  'use cache'
+  
 
   cacheTag(cacheTags.eventsGlobal)
 

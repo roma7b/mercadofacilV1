@@ -1,4 +1,4 @@
-﻿import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
+import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 
 export const DEFAULT_PROXY_WALLET_DEPLOY_ERROR_MESSAGE = 'Could not deploy your proxy wallet right now. Please try again in a few moments.'
 export const DEFAULT_TRADING_AUTH_ERROR_MESSAGE = 'Could not enable trading right now. Please try again in a few moments.'

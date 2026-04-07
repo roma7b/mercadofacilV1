@@ -1,4 +1,4 @@
-﻿const DEFAULT_RECONNECT_DELAY_MS = 1500
+const DEFAULT_RECONNECT_DELAY_MS = 1500
 
 interface CreateWebSocketReconnectControllerOptions {
   connect: () => void

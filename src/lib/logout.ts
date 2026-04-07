@@ -1,4 +1,4 @@
-﻿import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth-client'
 import { localizePathname } from '@/lib/locale-path'
 import { clearBrowserStorage, clearNonHttpOnlyCookies } from '@/lib/utils'
 import { useUser } from '@/stores/useUser'

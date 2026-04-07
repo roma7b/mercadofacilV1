@@ -1,4 +1,4 @@
-﻿import type { ClobOrderType, OrderSide } from '@/types'
+import type { ClobOrderType, OrderSide } from '@/types'
 import { orders } from '@/lib/db/schema/orders/tables'
 import { runQuery } from '@/lib/db/utils/run-query'
 import { db } from '@/lib/drizzle'

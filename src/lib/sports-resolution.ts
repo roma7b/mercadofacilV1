@@ -1,4 +1,4 @@
-﻿export interface ComparableSportsTeam {
+export interface ComparableSportsTeam {
   name: string | null | undefined
   abbreviation?: string | null | undefined
 }

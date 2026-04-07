@@ -1,4 +1,4 @@
-﻿import type { PlatformNavigationTag } from '@/lib/platform-navigation'
+import type { PlatformNavigationTag } from '@/lib/platform-navigation'
 import { isDynamicHomeCategorySlug } from '@/lib/platform-routing'
 
 export interface SearchCategoryMatch {

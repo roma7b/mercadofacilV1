@@ -1,4 +1,4 @@
-﻿import type { SupportedLocale } from '@/i18n/locales'
+import type { SupportedLocale } from '@/i18n/locales'
 import type { MarketContextSettings } from '@/lib/ai/market-context-config'
 import type { OpenRouterMessage } from '@/lib/ai/openrouter'
 import type { Event, Market, Outcome } from '@/types'
@@ -162,7 +162,7 @@ export function normalizeModelOutput(content: string) {
   return content
     .replace(/<\|begin[^>]*\|>/g, '')
     .replace(/<\|end[^>]*\|>/g, '')
-    .replace(/<ï½œbegin[^>]*ï½œ>/g, '')
-    .replace(/<ï½œend[^>]*ï½œ>/g, '')
+    .replace(/<｜begin[^>]*｜>/g, '')
+    .replace(/<｜end[^>]*｜>/g, '')
     .trim()
 }

@@ -1,4 +1,4 @@
-﻿import { DEFAULT_THEME_SITE_NAME } from '@/lib/theme-site-identity'
+import { DEFAULT_THEME_SITE_NAME } from '@/lib/theme-site-identity'
 
 interface UmaProposeSource {
   uma_request_tx_hash?: string | null

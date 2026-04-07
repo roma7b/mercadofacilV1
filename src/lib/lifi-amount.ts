@@ -1,4 +1,4 @@
-﻿import { MAX_AMOUNT_INPUT } from '@/lib/amount-input'
+import { MAX_AMOUNT_INPUT } from '@/lib/amount-input'
 
 const MAX_WHOLE_DIGITS = String(MAX_AMOUNT_INPUT).length
 

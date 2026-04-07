@@ -1,4 +1,4 @@
-﻿export type SportsVertical = 'sports' | 'esports'
+export type SportsVertical = 'sports' | 'esports'
 
 interface SportsVerticalConfig {
   label: string

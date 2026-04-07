@@ -1,4 +1,4 @@
-﻿export interface PlatformNavigationChild {
+export interface PlatformNavigationChild {
   name: string
   slug: string
   count?: number

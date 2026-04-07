@@ -1,4 +1,4 @@
-﻿import type { EventListStatusFilter } from '@/lib/event-list-filters'
+import type { EventListStatusFilter } from '@/lib/event-list-filters'
 import { isSportsAuxiliaryEventSlug } from '@/lib/sports-event-slugs'
 
 interface HomeEventVisibilityOptions {

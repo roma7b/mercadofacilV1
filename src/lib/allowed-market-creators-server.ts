@@ -1,4 +1,4 @@
-﻿import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
+import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 import { AllowedMarketCreatorRepository } from '@/lib/db/queries/allowed-market-creators'
 
 const WALLET_ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/

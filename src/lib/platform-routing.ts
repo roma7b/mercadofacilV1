@@ -1,4 +1,4 @@
-﻿import { normalizeAddress } from '@/lib/wallet'
+import { normalizeAddress } from '@/lib/wallet'
 
 const PLATFORM_RESERVED_ROOT_SLUGS = new Set([
   'activity',

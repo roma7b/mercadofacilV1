@@ -1,4 +1,4 @@
-﻿import { relations } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import { users } from '@/lib/db/schema/auth/tables'
 import { conditions, outcomes } from '@/lib/db/schema/events/tables'
 import { orders } from './tables'

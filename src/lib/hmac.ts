@@ -1,4 +1,4 @@
-﻿import { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 
 function replaceAll(s: string, search: string, replace: string) {

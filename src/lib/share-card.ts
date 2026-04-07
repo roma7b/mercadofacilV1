@@ -1,4 +1,4 @@
-﻿import { OUTCOME_INDEX } from '@/lib/constants'
+import { OUTCOME_INDEX } from '@/lib/constants'
 import { formatCentsLabel, formatCurrency, formatPercent } from '@/lib/formatters'
 
 export type ShareCardVariant = 'yes' | 'no'
@@ -36,7 +36,7 @@ export interface ShareCardUserInfo {
 }
 
 function formatCurrencyValue(value?: number | null) {
-  return Number.isFinite(value) ? formatCurrency(value ?? 0) : 'â€”'
+  return Number.isFinite(value) ? formatCurrency(value ?? 0) : '—'
 }
 
 function getOutcomeLabel(position: ShareCardPosition) {
@@ -85,7 +85,7 @@ export function buildShareCardPayload(position: ShareCardPosition, user?: ShareC
   return {
     title: position.title || 'Untitled market',
     outcome,
-    avgPrice: formatCentsLabel(avgPrice, { fallback: 'â€”' }),
+    avgPrice: formatCentsLabel(avgPrice, { fallback: '—' }),
     odds: formatPercent(nowPrice * 100, { digits: 0 }),
     cost: formatCurrencyValue(tradeValue),
     invested: formatCurrencyValue(tradeValue),

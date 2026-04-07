@@ -1,4 +1,4 @@
-﻿import { char, pgTable } from 'drizzle-orm/pg-core'
+import { char, pgTable } from 'drizzle-orm/pg-core'
 import { users } from '@/lib/db/schema/auth/tables'
 import { events } from '@/lib/db/schema/events/tables'
 

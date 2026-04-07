@@ -1,4 +1,4 @@
-﻿import type { Market } from '@/types'
+import type { Market } from '@/types'
 
 const MAX_DISPLAY_SPREAD = 0.1
 

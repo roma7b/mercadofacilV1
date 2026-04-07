@@ -1,4 +1,4 @@
-﻿import type { MarketOrderType, ProxyWalletStatus, User } from '@/types'
+import type { MarketOrderType, ProxyWalletStatus, User } from '@/types'
 import { asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -236,7 +236,7 @@ export const UserRepository = {
     sortOrder?: 'asc' | 'desc'
     searchByUsernameOnly?: boolean
   } = {}) {
-    'use cache'
+    
 
     const { data, error } = await runQuery(async () => {
       const {

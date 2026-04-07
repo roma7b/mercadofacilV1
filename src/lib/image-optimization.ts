@@ -1,4 +1,4 @@
-﻿const DEFAULT_IMAGE_HOST_PATTERNS = ['*.irys.xyz', '*.supabase.co'] as const
+const DEFAULT_IMAGE_HOST_PATTERNS = ['*.irys.xyz', '*.supabase.co'] as const
 
 type EnvMap = NodeJS.ProcessEnv | Record<string, string | undefined>
 

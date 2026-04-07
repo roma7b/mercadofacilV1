@@ -1,4 +1,4 @@
-﻿import { MARKET_CONTEXT_PROMPT_DEFAULT } from '@/lib/ai/market-context-template'
+import { MARKET_CONTEXT_PROMPT_DEFAULT } from '@/lib/ai/market-context-template'
 import { SettingsRepository } from '@/lib/db/queries/settings'
 import { decryptSecret } from '@/lib/encryption'
 

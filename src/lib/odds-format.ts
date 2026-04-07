@@ -1,4 +1,4 @@
-﻿import { formatCentsLabel, formatPercent } from '@/lib/formatters'
+import { formatCentsLabel, formatPercent } from '@/lib/formatters'
 
 export type OddsFormat
   = | 'price'
@@ -111,7 +111,7 @@ export function normalizeProbabilityFromPrice(value: number | null | undefined) 
 
 export function formatOddsFromProbability(probability: number | null | undefined, oddsFormat: OddsFormat) {
   if (probability == null || !Number.isFinite(probability) || probability <= 0 || probability >= 1) {
-    return 'â€”'
+    return '—'
   }
 
   const normalizedProbability = clampProbability(probability)
@@ -123,7 +123,7 @@ export function formatOddsFromProbability(probability: number | null | undefined
 
   switch (oddsFormat) {
     case 'price':
-      return formatCentsLabel(normalizedProbability, { fallback: 'â€”' })
+      return formatCentsLabel(normalizedProbability, { fallback: '—' })
     case 'american':
       return formatSigned(americanOdds, 0)
     case 'decimal':
@@ -143,7 +143,7 @@ export function formatOddsFromProbability(probability: number | null | undefined
       return formatSigned(value, 3)
     }
     default:
-      return formatCentsLabel(normalizedProbability, { fallback: 'â€”' })
+      return formatCentsLabel(normalizedProbability, { fallback: '—' })
   }
 }
 
@@ -154,7 +154,7 @@ export function formatOddsFromPrice(value: number | null | undefined, oddsFormat
 
 export function formatOddsFromCents(value: number | null | undefined, oddsFormat: OddsFormat) {
   if (value == null || !Number.isFinite(value)) {
-    return 'â€”'
+    return '—'
   }
   return formatOddsFromPrice(value, oddsFormat)
 }

@@ -1,4 +1,4 @@
-﻿import { getSportsVerticalConfig, resolveSportsVerticalFromTags } from '@/lib/sports-vertical'
+import { getSportsVerticalConfig, resolveSportsVerticalFromTags } from '@/lib/sports-vertical'
 
 interface EventRouteTagInput {
   slug?: string | null

@@ -1,4 +1,4 @@
-﻿import type { Event } from '@/types'
+import type { Event } from '@/types'
 
 const MS_IN_MINUTE = 60_000
 const MS_IN_HOUR = 3_600_000

@@ -1,4 +1,4 @@
-﻿import { buildDataApiUrl, normalizeDataApiAddress } from '@/lib/data-api/client'
+import { buildDataApiUrl, normalizeDataApiAddress } from '@/lib/data-api/client'
 
 export interface FeeReceiverTotal {
   exchange: string

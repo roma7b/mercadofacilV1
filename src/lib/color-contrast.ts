@@ -1,4 +1,4 @@
-﻿function normalizeHex(value: string) {
+function normalizeHex(value: string) {
   const normalized = value.trim().replace('#', '')
   if (normalized.length === 3) {
     return normalized.split('').map(char => `${char}${char}`).join('')

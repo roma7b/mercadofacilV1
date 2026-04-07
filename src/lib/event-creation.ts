@@ -1,4 +1,4 @@
-﻿import { slugifyText } from '@/lib/slug'
+import { slugifyText } from '@/lib/slug'
 
 export type EventCreationMode = 'single' | 'recurring'
 export type EventCreationStatus = 'draft' | 'scheduled' | 'running' | 'deployed' | 'failed' | 'canceled'

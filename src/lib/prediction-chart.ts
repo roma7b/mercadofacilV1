@@ -1,4 +1,4 @@
-﻿import type { Dispatch, MutableRefObject, SetStateAction } from 'react'
+import type { Dispatch, MutableRefObject, SetStateAction } from 'react'
 import type { DataPoint, SeriesConfig } from '@/types/PredictionChartTypes'
 
 export const DEFAULT_X_AXIS_TICKS = 6

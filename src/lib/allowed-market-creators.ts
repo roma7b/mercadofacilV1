@@ -1,4 +1,4 @@
-﻿export const PUBLIC_ALLOWED_MARKET_CREATORS_PATH = '/api/allowed-market-creators'
+export const PUBLIC_ALLOWED_MARKET_CREATORS_PATH = '/api/allowed-market-creators'
 export const DEMO_ALLOWED_MARKET_CREATOR_DISPLAY_NAME = 'demo.kuest.com'
 
 export type AllowedMarketCreatorSourceType = 'site' | 'wallet'

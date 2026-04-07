@@ -1,4 +1,4 @@
-﻿import type { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 
 function hashString(value: string) {
   let hash = 0

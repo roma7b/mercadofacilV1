@@ -1,4 +1,4 @@
-﻿import type { AllowedMarketCreatorRecord, AllowedMarketCreatorSourceType } from '@/lib/allowed-market-creators'
+import type { AllowedMarketCreatorRecord, AllowedMarketCreatorSourceType } from '@/lib/allowed-market-creators'
 import type { QueryResult } from '@/types'
 import { and, asc, eq, notInArray, sql } from 'drizzle-orm'
 import { getAddress } from 'viem'

@@ -1,4 +1,4 @@
-﻿import { createPublicClient, http } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { defaultNetwork } from '@/lib/appkit'
 import { CTF_EXCHANGE_ADDRESS, NEG_RISK_CTF_EXCHANGE_ADDRESS } from '@/lib/contracts'
 

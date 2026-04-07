@@ -1,4 +1,4 @@
-﻿import type { ResolvedThemeConfig } from '@/lib/theme'
+import type { ResolvedThemeConfig } from '@/lib/theme'
 
 const FALLBACK_LIGHT_COLOR = '#ffffff'
 const FALLBACK_DARK_COLOR = '#0f172a'

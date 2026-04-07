@@ -1,4 +1,4 @@
-﻿import { defaultNetwork } from '@/lib/appkit'
+import { defaultNetwork } from '@/lib/appkit'
 
 export const POLYGON_MAINNET_CHAIN_ID = 137
 

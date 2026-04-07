@@ -1,4 +1,4 @@
-﻿import { OUTCOME_INDEX } from '@/lib/constants'
+import { OUTCOME_INDEX } from '@/lib/constants'
 
 export type BinaryOutcomeIndex = typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO
 export type OutcomeNumerator = number | string | null | undefined

@@ -1,4 +1,4 @@
-﻿import { index, pgTable, smallint, text, timestamp } from 'drizzle-orm/pg-core'
+import { index, pgTable, smallint, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const settings = pgTable(
   'settings',

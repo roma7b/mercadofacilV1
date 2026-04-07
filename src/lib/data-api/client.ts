@@ -1,4 +1,4 @@
-﻿const DATA_API_URL = process.env.DATA_URL!
+const DATA_API_URL = process.env.DATA_URL!
 
 export function getDataApiUrl() {
   if (!DATA_API_URL) {

@@ -1,4 +1,4 @@
-﻿import type { SQLWrapper } from 'drizzle-orm'
+import type { SQLWrapper } from 'drizzle-orm'
 import { and, eq, sql } from 'drizzle-orm'
 import { event_tags, tags } from '@/lib/db/schema/events/tables'
 import { db } from '@/lib/drizzle'

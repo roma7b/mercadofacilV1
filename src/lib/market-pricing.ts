@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   OrderBookSummariesResponse,
   OrderBookSummaryResponse,
 } from '@/app/[locale]/(platform)/event/[slug]/_types/EventOrderBookTypes'

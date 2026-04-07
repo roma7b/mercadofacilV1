@@ -1,4 +1,4 @@
-﻿const INTEGER_FORMATTER = new Intl.NumberFormat('en-US')
+const INTEGER_FORMATTER = new Intl.NumberFormat('en-US')
 
 export const MAX_AMOUNT_INPUT = 999_999_999
 const MAX_WHOLE_DIGITS = String(MAX_AMOUNT_INPUT).length

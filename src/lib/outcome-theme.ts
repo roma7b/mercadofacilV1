@@ -1,4 +1,4 @@
-﻿export interface OutcomeButtonTheme {
+export interface OutcomeButtonTheme {
   background: string
   color: string
 }

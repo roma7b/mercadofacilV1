@@ -1,4 +1,4 @@
-﻿import { buildDataApiUrl } from '@/lib/data-api/client'
+import { buildDataApiUrl } from '@/lib/data-api/client'
 
 interface DataApiHolder {
   proxyWallet: string

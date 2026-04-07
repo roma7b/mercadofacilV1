@@ -1,4 +1,4 @@
-﻿import type { TypedDataDomain } from 'viem'
+import type { TypedDataDomain } from 'viem'
 import type { SignTypedDataParameters } from 'wagmi/actions'
 import type { BlockchainOrder } from '@/types'
 import { EIP712_TYPES } from '@/lib/constants'

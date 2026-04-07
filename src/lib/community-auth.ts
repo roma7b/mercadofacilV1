@@ -1,4 +1,4 @@
-﻿const STORAGE_KEY = 'community_auth'
+const STORAGE_KEY = 'community_auth'
 
 interface StoredCommunityAuth {
   token: string

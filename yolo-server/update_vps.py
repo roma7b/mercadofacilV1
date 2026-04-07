@@ -11,7 +11,10 @@ with open('yolo-server/yolov8n.onnx', 'rb') as f:
 with open('.env', 'rb') as f:
     sftp.putfo(f, '/opt/yolo-server/.env')
 sftp.close()
-client.exec_command('/opt/yolo-server/venv/bin/pip install lapx onnx onnxruntime python-dotenv')
+print("[Deploy] Instalando dependências...")
+stdin, stdout, stderr = client.exec_command('/opt/yolo-server/venv/bin/pip install lapx onnx onnxruntime python-dotenv')
+stdout.channel.recv_exit_status() # Espera o pip terminar
+print("[Deploy] Reiniciando serviço...")
 stdin, stdout, stderr = client.exec_command('systemctl restart yolo-server && sleep 5 && systemctl is-active yolo-server')
-print(stdout.read().decode().strip())
+print(f"[Deploy] Status: {stdout.read().decode().strip()}")
 client.close()

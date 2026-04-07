@@ -1,4 +1,4 @@
-﻿import { UserRejectedRequestError } from 'viem'
+import { UserRejectedRequestError } from 'viem'
 
 export function isUserRejectedRequestError(error: unknown): boolean {
   if (error instanceof UserRejectedRequestError) {

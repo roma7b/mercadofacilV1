@@ -1497,7 +1497,7 @@ export const EventRepository = {
     sportsSportSlug = '',
     status = 'active',
   }: ListEventMarketSlugsProps): Promise<QueryResult<string[]>> {
-    'use cache'
+    
     cacheTag(cacheTags.eventsGlobal)
 
     return await runQuery(async () => {
@@ -2199,7 +2199,7 @@ export const EventRepository = {
     slug: string,
     locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<QueryResult<{ title: string }>> {
-    'use cache'
+    
     cacheTag(cacheTags.eventsGlobal)
     cacheTag(cacheTags.event(slug))
 
@@ -2244,7 +2244,7 @@ export const EventRepository = {
     sports_section: 'games' | 'props' | null
     tags: Array<{ slug: string }>
   }>> {
-    'use cache'
+    
     cacheTag(cacheTags.eventsGlobal)
     cacheTag(cacheTags.event(slug))
 
@@ -2931,7 +2931,7 @@ export const EventRepository = {
   },
 
   async getRelatedEventsBySlug(slug: string, options: RelatedEventOptions = {}): Promise<QueryResult<RelatedEvent[]>> {
-    'use cache'
+    
 
     return runQuery(async () => {
       const tagSlug = options.tagSlug?.toLowerCase()

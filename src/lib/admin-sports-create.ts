@@ -1,4 +1,4 @@
-﻿import type { SportsMenuEntry } from '@/lib/sports-menu-types'
+import type { SportsMenuEntry } from '@/lib/sports-menu-types'
 import { slugifyText } from '@/lib/slug'
 import { normalizeDateTimeLocalValue } from './datetime-local'
 

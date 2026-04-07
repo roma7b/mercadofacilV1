@@ -1,4 +1,4 @@
-﻿export interface MarketContextVariable {
+export interface MarketContextVariable {
   key: string
   label: string
   description: string
@@ -27,7 +27,7 @@ export const MARKET_CONTEXT_PROMPT_DEFAULT = [
   '3. Competitive dynamics, risk factors, or what to watch next for traders.',
   'Whenever citing probabilities or monetary figures, quote the numbers explicitly.',
   'If external research is performed, integrate it fluidly without citing URLs.',
-  'Never return bullet pointsâ€”write clean paragraphs.',
+  'Never return bullet points—write clean paragraphs.',
   '',
   'Structured data:',
   'Event title: [event-title]',

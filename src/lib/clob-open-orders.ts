@@ -1,4 +1,4 @@
-﻿import type { ClobOrderType, UserOpenOrder } from '@/types'
+import type { ClobOrderType, UserOpenOrder } from '@/types'
 import { MICRO_UNIT } from '@/lib/constants'
 
 interface ClobOpenOrderLike {

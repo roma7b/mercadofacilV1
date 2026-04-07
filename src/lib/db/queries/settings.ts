@@ -8,7 +8,7 @@ import { db } from '@/lib/drizzle'
 
 export const SettingsRepository = {
   async getSettings(): Promise<QueryResult<Record<string, Record<string, { value: string, updated_at: string }>>>> {
-    'use cache'
+    
     cacheTag(cacheTags.settings)
 
     // MercadoFácil: No settings table, returning empty defaults

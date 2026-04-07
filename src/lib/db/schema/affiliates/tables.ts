@@ -1,4 +1,4 @@
-﻿import { sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import {
   char,
   pgTable,

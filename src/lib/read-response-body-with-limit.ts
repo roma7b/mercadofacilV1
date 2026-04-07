@@ -1,4 +1,4 @@
-﻿export async function readResponseBodyWithLimit(response: Response, maxBytes: number) {
+export async function readResponseBodyWithLimit(response: Response, maxBytes: number) {
   if (!Number.isFinite(maxBytes) || maxBytes <= 0) {
     throw new Error('maxBytes must be a positive number.')
   }

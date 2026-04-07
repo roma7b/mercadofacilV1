@@ -1,4 +1,4 @@
-﻿import type { OrderBookSummaryResponse } from '@/types/EventCardTypes'
+import type { OrderBookSummaryResponse } from '@/types/EventCardTypes'
 
 const CLOB_BASE_URL = process.env.CLOB_URL
 const MAX_LIMIT_PRICE = 99.9

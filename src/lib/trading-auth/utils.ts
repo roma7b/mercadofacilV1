@@ -1,4 +1,4 @@
-﻿export function sanitizeTradingAuthSettings(settings: Record<string, any> | null | undefined) {
+export function sanitizeTradingAuthSettings(settings: Record<string, any> | null | undefined) {
   if (!settings?.tradingAuth) {
     return settings
   }

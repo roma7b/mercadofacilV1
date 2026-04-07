@@ -1,4 +1,4 @@
-﻿import { relations } from 'drizzle-orm'
+import { relations } from 'drizzle-orm'
 import { users } from '@/lib/db/schema/auth/tables'
 import { affiliate_referrals } from './tables'
 

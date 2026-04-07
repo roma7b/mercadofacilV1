@@ -1,4 +1,4 @@
-﻿import { createConfig } from '@lifi/sdk'
+import { createConfig } from '@lifi/sdk'
 import { SettingsRepository } from '@/lib/db/queries/settings'
 import { decryptSecret } from '@/lib/encryption'
 import 'server-only'
