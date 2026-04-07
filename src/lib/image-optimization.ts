@@ -64,3 +64,4 @@ export function getOptimizedImageHostPatterns(env: EnvMap = process.env) {
     ...resolveS3ImageHostPatterns(env),
   ]))
 }
+

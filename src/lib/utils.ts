@@ -272,3 +272,4 @@ export function clearNonHttpOnlyCookies() {
     document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax; Secure`
   })
 }
+

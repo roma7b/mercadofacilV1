@@ -32,3 +32,4 @@ export function sanitizeTradingAuthSettings(settings: Record<string, any> | null
     tradingAuth: normalized,
   }
 }
+

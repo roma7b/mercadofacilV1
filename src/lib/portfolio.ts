@@ -148,3 +148,4 @@ export async function fetchPortfolioSnapshot(userAddress?: string | null): Promi
     return defaultSnapshot
   }
 }
+

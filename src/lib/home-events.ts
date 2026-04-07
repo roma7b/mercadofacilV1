@@ -227,3 +227,4 @@ export function filterHomeEvents<T extends HomeVisibleEventCandidate>(
     return newestBySeriesSlug.get(seriesSlug)?.id === event.id
   })
 }
+

@@ -32,3 +32,4 @@ export default function HeaderLogo({ labelSuffix }: HeaderLogoProps) {
     </IntentPrefetchLink>
   )
 }
+

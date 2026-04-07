@@ -435,3 +435,4 @@ export const v_main_tag_subcategories = pgView(
     last_market_activity_at: timestamp(),
   },
 ).existing()
+

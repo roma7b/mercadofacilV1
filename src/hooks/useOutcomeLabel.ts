@@ -21,3 +21,4 @@ export function useOutcomeLabel() {
     return label ?? ''
   }
 }
+

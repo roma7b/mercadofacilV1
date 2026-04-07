@@ -106,3 +106,4 @@ export function generateBotMessage(activeEvents: Event[]): BotMessage {
     color
   };
 }
+

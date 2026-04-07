@@ -232,3 +232,4 @@ export function resolvePredictionSearchContext(tags: PlatformNavigationTag[], sl
     tag: 'trending',
   }
 }
+

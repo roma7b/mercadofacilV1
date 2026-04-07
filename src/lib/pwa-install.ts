@@ -18,3 +18,4 @@ export function detectStandaloneMode() {
 
   return window.matchMedia('(display-mode: standalone)').matches || navigatorWithStandalone.standalone === true
 }
+

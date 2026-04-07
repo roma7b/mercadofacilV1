@@ -37,3 +37,4 @@ export const orders = pgTable('orders', {
   created_at: timestamp({ withTimezone: true }).defaultNow().notNull(),
   updated_at: timestamp({ withTimezone: true }).defaultNow().notNull(),
 })
+

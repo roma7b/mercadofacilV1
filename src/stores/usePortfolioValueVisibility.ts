@@ -9,3 +9,4 @@ export const usePortfolioValueVisibility = create<PortfolioValueVisibilityState>
   isHidden: false,
   toggle: () => set(state => ({ isHidden: !state.isHidden })),
 }))
+

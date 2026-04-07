@@ -2083,3 +2083,4 @@ async function updateSyncStatus(
     console.error(`Failed to update sync status to ${status}:`, error)
   }
 }
+

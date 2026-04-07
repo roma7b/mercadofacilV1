@@ -207,3 +207,4 @@ export function isPublicAllowedMarketCreatorsResponse(payload: unknown): payload
   const candidate = payload as Partial<PublicAllowedMarketCreatorsResponse>
   return Array.isArray(candidate.wallets) && candidate.wallets.every(wallet => typeof wallet === 'string')
 }
+

@@ -106,3 +106,4 @@ export async function listHomeEventsPage({
     currentTimestamp: resolvedCurrentTimestamp ?? null,
   }
 }
+

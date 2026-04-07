@@ -39,3 +39,4 @@ function Switch({ ref, className, ...props }: React.ComponentPropsWithoutRef<typ
 Switch.displayName = SwitchPrimitives.Root.displayName
 
 export { Switch }
+

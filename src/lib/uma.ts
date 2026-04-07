@@ -89,3 +89,4 @@ export function buildUmaSettledUrl(source?: UmaProposeSource | null, projectName
 
   return `${baseUrl}/settled?${query.toString()}`
 }
+

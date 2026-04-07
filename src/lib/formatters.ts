@@ -371,3 +371,4 @@ export function formatAmountInputValue(value: number, options: AmountInputFormat
 
   return normalized.toFixed(2)
 }
+

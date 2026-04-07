@@ -141,3 +141,4 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
     </Dialog>
   )
 }
+

@@ -12,3 +12,4 @@ export function getBetterAuthSecretHash() {
   }
   return sha256Hex(secret)
 }
+

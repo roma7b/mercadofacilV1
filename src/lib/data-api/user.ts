@@ -444,3 +444,4 @@ export async function fetchUserPositionsForMarket({
 
   return (result as DataApiPosition[]).map(item => mapDataApiPositionToUserPosition(item, status))
 }
+

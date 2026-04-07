@@ -158,3 +158,4 @@ export function formatOddsFromCents(value: number | null | undefined, oddsFormat
   }
   return formatOddsFromPrice(value, oddsFormat)
 }
+

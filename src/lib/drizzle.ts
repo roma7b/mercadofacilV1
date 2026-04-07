@@ -52,3 +52,4 @@ export const db = new Proxy({} as DrizzleDb, {
     return typeof value === 'function' ? value.bind(database) : value
   },
 }) as DrizzleDb
+

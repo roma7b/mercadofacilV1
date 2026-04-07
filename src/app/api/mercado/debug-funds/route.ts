@@ -34,3 +34,4 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ success: true, userId, added: amount, newBalance: (Number(wallet?.saldo ?? 0) + amount).toFixed(2) })
 }
+

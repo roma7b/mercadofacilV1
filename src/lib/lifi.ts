@@ -51,3 +51,4 @@ export async function ensureLiFiServerConfig() {
 
   configuredSignature = nextSignature
 }
+

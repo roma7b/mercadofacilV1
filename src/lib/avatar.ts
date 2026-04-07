@@ -169,3 +169,4 @@ export function buildAvatarBackgroundStyle(seed: string): CSSProperties {
 export function getAvatarPlaceholderStyle(fallbackSeed: string): CSSProperties {
   return buildAvatarBackgroundStyle(fallbackSeed)
 }
+

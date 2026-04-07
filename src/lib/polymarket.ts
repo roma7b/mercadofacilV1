@@ -70,3 +70,4 @@ export async function fetchPolymarketOdds(conditionId: string): Promise<{ yes: n
     return { yes: 0.5, no: 0.5, volume: 0, success: false }
   }
 }
+

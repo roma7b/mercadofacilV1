@@ -49,3 +49,4 @@ export function isAdminWallet(address?: string | null): boolean {
     getAdminWallets().includes(normalized)
   )
 }
+

@@ -484,3 +484,4 @@ export interface PublicActivity {
   timestamp: number
   txHash?: string
 }
+

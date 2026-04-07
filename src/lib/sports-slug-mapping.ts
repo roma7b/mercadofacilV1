@@ -224,3 +224,4 @@ export function resolveSportsSectionConfigBySlug(
 
   return resolver.sectionsBySlug.get(canonicalSlug) ?? null
 }
+

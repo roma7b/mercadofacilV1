@@ -47,3 +47,4 @@ export function buildTradingAuthMessage(params: {
     message: prompt,
   }
 }
+

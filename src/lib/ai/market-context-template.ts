@@ -44,3 +44,4 @@ export const MARKET_CONTEXT_PROMPT_DEFAULT = [
   'Outcome snapshot:',
   '[market-outcomes]',
 ].join('\n')
+

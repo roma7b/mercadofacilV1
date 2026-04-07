@@ -29,3 +29,4 @@ export function isEventListStatusFilter(value: string | null | undefined): value
 
   return EVENT_LIST_STATUS_OPTIONS.includes(value as EventListStatusFilter)
 }
+

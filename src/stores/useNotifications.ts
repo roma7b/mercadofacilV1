@@ -290,3 +290,4 @@ export function useNotificationsLoading() {
 export function useNotificationsError() {
   return useNotifications(state => state.error)
 }
+

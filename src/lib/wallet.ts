@@ -28,3 +28,4 @@ export function normalizeAddress(value?: string | null): `0x${string}` | null {
   const trimmed = value.trim()
   return /^0x[0-9a-fA-F]{40}$/.test(trimmed) ? trimmed as `0x${string}` : null
 }
+

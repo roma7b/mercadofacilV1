@@ -116,3 +116,4 @@ export function buildShareCardUrl(payload: ShareCardPayload) {
   })
   return `/api/og?${params.toString()}`
 }
+

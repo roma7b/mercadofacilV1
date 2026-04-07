@@ -155,3 +155,4 @@ export async function ensureCommunityToken({
 
   return verifyPayload.token
 }
+

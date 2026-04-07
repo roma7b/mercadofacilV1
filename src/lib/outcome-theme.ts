@@ -45,3 +45,4 @@ export function resolveOutcomeButtonTheme(label: string, index: number): Outcome
         color: '#7c4ed8',
       }
 }
+

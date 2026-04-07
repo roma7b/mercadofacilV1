@@ -430,3 +430,4 @@ function normalizeAssetRef(value: unknown): EventCreationAssetRef {
     contentType: typeof candidate.contentType === 'string' ? candidate.contentType : 'application/octet-stream',
   }
 }
+

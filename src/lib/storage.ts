@@ -298,3 +298,4 @@ export function getPublicAssetUrl(assetPath: string | null): string {
 
   return ''
 }
+

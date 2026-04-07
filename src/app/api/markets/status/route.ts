@@ -63,3 +63,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: DEFAULT_ERROR_MESSAGE }, { status: 500 })
   }
 }
+

@@ -41,3 +41,4 @@ export async function translateTexts(texts: string[], targetLang: string = 'Port
     return texts // fallback to original texts
   }
 }
+

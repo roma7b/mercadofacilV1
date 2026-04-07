@@ -63,3 +63,4 @@ export function getAmountSizeClass(rawAmount: string, options?: AmountSizeClassO
 
   return largeClass
 }
+

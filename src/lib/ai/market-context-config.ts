@@ -99,3 +99,4 @@ export async function loadMarketContextSettings(): Promise<MarketContextSettings
 export function parseMarketContextSettings(allSettings?: SettingsMap): MarketContextSettingsResult {
   return parseMarketContextSettingsFromMap(allSettings)
 }
+

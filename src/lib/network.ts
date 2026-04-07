@@ -9,3 +9,4 @@ export const IS_TEST_MODE = defaultNetwork.id === AMOY_CHAIN_ID
 export const POLYGON_SCAN_BASE = IS_TEST_MODE
   ? 'https://amoy.polygonscan.com'
   : 'https://polygonscan.com'
+

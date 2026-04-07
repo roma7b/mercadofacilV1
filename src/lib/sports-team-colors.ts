@@ -55,3 +55,4 @@ export function resolveSportsTeamFallbackDepthStyle(tone: SportsTeamTone): CSSPr
     backgroundColor: resolveSportsTeamFallbackDepthColor(tone),
   }
 }
+

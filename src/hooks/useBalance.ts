@@ -71,3 +71,4 @@ export function useBalance(options: UseBalanceOptions = {}) {
     refetchBalance: refetch,
   }
 }
+

@@ -15,3 +15,4 @@ export function sanitizeLiFiAmount(rawValue: string, decimals: number) {
   const fraction = decimalSegments.join('').slice(0, safeDecimals)
   return fraction ? `${limitedWhole}.${fraction}` : limitedWhole
 }
+

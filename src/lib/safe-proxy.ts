@@ -75,3 +75,4 @@ export async function isProxyWalletDeployed(address?: Address | string | null) {
   const bytecode = await getSafeProxyClient().getBytecode({ address: normalizedAddress })
   return Boolean(bytecode && bytecode !== '0x')
 }
+

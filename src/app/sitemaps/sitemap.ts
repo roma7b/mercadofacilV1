@@ -131,3 +131,4 @@ function toAbsoluteUrl(siteUrl: string, path: string): string {
 function ensureTrailingSlash(url: string): string {
   return url.endsWith('/') ? url : `${url}/`
 }
+

@@ -80,3 +80,4 @@ export function baseUnitsToNumber(amount: bigint, decimals = 6): number {
   }
   return Number(amount) / 10 ** decimals
 }
+

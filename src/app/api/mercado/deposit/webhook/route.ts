@@ -89,3 +89,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Erro interno ao processar webhook' }, { status: 500 })
   }
 }
+

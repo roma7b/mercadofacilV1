@@ -151,3 +151,4 @@ export function resolveOutcomeSelectionPriceCents(
 ) {
   return toCents(resolveOutcomeSelectionUnitPrice(market, outcome, options))
 }
+

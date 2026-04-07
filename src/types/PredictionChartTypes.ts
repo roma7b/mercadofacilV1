@@ -94,3 +94,4 @@ export interface PredictionChartProps {
     label?: string | null
   }
 }
+

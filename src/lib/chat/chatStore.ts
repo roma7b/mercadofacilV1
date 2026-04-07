@@ -96,3 +96,4 @@ export const chatStore = {
 if (typeof window !== 'undefined') {
   chatStore.init();
 }
+

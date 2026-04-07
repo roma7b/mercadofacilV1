@@ -49,3 +49,4 @@ export function AppProviders({ children }: AppProvidersProps) {
     </ProgressIndicatorProvider>
   )
 }
+

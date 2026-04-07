@@ -16,3 +16,4 @@ export const wagmiAdapter = {
   }
 }
 export const wagmiConfig = wagmiAdapter.wagmiConfig
+

@@ -6,3 +6,4 @@ export function isCronAuthorized(header: string | null, cronSecret?: string): bo
 
   return header === `Bearer ${secret}`
 }
+

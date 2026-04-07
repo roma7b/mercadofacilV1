@@ -21,3 +21,4 @@ export default function SiteStructuredData({ locale, site }: SiteStructuredDataP
     </>
   )
 }
+

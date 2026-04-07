@@ -8,3 +8,4 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
     references: [users.id],
   }),
 }))
+

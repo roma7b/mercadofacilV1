@@ -71,3 +71,4 @@ export function buildTwoFactorRedirectPath(currentPathname: string, currentSearc
   const params = new URLSearchParams({ next })
   return `${twoFactorPath}?${params.toString()}`
 }
+

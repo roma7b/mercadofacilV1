@@ -360,3 +360,4 @@ export function validateThemeSiteLogoImagePath(value: string | null | undefined,
 
   return { value: normalized, error: null }
 }
+

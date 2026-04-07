@@ -57,3 +57,4 @@ export function parseEventCreationSignerPrivateKeys(input: string | undefined | 
 export function loadEventCreationSignersFromEnv() {
   return parseEventCreationSignerPrivateKeys(process.env.EVENT_CREATION_SIGNER_PRIVATE_KEYS)
 }
+

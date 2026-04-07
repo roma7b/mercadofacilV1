@@ -59,3 +59,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Erro ao gerar PIX' }, { status: 500 })
   }
 }
+

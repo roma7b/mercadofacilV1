@@ -49,3 +49,4 @@ export const twoFactorsRelations = relations(two_factors, ({ one }) => ({
     references: [users.id],
   }),
 }))
+

@@ -86,3 +86,4 @@ export async function resolveMercadoLive(marketId: string, vencedorLabel: 'SIM' 
     return processedBets
   })
 }
+

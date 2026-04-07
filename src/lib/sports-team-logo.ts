@@ -13,3 +13,4 @@ export function shouldUseCroppedSportsTeamLogo(sportSlug: string | null | undefi
 
   return CROPPED_TEAM_LOGO_SPORTS.has(normalizedSportSlug)
 }
+

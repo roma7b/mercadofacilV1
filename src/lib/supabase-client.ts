@@ -12,3 +12,4 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
 export const supabaseAdmin = (supabaseUrl && supabaseServiceRoleKey) 
   ? createClient(supabaseUrl, supabaseServiceRoleKey)
   : null
+

@@ -32,3 +32,4 @@ export type SportsMenuEntry = SportsMenuDividerEntry
   | SportsMenuHeaderEntry
   | SportsMenuLinkEntry
   | SportsMenuGroupEntry
+

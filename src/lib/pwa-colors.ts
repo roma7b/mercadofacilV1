@@ -17,3 +17,4 @@ export function resolvePwaThemeColors(theme: ResolvedThemeConfig) {
     darkSurface,
   }
 }
+

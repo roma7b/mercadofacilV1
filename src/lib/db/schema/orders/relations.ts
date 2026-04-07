@@ -17,3 +17,4 @@ export const ordersRelations = relations(orders, ({ one }) => ({
     references: [conditions.id],
   }),
 }))
+

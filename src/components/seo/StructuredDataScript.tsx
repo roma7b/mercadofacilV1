@@ -26,3 +26,4 @@ export default function StructuredDataScript({ data }: StructuredDataScriptProps
     />
   )
 }
+

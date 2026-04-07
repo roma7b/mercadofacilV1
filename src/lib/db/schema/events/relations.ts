@@ -97,3 +97,4 @@ export const eventTranslationsRelations = relations(event_translations, ({ one }
     references: [events.id],
   }),
 }))
+

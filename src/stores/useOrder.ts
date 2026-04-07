@@ -260,3 +260,4 @@ export function useSyncLimitPriceWithOutcome() {
     hasSyncedRef.current = true
   }, [noPrice, outcomeIndex, setLimitPrice, syncKey, yesPrice])
 }
+

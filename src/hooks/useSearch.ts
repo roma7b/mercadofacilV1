@@ -220,3 +220,4 @@ export function useSearch(): UseSearch {
     setActiveTab: handleSetActiveTab,
   }
 }
+

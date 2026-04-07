@@ -110,3 +110,4 @@ export function shouldShowEventNewBadge(event: EventNewBadgeInput, currentTime: 
   const ageMs = Math.max(0, currentTime - referenceCreatedAt)
   return ageMs <= getNewBadgeWindowMs(event.series_recurrence)
 }
+

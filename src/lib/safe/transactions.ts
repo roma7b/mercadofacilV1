@@ -553,3 +553,4 @@ export function packSafeSignature(signature: `0x${string}`): string {
 
   return encodePacked(['uint256', 'uint256', 'uint8'], [r, s, Number(v)])
 }
+

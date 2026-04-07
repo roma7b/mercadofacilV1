@@ -9,3 +9,4 @@ export const cacheTags = {
   mainTags: (locale: string) => `main-tags:${locale}`,
   settings: 'settings',
 }
+

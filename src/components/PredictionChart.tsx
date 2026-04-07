@@ -1965,3 +1965,4 @@ export function PredictionChart({
 }
 
 export default PredictionChart
+

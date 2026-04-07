@@ -62,3 +62,4 @@ export function resolveSportsVerticalFromTags(params: {
 
   return tagSlugs.has('esports') ? 'esports' : 'sports'
 }
+

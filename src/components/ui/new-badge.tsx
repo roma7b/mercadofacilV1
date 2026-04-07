@@ -25,3 +25,4 @@ export function NewBadge({ variant = 'plain', className }: NewBadgeProps) {
     </span>
   )
 }
+
