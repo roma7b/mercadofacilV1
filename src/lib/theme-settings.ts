@@ -1,3 +1,4 @@
+'use cache'
 import type { ResolvedThemeConfig, ThemeOverrides, ThemePresetId, ThemeRadius } from '@/lib/theme'
 import type { ThemeSiteIdentity, ThemeSiteLogoMode } from '@/lib/theme-site-identity'
 import { cacheTag } from 'next/cache'

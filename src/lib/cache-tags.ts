@@ -1,3 +1,4 @@
+'use cache'
 export const cacheTags = {
   notifications: (key: string) => `notifications:${key}`,
   activity: (key: string) => `activity:${key}`,

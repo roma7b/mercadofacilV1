@@ -1,3 +1,4 @@
+'use cache'
 import type { SupportedLocale } from '@/i18n/locales'
 import type { Event } from '@/types'
 import { cacheTag } from 'next/cache'
