@@ -13,6 +13,10 @@ const API_URL =  typeof window !== 'undefined' && window.location.protocol === '
 
 const WS_URL = API_URL.replace(/^https/, 'wss').replace(/^http/, 'ws')
 
+if (typeof window !== 'undefined') {
+  console.log('[LiveCameraFeed] Config:', { BASE_URL, API_URL, WS_URL, windowProtocol: window.location.protocol })
+}
+
 const FLASH_DURATION_MS = 1600
 
 interface LiveCameraFeedProps {
@@ -67,6 +71,9 @@ export default function LiveCameraFeed({
     )
   }
   const [status, setStatus] = useState<FeedStatus>('loading')
+  if (typeof window !== 'undefined') {
+    console.log('[LiveCameraFeed] Render liveId:', liveId, 'viewMode:', viewMode)
+  }
   const [showPulse, setShowPulse] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [iaConnected, setIaConnected] = useState(false)

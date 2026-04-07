@@ -406,7 +406,7 @@ export default function EventContent({
                 {event.slug.startsWith('live-') ? (
                   <div className="flex flex-col gap-6">
                     <LiveCameraFeed
-                      liveId={event.id}
+                      liveId={event.slug.startsWith('live-') ? event.slug.replace('live-', '') : event.slug}
                       originalStreamUrl={event.livestream_url || ''}
                       className="w-full rounded-2xl border border-white/10 shadow-2xl"
                     />
