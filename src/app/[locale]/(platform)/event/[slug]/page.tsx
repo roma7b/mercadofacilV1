@@ -1,8 +1,5 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-
-export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store'
 import type { SupportedLocale } from '@/i18n/locales'
 import { setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
