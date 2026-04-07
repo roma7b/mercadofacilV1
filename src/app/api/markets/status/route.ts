@@ -1,4 +1,4 @@
-﻿import { inArray } from 'drizzle-orm'
+import { inArray } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 import { markets } from '@/lib/db/schema/events/tables'

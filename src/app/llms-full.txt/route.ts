@@ -1,4 +1,4 @@
-﻿import { getLLMText } from '@/lib/get-llm-text'
+import { getLLMText } from '@/lib/get-llm-text'
 import { source } from '@/lib/source'
 
 export async function GET() {

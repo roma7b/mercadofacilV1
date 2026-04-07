@@ -1,4 +1,4 @@
-﻿import { and, asc, eq, lte } from 'drizzle-orm'
+import { and, asc, eq, lte } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 import { createPublicClient, createWalletClient, getAddress, http, keccak256, stringToHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'

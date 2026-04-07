@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { DownloadIcon } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
@@ -10,12 +10,12 @@ import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { useSiteIdentity } from '@/hooks/useSiteIdentity'
 
 const installDescriptionByLocale: Record<string, string> = {
-  de: 'Speichere diese App auf deinem GerÃ¤t, damit du sie beim nÃ¤chsten Mal schneller Ã¶ffnen kannst.',
+  de: 'Speichere diese App auf deinem Gerät, damit du sie beim nächsten Mal schneller öffnen kannst.',
   en: 'Save this app to your device for quicker access next time.',
-  es: 'Guarda esta aplicaciÃ³n en tu dispositivo para abrirla mÃ¡s rÃ¡pido la prÃ³xima vez.',
+  es: 'Guarda esta aplicación en tu dispositivo para abrirla más rápido la próxima vez.',
   fr: 'Enregistrez cette application sur votre appareil pour l\'ouvrir plus vite la prochaine fois.',
-  pt: 'Salve este app no seu dispositivo para abrir mais rÃ¡pido da prÃ³xima vez.',
-  zh: 'å°†æ­¤åº”ç”¨ä¿å­˜åˆ°ä½ çš„è®¾å¤‡ï¼Œæ–¹ä¾¿ä¸‹æ¬¡æ›´å¿«æ‰“å¼€ã€‚',
+  pt: 'Salve este app no seu dispositivo para abrir mais rápido da próxima vez.',
+  zh: '将此应用保存到你的设备，方便下次更快打开。',
 }
 
 export default function PwaInstallCard() {

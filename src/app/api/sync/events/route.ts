@@ -1,4 +1,4 @@
-﻿import { and, eq, inArray, lt, ne, or } from 'drizzle-orm'
+import { and, eq, inArray, lt, ne, or } from 'drizzle-orm'
 import { updateTag } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { loadAllowedMarketCreatorWallets } from '@/lib/allowed-market-creators-server'
@@ -172,7 +172,7 @@ async function getAllowedCreators(): Promise<string[]> {
   return data
 }
 /**
- * ðŸ”„ Market Synchronization Script for Vercel Functions
+ * 🔄 Market Synchronization Script for Vercel Functions
  *
  * This function syncs prediction markets from the Goldsky PnL subgraph:
  * - Fetches new markets from blockchain via subgraph (INCREMENTAL)
@@ -188,7 +188,7 @@ export async function GET(request: Request) {
   try {
     const lockAcquired = await tryAcquireSyncLock()
     if (!lockAcquired) {
-      console.log('ðŸš« Sync already running, skipping...')
+      console.log('🚫 Sync already running, skipping...')
       return NextResponse.json({
         success: false,
         message: 'Sync already running',
@@ -196,16 +196,16 @@ export async function GET(request: Request) {
       }, { status: 409 })
     }
 
-    console.log('ðŸš€ Starting incremental market synchronization...')
+    console.log('🚀 Starting incremental market synchronization...')
 
     const lastCursor = await getLastPnLCursor()
     if (lastCursor) {
       console.log(
-        `ðŸ“Š Last PnL cursor: ${lastCursor.conditionId} @ ${new Date(lastCursor.updatedAt * 1000).toISOString()}`,
+        `📊 Last PnL cursor: ${lastCursor.conditionId} @ ${new Date(lastCursor.updatedAt * 1000).toISOString()}`,
       )
     }
     else {
-      console.log('ðŸ“Š Last PnL cursor: none (full scan from subgraph start)')
+      console.log('📊 Last PnL cursor: none (full scan from subgraph start)')
     }
 
     const [allowedCreators, autoDeployNewEvents] = await Promise.all([
@@ -217,7 +217,7 @@ export async function GET(request: Request) {
     await updateSyncStatus('completed', null, syncResult.processedCount)
 
     if (syncResult.fetchedCount === 0) {
-      console.log('ðŸ“­ No markets fetched from PnL subgraph')
+      console.log('📭 No markets fetched from PnL subgraph')
       return NextResponse.json({
         success: true,
         message: 'No new markets to process',
@@ -236,11 +236,11 @@ export async function GET(request: Request) {
       timeLimitReached: syncResult.timeLimitReached,
     }
 
-    console.log('ðŸŽ‰ Incremental synchronization completed:', responsePayload)
+    console.log('🎉 Incremental synchronization completed:', responsePayload)
     return NextResponse.json(responsePayload)
   }
   catch (error: any) {
-    console.error('ðŸ’¥ Sync failed:', error)
+    console.error('💥 Sync failed:', error)
 
     await updateSyncStatus('error', error.message)
 
@@ -274,10 +274,10 @@ async function syncMarkets(allowedCreators: Set<string>, options: SyncOptions): 
 
   if (cursor) {
     const cursorIso = new Date(cursor.updatedAt * 1000).toISOString()
-    console.log(`â±ï¸ Resuming sync after condition ${cursor.conditionId} (updated at ${cursorIso})`)
+    console.log(`⏱️ Resuming sync after condition ${cursor.conditionId} (updated at ${cursorIso})`)
   }
   else {
-    console.log('ðŸ“¥ No existing markets found, starting full sync')
+    console.log('📥 No existing markets found, starting full sync')
   }
 
   let fetchedCount = 0
@@ -295,19 +295,19 @@ async function syncMarkets(allowedCreators: Set<string>, options: SyncOptions): 
     const page = await fetchPnLConditionsPage(trackedCreators, cursor)
 
     if (page.conditions.length === 0) {
-      console.log('ðŸ“¦ PnL subgraph returned no additional conditions')
+      console.log('📦 PnL subgraph returned no additional conditions')
       break
     }
 
     fetchedCount += page.conditions.length
-    console.log(`ðŸ“‘ Processing ${page.conditions.length} conditions (running total fetched: ${fetchedCount})`)
+    console.log(`📑 Processing ${page.conditions.length} conditions (running total fetched: ${fetchedCount})`)
 
     let lastPersistableCursor: SyncCursor | null = null
 
     for (const condition of page.conditions) {
       const updatedAt = Number(condition.updatedAt)
       if (Number.isNaN(updatedAt)) {
-        console.error(`âš ï¸ Skipping condition ${condition.id} - invalid updatedAt: ${condition.updatedAt}`)
+        console.error(`⚠️ Skipping condition ${condition.id} - invalid updatedAt: ${condition.updatedAt}`)
         continue
       }
 
@@ -317,7 +317,7 @@ async function syncMarkets(allowedCreators: Set<string>, options: SyncOptions): 
       }
 
       if (!condition.creator) {
-        console.error(`âš ï¸ Skipping condition ${condition.id} - missing creator field`)
+        console.error(`⚠️ Skipping condition ${condition.id} - missing creator field`)
         lastPersistableCursor = conditionCursor
         continue
       }
@@ -325,13 +325,13 @@ async function syncMarkets(allowedCreators: Set<string>, options: SyncOptions): 
       const creatorAddress = condition.creator.toLowerCase()
       if (!allowedCreators.has(creatorAddress)) {
         skippedCreatorCount++
-        console.log(`ðŸš« Skipping market ${condition.id} - creator ${condition.creator} not in allowed list`)
+        console.log(`🚫 Skipping market ${condition.id} - creator ${condition.creator} not in allowed list`)
         lastPersistableCursor = conditionCursor
         continue
       }
 
       if (Date.now() - syncStartedAt >= SYNC_TIME_LIMIT_MS) {
-        console.warn('â¹ï¸ Time limit reached during market processing, aborting sync loop')
+        console.warn('⏹️ Time limit reached during market processing, aborting sync loop')
         timeLimitReached = true
         break
       }
@@ -344,10 +344,10 @@ async function syncMarkets(allowedCreators: Set<string>, options: SyncOptions): 
         }
         processedCount++
         lastPersistableCursor = conditionCursor
-        console.log(`âœ… Processed market: ${condition.id}`)
+        console.log(`✅ Processed market: ${condition.id}`)
       }
       catch (error: any) {
-        console.error(`âŒ Error processing market ${condition.id}:`, error)
+        console.error(`❌ Error processing market ${condition.id}:`, error)
         errors.push({
           conditionId: condition.id,
           error: error.message ?? String(error),
@@ -387,7 +387,7 @@ async function syncMarkets(allowedCreators: Set<string>, options: SyncOptions): 
     }
 
     if (page.conditions.length < PNL_PAGE_SIZE) {
-      console.log('ðŸ“­ Last fetched page was smaller than the configured page size; stopping pagination')
+      console.log('📭 Last fetched page was smaller than the configured page size; stopping pagination')
       break
     }
   }

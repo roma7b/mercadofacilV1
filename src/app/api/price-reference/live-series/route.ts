@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 type Interval = '5m' | '15m' | '1h' | '4h' | '1d'
 type Source = 'chainlink' | 'massive'

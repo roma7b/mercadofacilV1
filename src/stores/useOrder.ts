@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { RefObject } from 'react'
 import type { Event, Market, OrderSide, OrderType, Outcome } from '@/types'

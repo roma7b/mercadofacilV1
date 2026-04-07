@@ -1,4 +1,4 @@
-﻿import type { ActivityOrder } from '@/types'
+import type { ActivityOrder } from '@/types'
 import { NextResponse } from 'next/server'
 import { filterActivitiesByMinAmount } from '@/lib/activity/filter'
 import { DEFAULT_ERROR_MESSAGE, MICRO_UNIT } from '@/lib/constants'

@@ -1,4 +1,4 @@
-﻿import type { SupportedLocale } from '@/i18n/locales'
+import type { SupportedLocale } from '@/i18n/locales'
 import type { ThemeSiteIdentity } from '@/lib/theme-site-identity'
 import StructuredDataScript from '@/components/seo/StructuredDataScript'
 import { buildSiteStructuredData } from '@/lib/structured-data'

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import IntentPrefetchLink from '@/components/IntentPrefetchLink'
 import SiteLogoIcon from '@/components/SiteLogoIcon'

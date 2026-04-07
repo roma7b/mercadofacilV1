@@ -1,4 +1,4 @@
-﻿import type { User } from '@/types'
+import type { User } from '@/types'
 import { create } from 'zustand'
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

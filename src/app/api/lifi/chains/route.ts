@@ -1,4 +1,4 @@
-﻿import { getChains } from '@lifi/sdk'
+import { getChains } from '@lifi/sdk'
 import { NextResponse } from 'next/server'
 import { ensureLiFiServerConfig } from '@/lib/lifi'
 

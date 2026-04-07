@@ -1,4 +1,4 @@
-﻿import type { NonDefaultLocale } from '@/i18n/locales'
+import type { NonDefaultLocale } from '@/i18n/locales'
 import { createHash } from 'node:crypto'
 import { and, asc, eq, inArray, like, lte, or, sql } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
@@ -177,8 +177,8 @@ function buildBackoffMs(attempts: number) {
 function normalizeTranslatedText(value: string) {
   return value
     .trim()
-    .replace(/^['"`â€œâ€â€˜â€™\s]+/, '')
-    .replace(/['"`â€œâ€â€˜â€™\s]+$/, '')
+    .replace(/^['"`“”‘’\s]+/, '')
+    .replace(/['"`“”‘’\s]+$/, '')
     .trim()
 }
 

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useExtracted } from 'next-intl'
 import Image from 'next/image'

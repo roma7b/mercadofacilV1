@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { loadEnabledLocales } from '@/i18n/locale-settings'
 
 export async function GET() {

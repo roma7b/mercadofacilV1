@@ -1,4 +1,4 @@
-﻿import type { SupportedLocale } from '@/i18n/locales'
+import type { SupportedLocale } from '@/i18n/locales'
 import { DEFAULT_LOCALE, normalizeEnabledLocales, parseEnabledLocales } from '@/i18n/locales'
 import { SettingsRepository } from '@/lib/db/queries/settings'
 

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { CSSProperties, ReactElement } from 'react'
 import type {

@@ -1,4 +1,4 @@
-﻿import type { NextResponse } from 'next/server'
+import type { NextResponse } from 'next/server'
 import type { Event, Market, Outcome } from '@/types'
 
 const FALLBACK_PRICE = 0.5

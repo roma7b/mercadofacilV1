@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { CSSProperties, ReactNode } from 'react'
 import Image from 'next/image'

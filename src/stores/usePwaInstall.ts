@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { BeforeInstallPromptEvent } from '@/lib/pwa-install'
 import { create } from 'zustand'

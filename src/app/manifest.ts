@@ -1,4 +1,4 @@
-﻿import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
 import { DEFAULT_LOCALE } from '@/i18n/locales'
 import { resolvePwaThemeColors } from '@/lib/pwa-colors'
 import { loadRuntimeThemeState } from '@/lib/theme-settings'

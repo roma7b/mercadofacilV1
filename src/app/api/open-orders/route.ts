@@ -1,4 +1,4 @@
-﻿import type { OpenOrderOutcomeMeta } from '@/lib/clob-open-orders'
+import type { OpenOrderOutcomeMeta } from '@/lib/clob-open-orders'
 import type { ClobOrderType, UserOpenOrder } from '@/types'
 import { inArray } from 'drizzle-orm'
 import { NextResponse } from 'next/server'

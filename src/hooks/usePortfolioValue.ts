@@ -1,4 +1,4 @@
-﻿import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { normalizeAddress } from '@/lib/wallet'
 import { useUser } from '@/stores/useUser'
 

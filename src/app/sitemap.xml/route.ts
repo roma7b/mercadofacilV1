@@ -1,4 +1,4 @@
-﻿import siteUrlUtils from '@/lib/site-url'
+import siteUrlUtils from '@/lib/site-url'
 import { getSitemapIndexEntries } from '@/lib/sitemap'
 
 const { resolveSiteUrl } = siteUrlUtils

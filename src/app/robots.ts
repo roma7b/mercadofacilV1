@@ -1,4 +1,4 @@
-﻿import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
 import siteUrlUtils from '@/lib/site-url'
 
 const { resolveSiteUrl } = siteUrlUtils

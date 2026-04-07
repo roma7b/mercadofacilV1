@@ -1,4 +1,4 @@
-﻿import type { NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import type { SupportedLocale } from '@/i18n/locales'
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/i18n/locales'
 import { EventRepository } from '@/lib/db/queries/event'

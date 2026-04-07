@@ -1,4 +1,4 @@
-﻿import { MinusIcon, PlusIcon } from 'lucide-react'
+import { MinusIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -140,7 +140,7 @@ export function NumberInput({
         <span
           className={cn(`text-lg font-bold ${hasValue ? 'text-foreground' : 'text-muted-foreground'}`)}
         >
-          Â¢
+          ¢
         </span>
       </div>
 

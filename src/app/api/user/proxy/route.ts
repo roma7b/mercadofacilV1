@@ -1,4 +1,4 @@
-﻿import { eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { NextResponse } from 'next/server'
 import { UserRepository } from '@/lib/db/queries/user'
 import { users } from '@/lib/db/schema/auth/tables'

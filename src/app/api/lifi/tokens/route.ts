@@ -1,4 +1,4 @@
-﻿import { getTokens } from '@lifi/sdk'
+import { getTokens } from '@lifi/sdk'
 import { NextResponse } from 'next/server'
 import { ensureLiFiServerConfig } from '@/lib/lifi'
 

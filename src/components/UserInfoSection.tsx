@@ -1,4 +1,4 @@
-﻿import { CheckIcon, CopyIcon, ExternalLinkIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, ExternalLinkIcon } from 'lucide-react'
 import Image from 'next/image'
 import IntentPrefetchLink from '@/components/IntentPrefetchLink'
 import { Button } from '@/components/ui/button'

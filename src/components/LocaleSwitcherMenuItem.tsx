@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { SupportedLocale } from '@/i18n/locales'
 import { CheckIcon } from 'lucide-react'

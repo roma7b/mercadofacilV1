@@ -1,4 +1,4 @@
-﻿export const EMBED_CODE_TOKEN_STYLES = {
+export const EMBED_CODE_TOKEN_STYLES = {
   tag: 'text-muted-foreground',
   attr: 'text-red-500',
   value: 'text-rose-500',

@@ -1,4 +1,4 @@
-﻿import type { ProfileLinkStats } from '@/lib/data-api/profile-link-stats'
+import type { ProfileLinkStats } from '@/lib/data-api/profile-link-stats'
 import Image from 'next/image'
 import IntentPrefetchLink from '@/components/IntentPrefetchLink'
 import { Skeleton } from '@/components/ui/skeleton'

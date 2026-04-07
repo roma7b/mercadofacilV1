@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 const XTRACKER_API_BASE_URL = 'https://xtracker.polymarket.com/api'
 const DEFAULT_XTRACKER_PLATFORM = 'X'

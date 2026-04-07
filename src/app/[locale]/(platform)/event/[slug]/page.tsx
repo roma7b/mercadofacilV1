@@ -15,7 +15,6 @@ import { eq } from 'drizzle-orm'
 import { events, markets, conditions } from '@/lib/db/schema/events/tables'
 import { syncSingleMarketAction } from '@/app/[locale]/admin/mercado-hype/_actions/sync-odds'
 
-export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/event/[slug]'>): Promise<Metadata> {
   const { locale, slug } = await params

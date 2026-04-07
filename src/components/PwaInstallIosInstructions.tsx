@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { PropsWithChildren } from 'react'
 import { MoreHorizontalIcon, ShareIcon, SquarePlusIcon } from 'lucide-react'
@@ -18,12 +18,12 @@ interface IosInstallCopy {
 const iosInstallCopyByLocale: Record<string, IosInstallCopy> = {
   de: {
     inSafari: 'In Safari,',
-    tapMenu: 'tippe auf das MenÃ¼',
+    tapMenu: 'tippe auf das Menü',
     thenShare: 'und dann auf',
-    nextTap: 'AnschlieÃŸend tippe auf',
+    nextTap: 'Anschließend tippe auf',
     more: 'Mehr',
     share: 'Teilen',
-    addToHomeScreen: 'Zu Home-Bildschirm hinzufÃ¼gen',
+    addToHomeScreen: 'Zu Home-Bildschirm hinzufügen',
   },
   en: {
     inSafari: 'In Safari,',
@@ -36,12 +36,12 @@ const iosInstallCopyByLocale: Record<string, IosInstallCopy> = {
   },
   es: {
     inSafari: 'En Safari,',
-    tapMenu: 'toca el menÃº',
-    thenShare: 'y despuÃ©s',
+    tapMenu: 'toca el menú',
+    thenShare: 'y después',
     nextTap: 'Luego toca',
-    more: 'MÃ¡s',
+    more: 'Más',
     share: 'Compartir',
-    addToHomeScreen: 'AÃ±adir a pantalla de inicio',
+    addToHomeScreen: 'Añadir a pantalla de inicio',
   },
   fr: {
     inSafari: 'Dans Safari,',
@@ -50,7 +50,7 @@ const iosInstallCopyByLocale: Record<string, IosInstallCopy> = {
     nextTap: 'Ensuite, touchez',
     more: 'Plus',
     share: 'Partager',
-    addToHomeScreen: 'Sur lâ€™Ã©cran dâ€™accueil',
+    addToHomeScreen: 'Sur l’écran d’accueil',
   },
   pt: {
     inSafari: 'No Safari,',
@@ -59,16 +59,16 @@ const iosInstallCopyByLocale: Record<string, IosInstallCopy> = {
     nextTap: 'Em seguida, toque em',
     more: 'Mais',
     share: 'Compartilhar',
-    addToHomeScreen: 'Adicionar Ã  Tela de InÃ­cio',
+    addToHomeScreen: 'Adicionar à Tela de Início',
   },
   zh: {
-    inSafari: 'åœ¨ Safari ä¸­ï¼Œ',
-    tapMenu: 'è½»ç‚¹èœå•',
-    thenShare: 'ï¼Œç„¶åŽè½»ç‚¹',
-    nextTap: 'æŽ¥ç€è½»ç‚¹',
-    more: 'æ›´å¤š',
-    share: 'å…±äº«',
-    addToHomeScreen: 'æ·»åŠ åˆ°ä¸»å±å¹•',
+    inSafari: '在 Safari 中，',
+    tapMenu: '轻点菜单',
+    thenShare: '，然后轻点',
+    nextTap: '接着轻点',
+    more: '更多',
+    share: '共享',
+    addToHomeScreen: '添加到主屏幕',
   },
 }
 

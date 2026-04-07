@@ -1,4 +1,4 @@
-﻿import { ImageResponse } from 'next/og'
+import { ImageResponse } from 'next/og'
 import { loadRuntimeThemeState } from '@/lib/theme-settings'
 
 interface ShareCardPayload {

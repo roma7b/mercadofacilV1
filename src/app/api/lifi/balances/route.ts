@@ -1,4 +1,4 @@
-﻿import { getWalletBalances } from '@lifi/sdk'
+import { getWalletBalances } from '@lifi/sdk'
 import { NextResponse } from 'next/server'
 import { ensureLiFiServerConfig } from '@/lib/lifi'
 

@@ -1,4 +1,4 @@
-﻿import { HandCoinsIcon } from 'lucide-react'
+import { HandCoinsIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 const AFFILIATE_TOAST_COOLDOWN_MS = 12_000

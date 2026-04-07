@@ -1,4 +1,4 @@
-﻿import type { DataPoint } from '@/types/PredictionChartTypes'
+import type { DataPoint } from '@/types/PredictionChartTypes'
 import { TOOLTIP_LABEL_MAX_WIDTH } from '@/lib/prediction-chart'
 
 interface TooltipEntry {

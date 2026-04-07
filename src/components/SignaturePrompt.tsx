@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useWalletInfo } from '@/hooks/useAppKitMock'
 import { Loader2Icon, WalletIcon, XIcon } from 'lucide-react'

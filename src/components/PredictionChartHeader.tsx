@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { sanitizeSvg } from '@/lib/utils'
 
 interface PredictionChartHeaderProps {

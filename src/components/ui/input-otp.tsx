@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { OTPInput, OTPInputContext } from 'input-otp'
 import { MinusIcon } from 'lucide-react'

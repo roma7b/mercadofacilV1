@@ -1,4 +1,4 @@
-﻿import { and, eq, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm'
 import { updateTag } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { isCronAuthorized } from '@/lib/auth-cron'

@@ -1,4 +1,4 @@
-﻿import { useExtracted } from 'next-intl'
+import { useExtracted } from 'next-intl'
 
 type OutcomeLabel = string | null | undefined
 

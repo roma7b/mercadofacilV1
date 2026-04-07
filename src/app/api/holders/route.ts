@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 import { fetchTopHoldersFromDataApi } from '@/lib/data-api/holders'
 import { UserRepository } from '@/lib/db/queries/user'

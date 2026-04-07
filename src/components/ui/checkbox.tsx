@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { CheckIcon } from 'lucide-react'
 import { Checkbox as CheckboxPrimitive } from 'radix-ui'

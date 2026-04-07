@@ -1,4 +1,4 @@
-﻿import type { ProxyWalletStatus } from '@/types'
+import type { ProxyWalletStatus } from '@/types'
 import { useEffect } from 'react'
 import { useUser } from '@/stores/useUser'
 

@@ -1,4 +1,4 @@
-﻿import { source } from '@/lib/source'
+import { source } from '@/lib/source'
 
 function normalizeDescription(description?: string) {
   return description?.replace(/\s+/g, ' ').trim()

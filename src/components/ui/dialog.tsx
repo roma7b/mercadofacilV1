@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { XIcon } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'

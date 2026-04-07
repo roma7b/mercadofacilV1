@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { loadAllowedMarketCreatorWallets } from '@/lib/allowed-market-creators-server'
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 
