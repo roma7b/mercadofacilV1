@@ -110,3 +110,5 @@ const withNextIntl = createNextIntlPlugin({
 export default withSentryConfig(withNextIntl(withMDX(config)), {
   telemetry: false,
 })
+
+// Vercel force deploy trigger
