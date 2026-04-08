@@ -50,7 +50,7 @@ export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLo
   if (isLive) {
     // noStore() obrigatório aqui também (chamado pelo generateMetadata)
     noStore()
-    const id = eventSlug.replace(/^live-/, '')
+    const id = eventSlug.replace(/^live_/, '')
     const event = await MercadoFacilRepository.getEventById(id)
     return event?.title ?? null
   }
@@ -66,8 +66,8 @@ export async function getEventRouteBySlug(eventSlug: string) {
   if (isMercadoFacilLive) {
     // noStore() impede o Next.js de pré-renderizar/cachear — obrigatório para Supabase fetch()
     noStore()
-    // Remove apenas o prefixo 'live-' do início
-    const id = eventSlug.replace(/^live-/, '')
+    // Remove apenas o prefixo 'live_' do início
+    const id = eventSlug.replace(/^live_/, '')
     console.log('[getEventRouteBySlug] Slug live detectado:', { slug: eventSlug, id })
     return { id, slug: eventSlug } as any
   }
@@ -103,7 +103,7 @@ export async function loadEventPagePublicContentData(
     // noStore() é ESSENCIAL aqui — sem isso o Next.js tenta pré-renderizar e o
     // prerenderer cancela o fetch() do Supabase antes de completar (erro 500)
     noStore()
-    const id = eventSlug.replace(/^live-/, '')
+    const id = eventSlug.replace(/^live_/, '')
     console.log('[loadEventPagePublicContentData] Buscando live event com id:', id)
     const liveEvent = await MercadoFacilRepository.getEventById(id)
     console.log('[loadEventPagePublicContentData] Resultado live event:', { found: !!liveEvent, id })

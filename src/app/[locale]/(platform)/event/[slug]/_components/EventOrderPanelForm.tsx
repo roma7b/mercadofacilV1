@@ -225,7 +225,7 @@ export default function EventOrderPanelForm({
   )
 
   const fallbackPrices = useQuery({
-    queryKey: ['mercado-live-pool-fallback', activeMarket?.slug],
+    queryKey: ['mercado-live_pool-fallback', activeMarket?.slug],
     queryFn: async () => {
       if (!activeMarket?.slug) return null
       if (!activeMarket.slug.startsWith('poly-') && !activeMarket.slug.startsWith('live_')) return null

@@ -48,7 +48,7 @@ export const MercadoFacilRepository = {
 
   mapToEvent(row: any): Event {
     const id = row.id
-    const slug = `live-${id}`
+    const slug = `live_${id}`
 
     const getIconUrl = (tipo: string) => {
       switch (tipo) {
@@ -127,9 +127,9 @@ export const MercadoFacilRepository = {
       updated_at: row.updated_at || new Date().toISOString(),
       markets,
       tags: [
-        { id: 999, name: 'Live Cam', slug: 'live-cam', isMainCategory: true, is_main_category: true },
+        { id: 999, name: 'Live Cam', slug: 'live_cam', isMainCategory: true, is_main_category: true },
       ],
-      main_tag: 'live-cam',
+      main_tag: 'live_cam',
       is_bookmarked: false,
       is_trending: true,
       end_date: null,
