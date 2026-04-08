@@ -84,8 +84,9 @@ async function fetchQuotesByMarket(targets: MarketTokenTarget[]): Promise<Market
 
   if (!response.ok) {
     const message = `Failed to fetch market quotes (${response.status} ${response.statusText}).`
-    console.error(message)
-    throw new Error(message)
+    console.warn(message)
+    // Fall back to empty rather than throwing to avoid crashing the view for custom or unlisted markets
+    return {}
   }
 
   const [data, midpointResults] = await Promise.all([

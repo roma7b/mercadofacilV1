@@ -434,7 +434,7 @@ export default function EventContent({
                 </div>
                 {event.total_markets_count === 1 && singleMarket && (
                   <div className="grid gap-6">
-                    {event.slug.startsWith('live_') ? (
+                    {(event.slug.startsWith('live_') && event.slug.includes('sp008')) ? (
                        <div className="hidden md:block rounded-2xl border border-white/5 bg-card/30 backdrop-blur-md p-6">
                           <EventMarketCard
                             row={{
