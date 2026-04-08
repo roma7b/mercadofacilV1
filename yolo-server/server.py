@@ -41,11 +41,12 @@ STREAMS: Dict[str, str] = {
     ),
 }
 
-# Modelo YOLO — ONNX é ~30% mais rápido em CPU
+# Modelo YOLO — OpenVINO FP16 é ~2x mais rápido que ONNX em CPU
 MODEL_PATH = os.environ.get("YOLO_MODEL", "yolov8n.onnx")
 
 # Classes de veículos no COCO que nos interessam
-VEHICLE_CLASSES = {2: "carro", 3: "moto", 5: "ônibus", 7: "caminhão"}
+# ATENÇÃO: moto (3) removida intencionalmente — usuário quer apenas carros/ônibus/caminhões
+VEHICLE_CLASSES = {2: "carro", 5: "ônibus", 7: "caminhão"}
 
 # Cores por classe (R, G, B)
 CLASS_COLORS = {
@@ -75,6 +76,11 @@ class CameraState:
 
         # Linha de contagem (normalizada 0-1)
         self.line = {"x1": 0.0, "y1": 0.45, "x2": 1.0, "y2": 0.45}
+
+        # Rastreamento de FPS real da inferência
+        self.fps_counter = 0
+        self.fps_ts = time.time()
+        self.fps_real = 0.0
 
         # Rastreamento de IDs para evitar dupla contagem
         self.tracked_ids: Dict[int, dict] = {}
@@ -300,15 +306,28 @@ def process_stream(stream_id: str, main_loop: asyncio.AbstractEventLoop):
             h, w = frame.shape[:2]
 
             # ─── Inferência YOLO com rastreamento ──────────────────────────
+            t0 = time.time()
             results = model.track(
                 frame,
                 persist=True,
+                tracker="bytetrack_5fps.yaml",  # Customizado para 5fps
                 classes=list(VEHICLE_CLASSES.keys()),
                 imgsz=320,
-                conf=0.3,
-                iou=0.5,
+                conf=0.20,
+                iou=0.45,
                 verbose=False
             )
+            inference_time = time.time() - t0
+
+            # Conta FPS real
+            with cam.lock:
+                cam.fps_counter += 1
+                elapsed = time.time() - cam.fps_ts
+                if elapsed >= 5.0:  # loga a cada 5 segundos
+                    cam.fps_real = cam.fps_counter / elapsed
+                    print(f"[{stream_id}] FPS real da IA: {cam.fps_real:.1f} fps | última inferência: {inference_time*1000:.0f}ms")
+                    cam.fps_counter = 0
+                    cam.fps_ts = time.time()
 
             ai_frame = frame.copy()
             crossings = []
@@ -411,7 +430,12 @@ def process_stream(stream_id: str, main_loop: asyncio.AbstractEventLoop):
 # ─── Endpoints REST ────────────────────────────────────────────────────────────
 @app.get("/status/{stream_id}")
 async def get_status(stream_id: str):
-    cam = cameras.get(stream_id)
+    # Normaliza ID (remove prefixos extras se houver)
+    norm_id = stream_id
+    if norm_id.startswith("live-live-"):
+        norm_id = norm_id.replace("live-live-", "live-")
+        
+    cam = cameras.get(norm_id)
     if not cam:
         return JSONResponse({"error": "Camera not found"}, status_code=404)
     return {
@@ -442,17 +466,31 @@ async def set_line(stream_id: str, x1: int, y1: int, x2: int, y2: int):
 @app.get("/video-feed/{stream_id}")
 async def video_feed(stream_id: str):
     """MJPEG stream do frame processado pela IA (modo 'VISÃO IA')."""
-    cam = cameras.get(stream_id)
+    # Normaliza ID para prevenir bugs de conexão
+    norm_id = stream_id
+    if norm_id.startswith("live-live-"):
+        norm_id = norm_id.replace("live-live-", "live-")
+        
+    cam = cameras.get(norm_id)
     if not cam:
         return JSONResponse({"error": "Camera not found"}, status_code=404)
 
     async def generate():
+        last_yield_time = 0
+        target_fps = 10.0  # Limita o stream na web para 10 FPS (economizando banda na Vercel)
+        frame_interval = 1.0 / target_fps
+        
         while True:
-            # Espera até o YOLO sinalizar frame novo (sem sleep fixo - Otimização do Claude)
+            # Espera até o YOLO sinalizar frame novo
             try:
                 await asyncio.wait_for(cam.frame_event.wait(), timeout=2.0)
                 cam.frame_event.clear()
             except (asyncio.TimeoutError, Exception):
+                continue
+                
+            # Throttle (controle de framerate) para envio pela rede
+            now = time.time()
+            if now - last_yield_time < frame_interval:
                 continue
 
             with cam.lock:
@@ -463,6 +501,7 @@ async def video_feed(stream_id: str):
                     b"--frame\r\n"
                     b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n"
                 )
+                last_yield_time = time.time()
 
     return StreamingResponse(generate(), media_type="multipart/x-mixed-replace;boundary=frame")
 
@@ -470,7 +509,12 @@ async def video_feed(stream_id: str):
 # ─── WebSocket ────────────────────────────────────────────────────────────────
 @app.websocket("/ws/live/{stream_id}")
 async def websocket_endpoint(websocket: WebSocket, stream_id: str):
-    cam = cameras.get(stream_id)
+    # Normaliza ID
+    norm_id = stream_id
+    if norm_id.startswith("live-live-"):
+        norm_id = norm_id.replace("live-live-", "live-")
+        
+    cam = cameras.get(norm_id)
     if not cam:
         await websocket.close(code=1008)
         return

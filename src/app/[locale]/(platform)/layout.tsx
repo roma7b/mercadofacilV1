@@ -44,7 +44,7 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
           <PlatformNavigationProvider tags={tags} childParentMap={childParentMap}>
             <Header />
             <NavigationTabs />
-            <div className="mx-auto flex w-full max-w-[1550px] gap-2 px-4 md:px-6"> 
+            <div className="mx-auto flex w-full max-w-[1332px] gap-2 md:px-6"> 
               <div className="flex-1 min-w-0">
                 {children}
               </div>
