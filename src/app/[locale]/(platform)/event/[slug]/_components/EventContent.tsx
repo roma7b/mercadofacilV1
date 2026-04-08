@@ -403,7 +403,7 @@ export default function EventContent({
               <EventHeader event={event} />
 
               <div className={cn(shouldHideChart ? 'w-full' : 'min-h-[300px] md:min-h-[500px] w-full')}>
-                {event.slug.startsWith('live_') ? (
+                {(event.slug.startsWith('live_') && event.livestream_url && event.slug.includes('sp008')) ? (
                   <div className="flex flex-col gap-6">
                     <LiveCameraFeed
                       liveId={event.id}
@@ -482,7 +482,7 @@ export default function EventContent({
                       />
                     ))}
                     
-                    {!isSingleMarketResolved && !event.slug.startsWith('live_') && (
+                    {!isSingleMarketResolved && !(event.slug.startsWith('live_') && event.slug.includes('sp008')) && (
                       <EventSingleMarketOrderBook
                         market={singleMarket}
                         eventSlug={event.slug}
