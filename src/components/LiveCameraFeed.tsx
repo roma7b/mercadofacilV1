@@ -484,7 +484,7 @@ export default function LiveCameraFeed({
           {viewMode === 'live' ? (
             <video
               ref={videoRef}
-              className="w-full h-full object-cover"
+              className="w-full aspect-video object-contain bg-black"
               playsInline
               muted
               autoPlay
@@ -495,7 +495,7 @@ export default function LiveCameraFeed({
               {!iaError ? (
                 <img
                   src={`${API_URL}/video-feed/${liveId}`}
-                  className="w-full h-full object-cover"
+                  className="w-full aspect-video object-contain bg-black"
                   alt="AI Perspective"
                   onLoad={() => {
                     setStatus('live')
