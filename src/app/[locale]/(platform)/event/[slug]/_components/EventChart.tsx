@@ -413,7 +413,7 @@ function EventChartComponent({
   const fallbackPrices = useQuery({
     queryKey: ['mercado-live-pool-fallback', event.slug],
     queryFn: async () => {
-      if (!event.slug?.startsWith('poly-') && !event.slug?.startsWith('live-')) return null
+      if (!event.slug?.startsWith('poly-') && !event.slug?.startsWith('live-cam-')) return null
       try {
         const res = await fetch(`/api/mercado/${event.slug}`)
         const json = await res.json()
@@ -426,7 +426,7 @@ function EventChartComponent({
       } catch (e) { return null }
       return null
     },
-    enabled: Boolean(event.slug && (event.slug.startsWith('poly-') || event.slug.startsWith('live-')))
+    enabled: Boolean(event.slug && (event.slug.startsWith('poly-') || event.slug.startsWith('live-cam-')))
   })
 
   const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('ALL')

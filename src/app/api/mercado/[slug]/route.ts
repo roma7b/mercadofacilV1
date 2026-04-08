@@ -18,8 +18,8 @@ export async function GET(
       .single()
 
     let targetId = slug
-    if (slug.startsWith('live-')) {
-      targetId = slug.replace('live-', '')
+    if (slug.startsWith('live-cam-')) {
+      targetId = slug.replace('live-cam-', '')
     }
     
     let conditionId: string | null = null

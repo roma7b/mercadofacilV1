@@ -93,7 +93,7 @@ export default function EventRelated({ event }: EventRelatedProps) {
   const [showLeftShadow, setShowLeftShadow] = useState(false)
   const [showRightShadow, setShowRightShadow] = useState(false)
 
-  const isLiveMarket = event.slug.startsWith('live-')
+  const isLiveMarket = event.slug.startsWith('live-cam-')
   const { data: events = [], isLoading: loading, error } = useRelatedEvents({
     eventSlug: event.slug,
     tag: activeTag,

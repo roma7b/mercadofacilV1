@@ -11,7 +11,7 @@ export default async function EventLayout({ params, children }: LayoutProps<'/[l
   const { locale, slug } = await params
   setRequestLocale(locale)
 
-  const isLiveMarket = slug.startsWith('live-')
+  const isLiveMarket = slug.startsWith('live-cam-')
 
   const content = (
     <main className="container grid min-h-screen gap-8 pb-12 lg:grid-cols-[minmax(0,3fr)_21.25rem]">

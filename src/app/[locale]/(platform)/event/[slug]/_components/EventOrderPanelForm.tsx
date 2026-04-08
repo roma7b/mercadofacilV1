@@ -228,7 +228,7 @@ export default function EventOrderPanelForm({
     queryKey: ['mercado-live-pool-fallback', activeMarket?.slug],
     queryFn: async () => {
       if (!activeMarket?.slug) return null
-      if (!activeMarket.slug.startsWith('poly-') && !activeMarket.slug.startsWith('live-')) return null
+      if (!activeMarket.slug.startsWith('poly-') && !activeMarket.slug.startsWith('live-cam-')) return null
       
       try {
         const res = await fetch(`/api/mercado/${activeMarket.slug}`)
@@ -244,7 +244,7 @@ export default function EventOrderPanelForm({
       }
       return null
     },
-    enabled: Boolean(activeMarket?.slug && (activeMarket.slug.startsWith('poly-') || activeMarket.slug.startsWith('live-')))
+    enabled: Boolean(activeMarket?.slug && (activeMarket.slug.startsWith('poly-') || activeMarket.slug.startsWith('live-cam-')))
   })
 
   const activeLiveYesPrice = hasMatchingStoreMarket ? liveYesPrice : null

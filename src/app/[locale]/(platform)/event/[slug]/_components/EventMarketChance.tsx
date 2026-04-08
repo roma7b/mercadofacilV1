@@ -31,7 +31,7 @@ export default function EventMarketChance({
   const [poolChance, setPoolChance] = useState<number | null>(null)
 
   useEffect(() => {
-    if (!market.slug?.startsWith('live-') && !market.slug?.startsWith('poly-')) return
+    if (!market.slug?.startsWith('live-cam-') && !market.slug?.startsWith('poly-')) return
 
     const fetchPool = async () => {
       try {
