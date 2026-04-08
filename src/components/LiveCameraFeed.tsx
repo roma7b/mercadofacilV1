@@ -76,7 +76,10 @@ export default function LiveCameraFeed({
   const iaRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [calibState, setCalibState] = useState<CalibrateState>('idle')
   const [toast, setToast] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'live' | 'ia'>('ia')
+  // Em produção (domínio): usa HLS direto do DER-SP (sem passar pela internet doméstica do servidor)
+  // Em localhost: usa visão IA com bounding boxes do YOLO
+  const IS_PROD = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+  const [viewMode, setViewMode] = useState<'live' | 'ia'>(IS_PROD ? 'live' : 'ia')
 
 
 
