@@ -287,8 +287,11 @@ export function formatCentsLabel(
     return fallback
   }
 
-  // No Brasil não usamos 'Â¢', usamos R$ formatado
-  return formatCurrency(numeric)
+  // Divide por 100 porque o valor chega em 'centavos' (ex: 96) e queremos R$ 0,96
+  return formatCurrency(numeric / 100, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: numeric < 1 ? 3 : 2
+  })
 }
 
 interface SharePriceFormatOptions extends CentsFormatOptions {

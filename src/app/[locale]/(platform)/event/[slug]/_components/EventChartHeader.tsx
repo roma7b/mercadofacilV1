@@ -57,7 +57,7 @@ export default function EventChartHeader({
       }
       return null
     },
-    enabled: yesChanceValue === null && !!currentEventSlug && (currentEventSlug.startsWith('poly-') || currentEventSlug.startsWith('live-cam-'))
+    enabled: yesChanceValue === null && !!currentEventSlug && (currentEventSlug.startsWith('poly-') || currentEventSlug.startsWith('live_'))
   })
 
   const resolvedYesChance = yesChanceValue !== null 

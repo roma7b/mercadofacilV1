@@ -40,7 +40,7 @@ export async function resolveCanonicalEventSlugFromSportsPath(sportSlug: string,
 export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLocale) {
   // Mercados customizados do Supabase usam UUID como slug - buscar título diretamente
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug)
-  const isLive = eventSlug.startsWith('live-cam-')
+  const isLive = eventSlug.startsWith('live_')
 
   if (isUUID) {
     const { data: event } = await EventRepository.getEventBySlug(eventSlug)
@@ -61,7 +61,7 @@ export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLo
 
 export async function getEventRouteBySlug(eventSlug: string) {
 
-  const isMercadoFacilLive = eventSlug.startsWith('live-cam-');
+  const isMercadoFacilLive = eventSlug.startsWith('live_');
 
   if (isMercadoFacilLive) {
     // noStore() impede o Next.js de pré-renderizar/cachear — obrigatório para Supabase fetch()
@@ -97,7 +97,7 @@ export async function loadEventPagePublicContentData(
   let eventResult: { data: Event | null, error: any }
   let changeLogResult: { data: ConditionChangeLogEntry[] | null, error: any } = { data: [], error: null }
 
-  const isMercadoFacilLive = eventSlug.startsWith('live-cam-');
+  const isMercadoFacilLive = eventSlug.startsWith('live_');
 
   if (isMercadoFacilLive) {
     // noStore() é ESSENCIAL aqui — sem isso o Next.js tenta pré-renderizar e o

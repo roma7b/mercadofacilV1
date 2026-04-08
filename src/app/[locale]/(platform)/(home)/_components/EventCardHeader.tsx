@@ -68,7 +68,7 @@ export default function EventCardHeader({
             `
           }
         >
-          {event.slug.startsWith('live-cam-') && (
+          {event.slug.startsWith('live_') && (
             <span className="mr-1.5 mb-0.5 inline-flex align-middle items-center rounded bg-red-500/15 px-1 pb-[1px] text-[10px] font-bold uppercase tracking-wider text-red-500 border border-red-500/20">
               <span className="mr-1 h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse"></span>
               LIVE

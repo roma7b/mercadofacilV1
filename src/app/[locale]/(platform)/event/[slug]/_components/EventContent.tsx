@@ -229,7 +229,7 @@ export default function EventContent({
   }, [isMobile])
 
   const painelDeApostas = (
-    <PainelApostas marketId={event.slug.startsWith('live-cam-') ? event.slug.replace('live-cam-', '') : event.slug} />
+    <PainelApostas marketId={event.slug.startsWith('live_') ? event.slug.replace('live_', '') : event.slug} />
   )
   const eventMarketsRef = useRef<HTMLDivElement | null>(null)
   const appliedMarketSlugRef = useRef<string | null>(null)
@@ -395,7 +395,7 @@ export default function EventContent({
           <EventOrderQuerySync event={event} marketSlug={marketSlug} isMobile={isMobile} />
         </Suspense>
 
-        <div className={cn("container mx-auto grid gap-8 pt-2 pb-20 md:pt-5 md:pb-0 items-start", !event.slug.startsWith('live-cam-') && "lg:grid-cols-[1fr_21.25rem]")}>
+        <div className={cn("container mx-auto grid gap-8 pt-2 pb-20 md:pt-5 md:pb-0 items-start", !event.slug.startsWith('live_') && "lg:grid-cols-[1fr_21.25rem]")}>
           {portalTarget && createPortal(painelDeApostas, portalTarget)}
           
           <div className="flex flex-col gap-6 min-w-0">
@@ -403,7 +403,7 @@ export default function EventContent({
               <EventHeader event={event} />
 
               <div className={cn(shouldHideChart ? 'w-full' : 'min-h-[300px] md:min-h-[500px] w-full')}>
-                {event.slug.startsWith('live-cam-') ? (
+                {event.slug.startsWith('live_') ? (
                   <div className="flex flex-col gap-6">
                     <LiveCameraFeed
                       liveId={event.id}
@@ -434,7 +434,7 @@ export default function EventContent({
                 </div>
                 {event.total_markets_count === 1 && singleMarket && (
                   <div className="grid gap-6">
-                    {event.slug.startsWith('live-cam-') ? (
+                    {event.slug.startsWith('live_') ? (
                        <div className="hidden md:block rounded-2xl border border-white/5 bg-card/30 backdrop-blur-md p-6">
                           <EventMarketCard
                             row={{
@@ -482,7 +482,7 @@ export default function EventContent({
                       />
                     ))}
                     
-                    {!isSingleMarketResolved && !event.slug.startsWith('live-cam-') && (
+                    {!isSingleMarketResolved && !event.slug.startsWith('live_') && (
                       <EventSingleMarketOrderBook
                         market={singleMarket}
                         eventSlug={event.slug}
@@ -509,7 +509,7 @@ export default function EventContent({
                 )}
               </div>
 
-              {shouldRenderMobileRelated && !event.slug.startsWith('live-cam-') && (
+              {shouldRenderMobileRelated && !event.slug.startsWith('live_') && (
                 <div className="grid gap-4 lg:hidden">
                   <h3 className="text-base font-medium">{t('Related')}</h3>
                   <EventRelated event={event} />
@@ -519,7 +519,7 @@ export default function EventContent({
             </div>
           </div>
 
-          {!isMobile && !event.slug.startsWith('live-cam-') && (
+          {!isMobile && !event.slug.startsWith('live_') && (
             <aside
               className={`
                 hidden gap-4

@@ -116,89 +116,79 @@ function EventMarketCardComponent({
     <div
       className={cn(
         `
-          group relative flex w-full cursor-pointer flex-col p-4 mb-2 rounded-xl border border-border/50 
-          bg-card/30 backdrop-blur-sm transition-all duration-300 ease-in-out
-          hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary),0.05)]
-          lg:flex-row lg:items-center lg:px-6
+          group relative flex w-full cursor-pointer flex-row items-center justify-between p-3 mb-1 rounded-lg border border-border/20
+          bg-card/20 hover:bg-card/40 transition-all duration-200
+          lg:px-4 lg:py-3
         `,
-        isExpanded && 'border-primary/30 bg-primary/5'
+        isExpanded && 'bg-primary/5 border-primary/20'
       )}
       role="button"
       tabIndex={0}
       aria-expanded={isExpanded}
       onClick={onToggle}
     >
-      <div className="flex flex-1 flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-row flex-1 items-center justify-between gap-2 overflow-hidden">
         {/* Lado Esquerdo: Título e Volume */}
-        <div className="flex items-center gap-4 lg:w-1/3">
+        <div className="flex items-center gap-3 w-1/3 min-w-[20%] overflow-hidden">
           {shouldShowIcon && (
             <EventIconImage
               src={market.icon_url}
               alt={market.title}
-              sizes="48px"
-              containerClassName="size-12 shrink-0 rounded-lg shadow-sm"
+              sizes="32px"
+              containerClassName="size-8 shrink-0 rounded-full shadow-sm"
             />
           )}
-          <div className="flex flex-col min-w-0">
-            <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors truncate">
+          <div className="flex flex-col min-w-0 pr-1">
+            <h3 className="font-semibold text-[13px] sm:text-sm leading-tight text-white truncate group-hover:text-primary transition-colors">
               {market.title}
             </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
-                R$ {resolvedVolume?.toLocaleString('pt-BR') || '0,00'} Vol.
-              </span>
-            </div>
+            <span className="text-[10px] font-medium text-muted-foreground mt-0.5 truncate">
+               R$ {Number(resolvedVolume || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} Vol.
+            </span>
           </div>
         </div>
 
-        {/* Centro: Probabilidade */}
-        <div className="flex items-center justify-center lg:w-1/4">
-          <EventMarketChance
-            market={market}
-            chanceMeta={chanceMeta}
-            layout="desktop"
-            highlightKey={chanceHighlightKey}
-            showInReviewTag={showInReviewTag}
-          />
-        </div>
+        {/* Lado Direito: % e Botões */}
+        <div className="flex items-center justify-end gap-2 lg:gap-4 shrink-0">
+          {/* Chance */}
+          <div className="w-10 md:w-12 text-right">
+             <span className="text-[13px] md:text-sm font-bold cursor-pointer">{chanceMeta.chanceDisplay}</span>
+          </div>
 
-        {/* Lado Direito: Botões de Compra */}
-        <div className="flex items-center gap-2 lg:w-1/3 lg:justify-end">
-          <Button
-            size="sm"
-            className={cn(
-              "flex-1 lg:flex-none lg:w-32 h-11 rounded-lg font-bold transition-all",
-              "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20",
-              isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES && "ring-2 ring-white ring-offset-2 ring-offset-emerald-500"
-            )}
-            onClick={(event) => {
-              event.stopPropagation()
-              onBuy(market, OUTCOME_INDEX.YES, isMobile ? 'mobile' : 'desktop')
-            }}
-          >
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] uppercase tracking-wider opacity-80">{t('Buy')} Sim</span>
-              <span className="text-base">{formatCentsLabel(yesPriceValue)}</span>
-            </div>
-          </Button>
+          {/* Botões Sim/Não pequenos */}
+          <div className="flex items-center gap-1.5 ml-2">
+            <Button
+              size="sm"
+              className={cn(
+                "h-9 px-2 md:px-3 text-left rounded-md font-bold transition-all w-[65px] sm:w-[75px] md:w-[85px] flex items-center justify-between",
+                "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500",
+                isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES && "ring-1 ring-emerald-500 bg-emerald-500/30"
+              )}
+              onClick={(event) => {
+                event.stopPropagation()
+                onBuy(market, OUTCOME_INDEX.YES, isMobile ? 'mobile' : 'desktop')
+              }}
+            >
+              <span className="text-[9px] md:text-[10px] uppercase font-bold tracking-tight opacity-90 hidden sm:inline-block">Sim</span>
+              <span className="text-[11px] md:text-sm mx-auto sm:mx-0">{formatCentsLabel(yesPriceValue)}</span>
+            </Button>
 
-          <Button
-            size="sm"
-            className={cn(
-              "flex-1 lg:flex-none lg:w-32 h-11 rounded-lg font-bold transition-all",
-              "bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20",
-              isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO && "ring-2 ring-red-500 ring-offset-2"
-            )}
-            onClick={(event) => {
-              event.stopPropagation()
-              onBuy(market, OUTCOME_INDEX.NO, isMobile ? 'mobile' : 'desktop')
-            }}
-          >
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] uppercase tracking-wider opacity-80">{t('Buy')} Não</span>
-              <span className="text-base">{formatCentsLabel(noPriceValue)}</span>
-            </div>
-          </Button>
+            <Button
+              size="sm"
+              className={cn(
+                "h-9 px-2 md:px-3 text-left rounded-md font-bold transition-all w-[65px] sm:w-[75px] md:w-[85px] flex items-center justify-between",
+                "bg-red-500/10 hover:bg-red-500/20 text-red-500",
+                isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO && "ring-1 ring-red-500 bg-red-500/30"
+              )}
+              onClick={(event) => {
+                event.stopPropagation()
+                onBuy(market, OUTCOME_INDEX.NO, isMobile ? 'mobile' : 'desktop')
+              }}
+            >
+               <span className="text-[9px] md:text-[10px] uppercase font-bold tracking-tight opacity-90 hidden sm:inline-block">Não</span>
+               <span className="text-[11px] md:text-sm mx-auto sm:mx-0">{formatCentsLabel(noPriceValue)}</span>
+            </Button>
+          </div>
         </div>
       </div>
       
