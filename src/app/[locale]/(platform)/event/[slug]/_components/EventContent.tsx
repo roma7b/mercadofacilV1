@@ -36,6 +36,7 @@ import { buildResolutionTimeline, shouldDisplayResolutionTimeline } from '@/app/
 import { cn } from '@/lib/utils'
 import { useOrder, useSyncLimitPriceWithOutcome } from '@/stores/useOrder'
 import { useUser } from '@/stores/useUser'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 interface EventContentProps {
   event: Event
@@ -72,13 +73,15 @@ export default function EventContent({
   event,
   marketSlug,
   seriesEvents = [],
-  isMobile,
+  isMobile: isMobileProp,
 }: EventContentProps) {
   const t = useExtracted()
   const locale = useLocale()
   const currentUser = useUser()
+  const isMobileClient = useIsMobile()
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const isMobile = isMobileProp ?? isMobileClient
   
   if (!event || !event.slug) {
     return <div className="min-h-screen animate-pulse bg-background/50" />
