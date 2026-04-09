@@ -558,6 +558,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
     setSide(ORDER_SIDE.BUY)
 
     if (source === 'mobile') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       setIsMobileOrderPanelOpen(true)
     }
     else {
@@ -666,7 +667,12 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                          return (
                             <div 
                                key={outcome.outcome_index} 
-                               onClick={() => handleBuy(market, outcome.outcome_index, isMobile ? 'mobile' : 'desktop')}
+                               onClick={() => {
+                                 handleBuy(market, outcome.outcome_index, isMobile ? 'mobile' : 'desktop')
+                                 if (isMobile) {
+                                   setIsMobileOrderPanelOpen(true)
+                                 }
+                               }}
                                className={cn(
                                  "flex items-center justify-between p-3 rounded-2xl border border-white/5 cursor-pointer transition-all hover:bg-white/10 active:scale-[0.98]",
                                  isSelected ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20 shadow-inner" : "bg-card/30"

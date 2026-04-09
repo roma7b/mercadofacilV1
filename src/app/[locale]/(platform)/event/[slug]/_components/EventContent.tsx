@@ -214,9 +214,11 @@ export default function EventContent({
         )}
         
         {/* Mobile Betting Drawer (Bottom Fixed) */}
-        {isMobile && (
-          <div className="fixed inset-x-0 bottom-0 z-50 p-4 pb-10 bg-background/90 backdrop-blur-2xl border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
-             <EventOrderPanelMobile event={event} />
+        {isMobile && mounted && (
+          <div className="fixed inset-x-0 bottom-0 z-[9999] pointer-events-none">
+             <div className="pointer-events-auto">
+                <EventOrderPanelMobile event={event} showDefaultTrigger={true} />
+             </div>
           </div>
         )}
 
