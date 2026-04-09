@@ -1,6 +1,6 @@
 'use client'
 
-import type { Event, Market, Outcome } from '@/types'
+import type { Event, EventSeriesEntry, Market, Outcome } from '@/types'
 import { ArrowUpIcon, Trophy, Timeline, Info, ChevronRight } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
@@ -32,7 +32,7 @@ import { useUser } from '@/stores/useUser'
 interface EventContentProps {
   event: Event
   marketSlug?: string | null
-  seriesEvents?: Event[]
+  seriesEvents?: EventSeriesEntry[]
   isMobile: boolean
   isLiveMercadoEventFallback?: boolean
 }
