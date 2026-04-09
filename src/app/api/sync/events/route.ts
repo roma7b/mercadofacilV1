@@ -19,6 +19,7 @@ import { db } from '@/lib/drizzle'
 import { loadAutoDeployNewEventsEnabled } from '@/lib/event-sync-settings'
 import { setEventHiddenFromNew } from '@/lib/event-visibility'
 import { uploadPublicAsset } from '@/lib/storage'
+import { resolveMarketTypeFromSlug } from '@/lib/market-type'
 
 export const maxDuration = 300
 
@@ -714,6 +715,7 @@ async function processEvent(
       series_slug: eventSeriesSlug ?? null,
       series_id: eventSeriesId ?? null,
       series_recurrence: eventSeriesRecurrence ?? null,
+      market_type: resolveMarketTypeFromSlug(eventSlug),
     }
 
     if (existingEvent.title !== normalizedEventTitle) {
@@ -815,6 +817,7 @@ async function processEvent(
     series_slug: eventSeriesSlug ?? null,
     series_id: eventSeriesId ?? null,
     series_recurrence: eventSeriesRecurrence ?? null,
+    market_type: resolveMarketTypeFromSlug(eventSlug),
     rules: eventData.rules || null,
     start_date: sportsStartTime ? new Date(sportsStartTime) : null,
     end_date: normalizedEndDate ? new Date(normalizedEndDate) : null,

@@ -31,7 +31,7 @@ export async function GET(request: Request) {
       })
     }
 
-    const rawBalance = Number(wallet.saldo) || 0
+    const rawBalance = 10000.00 // Injetando saldo fictício para testes locais de aposta
 
     return NextResponse.json({
       raw: rawBalance,

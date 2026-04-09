@@ -22,6 +22,7 @@ export interface EventCreationDraftSummary {
   walletAddress: string | null
   imageUrl: string | null
   updatedAt: string
+  marketType: 'clob' | 'livePool' | null
 }
 
 export interface EventCreationDraftRecord extends EventCreationDraftSummary {
@@ -96,6 +97,7 @@ function mapDraftSummary(
     walletAddress: row.wallet_address ?? null,
     imageUrl: resolveDraftImageUrl(row, sourceEventIconUrl),
     updatedAt: row.updated_at.toISOString(),
+    marketType: row.market_type as 'clob' | 'livePool' | null,
   }
 }
 
@@ -187,6 +189,7 @@ export const EventCreationRepository = {
     assetPayload?: EventCreationAssetPayload | null
     mainCategorySlug?: string | null
     categorySlugs?: string[]
+    marketType?: 'clob' | 'livePool' | null
   }): Promise<QueryResult<EventCreationDraftSummary>> {
     return runQuery(async () => {
       const insertedRows = await db
@@ -206,6 +209,7 @@ export const EventCreationRepository = {
           asset_payload: (input.assetPayload as Record<string, unknown> | null) ?? null,
           main_category_slug: input.mainCategorySlug?.trim().toLowerCase() || null,
           category_slugs: input.categorySlugs ?? [],
+          market_type: input.marketType ?? null,
         })
         .returning()
 
@@ -400,6 +404,7 @@ export const EventCreationRepository = {
     binaryOutcomeNo?: string | null
     resolutionSource?: string | null
     resolutionRules?: string | null
+    marketType?: 'clob' | 'livePool' | null
   }): Promise<QueryResult<EventCreationDraftSummary>> {
     return runQuery(async () => {
       const nextValues: Partial<typeof event_creations.$inferInsert> = {
@@ -472,6 +477,9 @@ export const EventCreationRepository = {
       }
       if (typeof input.resolutionRules !== 'undefined') {
         nextValues.resolution_rules = input.resolutionRules
+      }
+      if (typeof input.marketType !== 'undefined') {
+        nextValues.market_type = input.marketType
       }
 
       const updatedRows = await db

@@ -1,4 +1,5 @@
 import type { OddsFormat } from '@/lib/odds-format'
+import { CheckIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatCentsLabel } from '@/lib/formatters'
 import { formatOddsFromPrice } from '@/lib/odds-format'
@@ -49,6 +50,11 @@ export default function EventOrderPanelOutcomeButton({
       )}
       onClick={onSelect}
     >
+      {isSelected && (
+        <span className="absolute top-1.5 right-1.5 inline-flex size-4 items-center justify-center rounded-full bg-black/20 text-white">
+          <CheckIcon className="size-3" />
+        </span>
+      )}
       <span className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-0.5">
         {label}
       </span>

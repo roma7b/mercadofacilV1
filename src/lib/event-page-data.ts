@@ -11,6 +11,7 @@ import { loadMarketContextSettings } from '@/lib/ai/market-context-config'
 import { cacheTags } from '@/lib/cache-tags'
 import { EventRepository } from '@/lib/db/queries/event'
 import { MercadoFacilRepository } from '@/lib/db/queries/mercado-facil'
+import { isLivePoolMarketType, resolveMarketTypeFromSlug } from '@/lib/market-type'
 import { loadRuntimeThemeState } from '@/lib/theme-settings'
 import 'server-only'
 
@@ -40,14 +41,15 @@ export async function resolveCanonicalEventSlugFromSportsPath(sportSlug: string,
 export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLocale) {
   // Mercados customizados do Supabase usam UUID como slug - buscar título diretamente
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug)
-  const isLive = eventSlug.startsWith('live_')
+  const isLive = isLivePoolMarketType(resolveMarketTypeFromSlug(eventSlug))
+  const isPolymarketImport = eventSlug.includes('poly-')
 
   if (isUUID) {
     const { data: event } = await EventRepository.getEventBySlug(eventSlug)
     return event?.title ?? null
   }
 
-  if (isLive) {
+  if (isLive || isPolymarketImport) {
     // noStore() obrigatório aqui também (chamado pelo generateMetadata)
     noStore()
     const id = eventSlug.replace(/^live_/, '')
@@ -61,14 +63,15 @@ export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLo
 
 export async function getEventRouteBySlug(eventSlug: string) {
 
-  const isMercadoFacilLive = eventSlug.startsWith('live_');
+  const isMercadoFacilLive = isLivePoolMarketType(resolveMarketTypeFromSlug(eventSlug))
+  const isPolymarketImport = eventSlug.includes('poly-')
 
-  if (isMercadoFacilLive) {
+  if (isMercadoFacilLive || isPolymarketImport) {
     // noStore() impede o Next.js de pré-renderizar/cachear — obrigatório para Supabase fetch()
     noStore()
     // Remove apenas o prefixo 'live_' do início
     const id = eventSlug.replace(/^live_/, '')
-    console.log('[getEventRouteBySlug] Slug live detectado:', { slug: eventSlug, id })
+    console.log('[getEventRouteBySlug] Slug live/poly detectado:', { slug: eventSlug, id })
     return { id, slug: eventSlug } as any
   }
 
@@ -97,33 +100,43 @@ export async function loadEventPagePublicContentData(
   let eventResult: { data: Event | null, error: any }
   let changeLogResult: { data: ConditionChangeLogEntry[] | null, error: any } = { data: [], error: null }
 
-  const isMercadoFacilLive = eventSlug.startsWith('live_');
-
-  if (isMercadoFacilLive) {
-    // noStore() é ESSENCIAL aqui — sem isso o Next.js tenta pré-renderizar e o
-    // prerenderer cancela o fetch() do Supabase antes de completar (erro 500)
-    noStore()
-    const id = eventSlug.replace(/^live_/, '')
-    console.log('[loadEventPagePublicContentData] Buscando live event com id:', id)
-    const liveEvent = await MercadoFacilRepository.getEventById(id)
-    console.log('[loadEventPagePublicContentData] Resultado live event:', { found: !!liveEvent, id })
-    eventResult = { data: liveEvent, error: liveEvent ? null : 'Not found' }
+  // 1. Tentar buscar no repositório unificado (Drizzle/Postgres) primeiro
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug)
+  const cleanSlug = eventSlug.replace(/^live_/, '').trim()
+  
+  // Tenta buscar no Drizzle com o slug original, com o slug limpo e diretamente pelo ID
+  let fetchedEvent = await EventRepository.getEventBySlug(eventSlug)
+  if (!fetchedEvent.data) {
+    fetchedEvent = await EventRepository.getEventBySlug(cleanSlug)
   }
-  else {
-    // UUIDs puros são mercados customizados do Supabase - não têm changelog no Drizzle
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug)
-    if (isUUID) {
-      const fetchedEvent = await EventRepository.getEventBySlug(eventSlug)
-      eventResult = fetchedEvent
-      changeLogResult = { data: [], error: null }
+  
+  // Fallback final no Drizzle: busca explícita se ainda não encontrou
+  if (!fetchedEvent.data && (eventSlug.includes('_') || isUUID)) {
+     const { data: secondTry } = await EventRepository.getEventBySlug(cleanSlug)
+     if (secondTry) {
+       fetchedEvent = { data: secondTry, error: null }
+     }
+  }
+
+  if (fetchedEvent.data) {
+    eventResult = fetchedEvent
+    // Busca changelog se não for UUID
+    if (!isUUID) {
+      changeLogResult = await EventRepository.getEventConditionChangeLogBySlug(eventResult.data.slug)
     }
-    else {
-      const [fetchedEvent, fetchedChangeLog] = await Promise.all([
-        EventRepository.getEventBySlug(eventSlug),
-        EventRepository.getEventConditionChangeLogBySlug(eventSlug),
-      ])
-      eventResult = fetchedEvent
-      changeLogResult = fetchedChangeLog
+  } else {
+    // 2. Fallback: Se não encontrar no banco principal, verifica se é um mercado legado do Mercado Fácil (Supabase)
+    const marketType = resolveMarketTypeFromSlug(eventSlug)
+    const isMercadoFacilLive = isLivePoolMarketType(marketType)
+    const isPolymarketImport = eventSlug.includes('poly-')
+
+    if (isMercadoFacilLive || isPolymarketImport) {
+      noStore()
+      console.log('[loadEventPagePublicContentData] Fallback: Buscando event id:', cleanSlug)
+      const liveEvent = await MercadoFacilRepository.getEventById(cleanSlug)
+      eventResult = { data: liveEvent, error: liveEvent ? null : 'Not found' }
+    } else {
+      eventResult = { data: null, error: 'Event not found' }
     }
   }
 

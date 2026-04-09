@@ -28,7 +28,7 @@ interface EventOrderPanelInputProps {
   shouldShake?: boolean
 }
 
-const BUY_CHIPS = ['+R$10', '+R$50', '+R$100', '+R$500']
+const BUY_CHIPS = ['+10', '+50', '+100', '+500']
 
 export default function EventOrderPanelInput({
   isMobile,
@@ -118,7 +118,7 @@ export default function EventOrderPanelInput({
           size="sm"
           variant="outline"
           className={cn(
-            'text-xs',
+            'text-xs rounded-lg',
             { 'cursor-not-allowed opacity-50': isDisabled },
           )}
           disabled={isDisabled}
@@ -144,9 +144,9 @@ export default function EventOrderPanelInput({
         key={chip}
         size="sm"
         variant="outline"
-        className="px-2 text-xs"
+        className="px-2 text-xs rounded-lg"
         onClick={() => {
-          const chipValue = Number.parseInt(chip.substring(3), 10)
+          const chipValue = Number.parseInt(chip.substring(1), 10)
           const newValue = amountNumber + chipValue
 
           const limitedValue = Math.min(newValue, MAX_AMOUNT_INPUT)
@@ -166,9 +166,7 @@ export default function EventOrderPanelInput({
     : '0.00'
 
   const formattedAmount = formatDisplayAmount(amount)
-  const inputValue = side === ORDER_SIDE.SELL
-    ? formattedAmount
-    : formattedAmount ? `R$${formattedAmount}` : ''
+  
   return (
     <>
       {isMobile
@@ -180,25 +178,29 @@ export default function EventOrderPanelInput({
                   onClick={() => decrementAmount(side === ORDER_SIDE.SELL ? 0.1 : 1)}
                   size="icon"
                   variant="ghost"
+                  className="size-10 rounded-full bg-muted/20"
                 >
                   −
                 </Button>
-                <div className="flex-1 text-center">
+                <div className="flex-1 text-center bg-muted/10 rounded-2xl py-2 shadow-inner border border-white/5 relative">
+                   {side !== ORDER_SIDE.SELL && (
+                     <span className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground font-black opacity-30">R$</span>
+                   )}
                   <input
                     ref={inputRef}
                     type="text"
                     className={cn(
                       `
-                        w-full [appearance:textfield] border-0 bg-transparent text-center font-semibold text-foreground
-                        placeholder-muted-foreground outline-hidden
+                        w-full [appearance:textfield] border-0 bg-transparent text-center font-black text-foreground
+                        placeholder-muted-foreground/30 outline-hidden
                         [&::-webkit-inner-spin-button]:appearance-none
                         [&::-webkit-outer-spin-button]:appearance-none
                       `,
                       amountSizeClass,
                       { 'animate-order-shake': shouldShake },
                     )}
-                    placeholder={side === ORDER_SIDE.SELL ? '0' : 'R$0'}
-                    value={inputValue}
+                    placeholder="0"
+                    value={formattedAmount}
                     onChange={e => handleInputChange(e.target.value)}
                     onBlur={e => handleBlur(e.target.value)}
                   />
@@ -208,6 +210,7 @@ export default function EventOrderPanelInput({
                   onClick={() => incrementAmount(side === ORDER_SIDE.SELL ? 0.1 : 1)}
                   size="icon"
                   variant="ghost"
+                  className="size-10 rounded-full bg-muted/20"
                 >
                   +
                 </Button>
@@ -215,12 +218,12 @@ export default function EventOrderPanelInput({
             </div>
           )
         : (
-            <div className="mb-2 flex items-center gap-3">
-              <div className="shrink-0">
-                <div className="text-lg font-medium">
-                  {side === ORDER_SIDE.SELL ? t('Shares') : t('Amount')}
+            <div className="mb-4 flex flex-col gap-2">
+              <div className="flex items-center justify-between px-1">
+                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  {side === ORDER_SIDE.SELL ? t('Cotas para Venda') : t('Valor da Aposta')}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-[10px] font-bold text-muted-foreground/60">
                   {side === ORDER_SIDE.SELL
                     ? null
                     : isBalanceLoading
@@ -228,36 +231,33 @@ export default function EventOrderPanelInput({
                       : (
                           <button
                             type="button"
-                            className={`
-                              cursor-pointer bg-transparent p-0 text-left transition-colors
-                              hover:text-foreground
-                            `}
+                            className="cursor-pointer hover:text-foreground transition-colors"
                             onClick={handleBalanceClick}
                           >
-                            {t('Balance')}
-                            {' '}
-                            {areValuesHidden ? '****' : `R$${formattedBalanceText}`}
+                            {t('Saldo')}: {areValuesHidden ? '****' : `R$${formattedBalanceText}`}
                           </button>
                         )}
                 </div>
               </div>
-              <div className="relative flex-1">
+              <div className="relative flex items-center bg-muted/20 rounded-2xl px-4 border border-white/5 transition-all focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-muted/30">
+                {side !== ORDER_SIDE.SELL && (
+                    <span className="text-xl font-black text-muted-foreground opacity-30 select-none mr-2">R$</span>
+                )}
                 <input
                   ref={inputRef}
                   type="text"
                   className={cn(
                     `
-                      h-14 w-full [appearance:textfield] border-0 bg-transparent text-right font-semibold text-slate-700
-                      placeholder-slate-400 outline-hidden
-                      dark:text-slate-300 dark:placeholder-slate-500
+                      h-16 w-full [appearance:textfield] border-0 bg-transparent text-right font-black text-foreground
+                      placeholder-muted-foreground/20 outline-hidden
                       [&::-webkit-inner-spin-button]:appearance-none
                       [&::-webkit-outer-spin-button]:appearance-none
                     `,
                     amountSizeClass,
                     { 'animate-order-shake': shouldShake },
                   )}
-                  placeholder={side === ORDER_SIDE.SELL ? '0' : 'R$0'}
-                  value={inputValue}
+                  placeholder="0"
+                  value={formattedAmount}
                   onChange={e => handleInputChange(e.target.value)}
                   onBlur={e => handleBlur(e.target.value)}
                 />
@@ -267,37 +267,39 @@ export default function EventOrderPanelInput({
 
       <div
         className={cn(
-          'mb-3 flex gap-2',
+          'mb-4 flex gap-2',
           isMobile ? 'justify-center' : 'justify-end',
         )}
       >
-        {renderActionButtons()}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className={cn(
-            'text-xs',
-            { 'cursor-not-allowed opacity-50': side === ORDER_SIDE.SELL && availableShares <= 0 },
-          )}
-          disabled={side === ORDER_SIDE.SELL && availableShares <= 0}
-          onClick={() => {
-            if (side === ORDER_SIDE.SELL) {
-              if (availableShares <= 0) {
-                return
-              }
-              onAmountChange(formatAmountInputValue(availableShares, { roundingMode: 'floor' }))
-            }
-            else {
-              const maxBalance = balance.raw
-              const limitedBalance = Math.min(maxBalance, MAX_AMOUNT_INPUT)
-              onAmountChange(formatAmountInputValue(limitedBalance, { roundingMode: 'floor' }))
-            }
-            focusInput()
-          }}
-        >
-          {t('Max')}
-        </Button>
+        <div className="flex gap-1.5 bg-muted/10 p-1 rounded-xl border border-white/5">
+            {renderActionButtons()}
+            <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={cn(
+                'text-[10px] font-black uppercase tracking-wider px-3 rounded-lg hover:bg-primary/10 hover:text-primary transition-all',
+                { 'cursor-not-allowed opacity-50': side === ORDER_SIDE.SELL && availableShares <= 0 },
+            )}
+            disabled={side === ORDER_SIDE.SELL && availableShares <= 0}
+            onClick={() => {
+                if (side === ORDER_SIDE.SELL) {
+                if (availableShares <= 0) {
+                    return
+                }
+                onAmountChange(formatAmountInputValue(availableShares, { roundingMode: 'floor' }))
+                }
+                else {
+                const maxBalance = balance.raw
+                const limitedBalance = Math.min(maxBalance, MAX_AMOUNT_INPUT)
+                onAmountChange(formatAmountInputValue(limitedBalance, { roundingMode: 'floor' }))
+                }
+                focusInput()
+            }}
+            >
+            {t('Max')}
+            </Button>
+        </div>
       </div>
     </>
   )

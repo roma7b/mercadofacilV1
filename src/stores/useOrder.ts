@@ -208,7 +208,12 @@ export function useNoPrice() {
 }
 
 export function useIsSingleMarket() {
-  return useOrder(state => state.event?.total_markets_count === 1)
+  return useOrder(state => {
+    if (!state.event) return false
+    const countIsOne = state.event.total_markets_count === 1
+    const marketsLengthIsOne = !state.event.markets || state.event.markets.length === 1
+    return countIsOne && marketsLengthIsOne
+  })
 }
 
 export function useIsLimitOrder() {

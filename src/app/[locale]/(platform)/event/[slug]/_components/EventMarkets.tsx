@@ -66,11 +66,11 @@ function toNumber(value: unknown) {
 }
 
 function isMarketResolved(market: Event['markets'][number]) {
-  return Boolean(market.is_resolved || market.condition?.resolved)
+  return Boolean(market?.is_resolved || market?.condition?.resolved)
 }
 
 function getMarketEndTime(market: Event['markets'][number]) {
-  if (!market.end_time) {
+  if (!market?.end_time) {
     return null
   }
   const parsed = Date.parse(market.end_time)
@@ -78,12 +78,12 @@ function getMarketEndTime(market: Event['markets'][number]) {
 }
 
 export function resolveWinningOutcomeIndex(market: Event['markets'][number]) {
-  const explicitWinner = market.outcomes.find(outcome => outcome.is_winning_outcome)
+  const explicitWinner = market?.outcomes?.find(outcome => outcome.is_winning_outcome)
   if (explicitWinner && (explicitWinner.outcome_index === OUTCOME_INDEX.YES || explicitWinner.outcome_index === OUTCOME_INDEX.NO)) {
     return explicitWinner.outcome_index
   }
 
-  return resolveUniqueBinaryWinningOutcomeIndexFromPayoutNumerators(market.condition?.payout_numerators)
+  return resolveUniqueBinaryWinningOutcomeIndexFromPayoutNumerators(market?.condition?.payout_numerators)
 }
 
 interface CashOutModalPayload {
@@ -111,7 +111,9 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   const setAmount = useOrder(state => state.setAmount)
   const inputRef = useOrder(state => state.inputRef)
   const user = useUser()
-  const isSingleMarket = useIsSingleMarket()
+  const isSingleMarketBase = useIsSingleMarket()
+  const isCategorical = useMemo(() => event.markets.some(m => m.outcomes && m.outcomes.length > 2), [event.markets])
+  const isSingleMarket = isSingleMarketBase && !isCategorical
   const isNegRiskEnabled = Boolean(event.enable_neg_risk || event.neg_risk)
   const isNegRiskAugmented = Boolean(event.neg_risk_augmented)
   const isTweetMarketEvent = useMemo(
@@ -549,7 +551,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   const handleBuy = useCallback((market: Event['markets'][number], outcomeIndex: number, source: 'mobile' | 'desktop') => {
     expandMarket(market.condition_id)
     setMarket(market)
-    const outcome = market.outcomes[outcomeIndex]
+    const outcome = market.outcomes.find(o => o.outcome_index === outcomeIndex) ?? market.outcomes[outcomeIndex]
     if (outcome) {
       setOutcome(outcome)
     }
@@ -625,6 +627,16 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   return (
     <>
       <div className="-mr-2 -ml-4 bg-background lg:mx-0">
+        {primaryMarketRows.length > 0 && (!primaryMarketRows[0].market.outcomes || primaryMarketRows[0].market.outcomes.length <= 2) && (
+          <div className="mx-4 mb-2 rounded-md border border-border/40 bg-card/20 px-3 py-2 text-xs text-muted-foreground lg:mx-0 lg:px-4">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2">
+              <span className="font-medium text-foreground/90">{t('Opções do mercado')}</span>
+              <span className="w-14 text-right">{t('Chance')}</span>
+              <span className="w-[70px] text-center sm:w-[78px] md:w-[92px]">{t('Sim')}</span>
+              <span className="w-[70px] text-center sm:w-[78px] md:w-[92px]">{t('Não')}</span>
+            </div>
+          </div>
+        )}
         {shouldShowActiveSection && <div className="mt-4 mr-2 ml-4 border-b border-border lg:mx-0" />}
         {primaryMarketRows
           .map((row, index, orderedMarkets) => {
@@ -647,7 +659,30 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
 
             return (
               <div key={market.condition_id} className="transition-colors">
-                {isResolvedInlineRow
+                {market.outcomes && market.outcomes.length > 2 && !isResolvedInlineRow ? (
+                  <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                     {market.outcomes.map((outcome) => {
+                         const isSelected = activeOutcomeIndex === outcome.outcome_index
+                         return (
+                            <div 
+                               key={outcome.outcome_index} 
+                               onClick={() => handleBuy(market, outcome.outcome_index, isMobile ? 'mobile' : 'desktop')}
+                               className={cn(
+                                 "flex items-center justify-between p-3 rounded-2xl border border-white/5 cursor-pointer transition-all hover:bg-white/10 active:scale-[0.98]",
+                                 isSelected ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20 shadow-inner" : "bg-card/30"
+                               )}
+                            >
+                               <span className={cn("text-sm md:text-base font-semibold", isSelected ? "text-primary" : "text-foreground")}>
+                                 {outcome.outcome_text}
+                               </span>
+                               <Button size="sm" variant={isSelected ? "default" : "secondary"} className={cn("text-xs h-7 rounded-full px-4", isSelected ? "shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" : "")}>
+                                 {isSelected ? t('Selecionado') : t('Apostar')}
+                               </Button>
+                            </div>
+                         )
+                     })}
+                  </div>
+                ) : isResolvedInlineRow
                   ? (
                       <ResolvedMarketRow
                         row={row}

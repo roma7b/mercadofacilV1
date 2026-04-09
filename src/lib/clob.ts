@@ -13,27 +13,45 @@ export function getClobBaseUrl() {
 }
 
 export async function fetchClobJson<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${getClobBaseUrl()}${path}`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+  // Usa o proxy local /api/clob para evitar CORS. Tenta CLOB local primeiro.
+  const urlsToTry = [
+    ...(CLOB_BASE_URL ? [CLOB_BASE_URL] : []),
+    '/api/clob',
+  ]
 
-  const text = await response.text()
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.status} ${text}`)
+  let lastError: Error | null = null
+  for (const baseUrl of urlsToTry) {
+    try {
+      const response = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      const text = await response.text()
+      if (!response.ok) {
+        lastError = new Error(`Failed to fetch ${path}: ${response.status} ${text}`)
+        continue
+      }
+
+      try {
+        return JSON.parse(text) as T
+      }
+      catch (error) {
+        console.error(`Failed to parse response from ${path}`, error)
+        throw new Error(`Failed to parse response from ${path}`)
+      }
+    }
+    catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
+      console.warn(`[clob] Failed to reach ${baseUrl}${path}:`, lastError.message)
+    }
   }
 
-  try {
-    return JSON.parse(text) as T
-  }
-  catch (error) {
-    console.error(`Failed to parse response from ${path}`, error)
-    throw new Error(`Failed to parse response from ${path}`)
-  }
+  throw lastError ?? new Error(`Failed to fetch ${path}: all CLOB endpoints failed`)
 }
 
 export async function fetchOrderBookSummary(tokenId: string): Promise<OrderBookSummaryResponse> {

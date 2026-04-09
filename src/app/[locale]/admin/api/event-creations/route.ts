@@ -11,6 +11,7 @@ const createDraftSchema = z.object({
   mode: z.enum(['single', 'recurring']),
   startAt: z.string().datetime({ offset: true }).optional().nullable(),
   sourceEventId: z.string().trim().length(26).optional().nullable(),
+  marketType: z.enum(['clob', 'livePool']).optional().nullable(),
 })
 
 export async function GET(request: NextRequest) {
@@ -118,6 +119,7 @@ export async function POST(request: NextRequest) {
       assetPayload: sourceAssetPayload,
       mainCategorySlug: sourceMainCategorySlug,
       categorySlugs: sourceCategorySlugs,
+      marketType: parsed.data.marketType ?? null,
     })
 
     if (error) {

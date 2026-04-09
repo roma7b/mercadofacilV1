@@ -42,10 +42,10 @@ export default function EventOrderPanelEarnings({
       <div className="rounded-xl border border-border/50 bg-muted/30 p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            {isBuy ? t('To win') : t('You\'ll receive')}
+            {isBuy ? 'Para ganhar' : 'Você receberá'}
           </span>
           <span className="text-xs font-bold text-foreground/70">
-            {t('Avg. price {price}', { price: avgPrice })}
+            {`Preço Médio ${avgPrice}`}
           </span>
         </div>
 
@@ -60,7 +60,7 @@ export default function EventOrderPanelEarnings({
           {isBuy && buyProfit > 0 && (
             <div className="flex flex-col items-end">
               <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">
-                +{buyProfitLabel} {t('Profit')}
+                +{buyProfitLabel} Lucro
               </span>
               <span className="text-[10px] font-black text-emerald-500/70 dark:text-emerald-500/50">
                 {buyChangeLabel}

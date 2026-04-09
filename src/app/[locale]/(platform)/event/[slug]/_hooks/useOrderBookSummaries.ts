@@ -9,7 +9,8 @@ export function useOrderBookSummaries(tokenIds: string[], options?: { enabled?: 
     queryKey: ['orderbook-summary', tokenIdsKey],
     queryFn: () => fetchOrderBookSummaries(tokenIds),
     enabled: shouldEnable && tokenIds.length > 0 && Boolean(process.env.CLOB_URL),
-    staleTime: 10_000,
+    staleTime: 2_000,
+    refetchInterval: 3000,
     gcTime: 60_000,
     retry: 1,
   })

@@ -10,6 +10,7 @@ export function getMaxSeriesCount() {
 }
 
 export function areNumberMapsEqual(a: Record<string, number>, b: Record<string, number>) {
+  if (!a || !b) return a === b
   const aKeys = Object.keys(a)
   const bKeys = Object.keys(b)
   if (aKeys.length !== bKeys.length) {
@@ -19,6 +20,7 @@ export function areNumberMapsEqual(a: Record<string, number>, b: Record<string, 
 }
 
 export function areQuoteMapsEqual(a: Record<string, MarketQuote>, b: Record<string, MarketQuote>) {
+  if (!a || !b) return a === b
   const aKeys = Object.keys(a)
   const bKeys = Object.keys(b)
   if (aKeys.length !== bKeys.length) {
@@ -51,7 +53,7 @@ export function computeChanceChanges(
   points: Array<Record<string, number | Date> & { date: Date }>,
   currentOverrides: Record<string, number> = {},
 ) {
-  if (!points.length) {
+  if (!points || !points.length) {
     return {}
   }
 
@@ -100,7 +102,7 @@ export function filterChartDataForSeries(
   points: Array<Record<string, number | Date> & { date: Date }>,
   seriesKeys: string[],
 ) {
-  if (!points.length || !seriesKeys.length) {
+  if (!points || !points.length || !seriesKeys || !seriesKeys.length) {
     return []
   }
 
@@ -155,7 +157,7 @@ export function getOutcomeLabelForMarket(
   market: Event['markets'][number] | undefined,
   outcomeIndex: number,
 ) {
-  const outcome = market?.outcomes.find(item => item.outcome_index === outcomeIndex)
+  const outcome = market?.outcomes?.find(item => item.outcome_index === outcomeIndex)
   const label = outcome?.outcome_text?.trim()
 
   if (label) {
@@ -165,18 +167,30 @@ export function getOutcomeLabelForMarket(
   return outcomeIndex === 0 ? 'Yes' : 'No'
 }
 
-export function buildChartSeries(event: Event, marketIds: string[]) {
-  return marketIds
-    .map((conditionId, index) => {
-      const market = event.markets.find(current => current.condition_id === conditionId)
-      if (!market) {
-        return null
+export function buildChartSeries(event: Event, ids: string[]) {
+  return ids
+    .map((id, index) => {
+      const market = event.markets.find(current => current.condition_id === id)
+      if (market) {
+        return {
+          key: id,
+          name: getMarketSeriesLabel(market),
+          color: CHART_COLOR_VARIABLES[index % CHART_COLOR_VARIABLES.length],
+        }
       }
-      return {
-        key: conditionId,
-        name: getMarketSeriesLabel(market),
-        color: CHART_COLOR_VARIABLES[index % CHART_COLOR_VARIABLES.length],
+
+      for (const m of event.markets) {
+        const outcome = m.outcomes?.find(o => o.token_id === id)
+        if (outcome) {
+          return {
+            key: id,
+            name: outcome.outcome_text || m.title,
+            color: CHART_COLOR_VARIABLES[index % CHART_COLOR_VARIABLES.length],
+          }
+        }
       }
+
+      return null
     })
     .filter((entry): entry is { key: string, name: string, color: string } => entry !== null)
 }

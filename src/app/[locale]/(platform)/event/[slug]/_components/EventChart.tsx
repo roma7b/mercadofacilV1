@@ -13,6 +13,7 @@ import type {
 import { useQuery } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEventTradeMarkers } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventTradeMarkers'
 import { useMarketChannelSubscription } from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketChannelProvider'
 import {
   useEventOutcomeChanceChanges,
@@ -54,7 +55,7 @@ import { formatCurrency, formatSharePriceLabel, formatSharesLabel, fromMicro } f
 import { buildChanceByMarket, normalizeMarketPrice, resolveDisplayPrice } from '@/lib/market-chance'
 import { getUserPublicAddress } from '@/lib/user-address'
 import { cn } from '@/lib/utils'
-import { useIsSingleMarket } from '@/stores/useOrder'
+import { useIsSingleMarket, useOrder } from '@/stores/useOrder'
 import { useUser } from '@/stores/useUser'
 import { loadStoredChartSettings, storeChartSettings } from '../_utils/chartSettingsStorage'
 import EventChartControls, { defaultChartSettings } from './EventChartControls'
@@ -167,8 +168,8 @@ function getOutcomeTokenIds(market: Market | null) {
   if (!market) {
     return null
   }
-  const yesOutcome = market.outcomes.find(outcome => outcome.outcome_index === OUTCOME_INDEX.YES)
-  const noOutcome = market.outcomes.find(outcome => outcome.outcome_index === OUTCOME_INDEX.NO)
+  const yesOutcome = market.outcomes?.find(outcome => outcome.outcome_index === OUTCOME_INDEX.YES)
+  const noOutcome = market.outcomes?.find(outcome => outcome.outcome_index === OUTCOME_INDEX.NO)
 
   if (!yesOutcome?.token_id || !noOutcome?.token_id) {
     return null
@@ -398,9 +399,26 @@ function EventChartComponent({
   const user = useUser()
   const userAddress = getUserPublicAddress(user)
   const normalizeOutcomeLabel = useOutcomeLabel()
-  const isSingleMarket = useIsSingleMarket()
+  const isSingleMarketBase = useIsSingleMarket()
+  const isCategorical = useMemo(() => event.markets.some(m => m.outcomes && m.outcomes.length > 2), [event.markets])
+  const isSingleMarket = isSingleMarketBase && !isCategorical
+  
+  const allCategoricalTokenIds = useMemo(() => {
+    const ids: string[] = []
+    event.markets.forEach(m => {
+      if (m.outcomes && m.outcomes.length > 2) {
+        m.outcomes.forEach(o => {
+          if (o.token_id) ids.push(o.token_id)
+        })
+      }
+    })
+    return ids
+  }, [event.markets])
+
   const isNegRiskEnabled = Boolean(event.enable_neg_risk || event.neg_risk)
-  const shouldHideChart = !isSingleMarket && !isNegRiskEnabled
+  // Non-single markets with neg_risk=false should hide chart, UNLESS it's a categorical market 
+  // (which is treated as a multi-outcome single market).
+  const shouldHideChart = !isSingleMarketBase && !isNegRiskEnabled && !isCategorical
   const currentOutcomeChances = useEventOutcomeChances()
   const currentOutcomeChanceChanges = useEventOutcomeChanceChanges()
   const currentMarketQuotes = useMarketQuotes()
@@ -409,6 +427,20 @@ function EventChartComponent({
   const updateMarketYesPrices = useUpdateMarketYesPrices()
   const updateMarketQuotes = useUpdateMarketQuotes()
   const updateOutcomeChanceChanges = useUpdateEventOutcomeChanceChanges()
+  
+  const selectedOutcomeStore = useOrder(state => state.outcome)
+
+  // LOG PARA DEPURAR O SERVIDOR SSR
+  if (typeof window === 'undefined') {
+    event.markets.forEach(m => {
+      console.log(`[SSR] EventChart render: Market ${m.condition_id} has ${m.outcomes?.length} outcomes.`)
+      m.outcomes?.forEach((o, i) => {
+        if (i < 2) console.log(`[SSR] Outcome ${i}: text=${o.outcome_text}, token_id=${o.token_id}`)
+      })
+    })
+    console.log(`[SSR] Computed isCategorical=${isCategorical}, shouldHideChart=${shouldHideChart}`)
+  }
+
 
   const fallbackPrices = useQuery({
     queryKey: ['mercado-live-pool-fallback', event.slug],
@@ -516,16 +548,49 @@ function EventChartComponent({
       && nowMs >= resolvedTweetCountdownTargetMs
     )
 
-  const yesMarketTargets = useMemo(
-    () => buildMarketTargets(event.markets, OUTCOME_INDEX.YES),
-    [event.markets],
-  )
-  const noMarketTargets = useMemo(
-    () => (shouldHideChart || !isSingleMarket ? [] : buildMarketTargets(event.markets, OUTCOME_INDEX.NO)),
-    [event.markets, isSingleMarket, shouldHideChart],
-  )
+  const yesMarketTargets = useMemo(() => {
+    const targets: { conditionId: string, tokenId: string }[] = []
+    const addedTokens = new Set<string>()
+
+    event.markets.forEach(m => {
+      if (m.outcomes && m.outcomes.length > 2) {
+        // Categorical
+        m.outcomes.slice(0, 10).forEach(o => {
+          if (o.token_id) {
+            targets.push({ conditionId: o.token_id, tokenId: o.token_id })
+            addedTokens.add(o.token_id)
+          }
+        })
+        
+        // Ensure selected is included
+        if (selectedOutcomeStore?.token_id && !addedTokens.has(selectedOutcomeStore.token_id)) {
+           const belongsToThisMarket = m.outcomes.some(o => o.token_id === selectedOutcomeStore.token_id)
+           if (belongsToThisMarket) {
+              targets.push({ conditionId: selectedOutcomeStore.token_id, tokenId: selectedOutcomeStore.token_id })
+              addedTokens.add(selectedOutcomeStore.token_id)
+           }
+        }
+      } else if (m.outcomes?.[OUTCOME_INDEX.YES]?.token_id) {
+        targets.push({ conditionId: m.condition_id, tokenId: m.outcomes[OUTCOME_INDEX.YES].token_id })
+        addedTokens.add(m.outcomes[OUTCOME_INDEX.YES].token_id)
+      }
+    })
+    return targets
+  }, [event.markets, selectedOutcomeStore?.token_id])
+
+  const noMarketTargets = useMemo(() => {
+    if (shouldHideChart || !isSingleMarket) return []
+    const targets: { conditionId: string, tokenId: string }[] = []
+    event.markets.forEach(m => {
+      if (m.outcomes?.[OUTCOME_INDEX.NO]?.token_id) {
+        targets.push({ conditionId: m.condition_id, tokenId: m.outcomes[OUTCOME_INDEX.NO].token_id })
+      }
+    })
+    return targets
+  }, [event.markets, isSingleMarket, shouldHideChart])
 
   const yesPriceHistory = useEventPriceHistory({
+    event,
     eventId: event.id,
     range: activeTimeRange,
     targets: yesMarketTargets,
@@ -533,6 +598,7 @@ function EventChartComponent({
     eventResolvedAt: eventHistoryEndAt,
   })
   const noPriceHistory = useEventPriceHistory({
+    event,
     eventId: event.id,
     range: activeTimeRange,
     targets: noMarketTargets,
@@ -541,8 +607,8 @@ function EventChartComponent({
   })
   const marketQuotesByMarket = useEventMarketQuotes(yesMarketTargets)
   const chanceChangeByMarket = useMemo(
-    () => computeChanceChanges(yesPriceHistory.normalizedHistory),
-    [yesPriceHistory.normalizedHistory],
+    () => computeChanceChanges(yesPriceHistory.points),
+    [yesPriceHistory.points],
   )
   const displayChanceByMarket = useMemo(() => {
     const marketIds = new Set([
@@ -612,9 +678,30 @@ function EventChartComponent({
 
   const maxSeriesCount = getMaxSeriesCount()
   const allMarketIds = useMemo(
-    () => event.markets
-      .map(market => market.condition_id)
-      .filter((conditionId): conditionId is string => Boolean(conditionId)),
+    () => {
+      const ids: string[] = []
+      event.markets.forEach(market => {
+        if (market.outcomes && market.outcomes.length > 2) {
+          // Mercado categórico: usa token_id dos outcomes (se disponíveis)
+          let addedCount = 0
+          market.outcomes.slice(0, 10).forEach(o => {
+            if (o.token_id) {
+              ids.push(o.token_id)
+              addedCount++
+            }
+          })
+          // Fallback: se não tiver token_ids, usa condition_id do mercado
+          if (addedCount === 0) {
+            const id = market.condition_id || market.id
+            if (id) ids.push(id)
+          }
+        } else {
+          const id = market.condition_id || market.id
+          if (id) ids.push(id)
+        }
+      })
+      return ids
+    },
     [event.markets],
   )
   const topMarketIds = useMemo(
@@ -629,7 +716,13 @@ function EventChartComponent({
     () => (topMarketIds.length > 0 ? topMarketIds : fallbackMarketIds),
     [topMarketIds, fallbackMarketIds],
   )
-  const [selectedMarketIds, setSelectedMarketIds] = useState<string[]>(() => defaultMarketIds)
+  // Para mercados categóricos com token_ids, inicializamos com os ids reais para não ficar em branco
+  const initialMarketIds = useMemo(
+    () => fallbackMarketIds.length > 0 ? fallbackMarketIds : defaultMarketIds,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const [selectedMarketIds, setSelectedMarketIds] = useState<string[]>(() => initialMarketIds)
   const [hasCustomSelection, setHasCustomSelection] = useState(false)
 
   useEffect(() => {
@@ -726,12 +819,12 @@ function EventChartComponent({
   const primaryMarket = useMemo(
     () => {
       if (isSingleMarket) {
-        return event.markets[0]
+        return event?.markets?.[0]
       }
-      const primaryId = baseSeries[0]?.key
+      const primaryId = baseSeries?.[0]?.key
       return (primaryId
-        ? event.markets.find(market => market.condition_id === primaryId)
-        : null) ?? event.markets[0]
+        ? event?.markets?.find(market => market.condition_id === primaryId)
+        : null) ?? event?.markets?.[0]
     },
     [event.markets, baseSeries, isSingleMarket],
   )
@@ -844,97 +937,55 @@ function EventChartComponent({
     staleTime: 60_000,
     gcTime: 5 * 60_000,
   })
+  const { markers: allTradeMarkers } = useEventTradeMarkers({
+    event,
+    markerConditionIds,
+    showBothOutcomes,
+    enabled: Boolean(chartSettings.annotations),
+  })
+
   const chartAnnotationMarkers = useMemo<PredictionChartAnnotationMarker[]>(() => {
-    if (!userTradeActivities.length) {
-      return []
-    }
-
-    return userTradeActivities.flatMap((activity, index) => {
+    const userMarkers = userTradeActivities.flatMap((activity, index) => {
       const conditionId = activity.market.condition_id
-      if (!conditionId || !markerConditionIds.includes(conditionId)) {
-        return []
-      }
-
+      if (!conditionId || !markerConditionIds.includes(conditionId)) return []
       const createdAtTimestamp = new Date(activity.created_at).getTime()
-      if (!Number.isFinite(createdAtTimestamp)) {
-        return []
-      }
-
+      if (!Number.isFinite(createdAtTimestamp)) return []
       const rawPrice = Number(activity.price)
-      if (!Number.isFinite(rawPrice)) {
-        return []
-      }
-
+      if (!Number.isFinite(rawPrice)) return []
       const outcomeIndex = Number(activity.outcome.index)
       const isYesOutcome = outcomeIndex === OUTCOME_INDEX.YES
       const isNoOutcome = outcomeIndex === OUTCOME_INDEX.NO
-      if (!isYesOutcome && !isNoOutcome) {
-        return []
-      }
-
-      const normalizedLineValue = showBothOutcomes
-        ? rawPrice * 100
-        : (isNoOutcome ? (1 - rawPrice) * 100 : rawPrice * 100)
-
-      if (!Number.isFinite(normalizedLineValue)) {
-        return []
-      }
-
+      if (!isYesOutcome && !isNoOutcome) return []
+      const normalizedLineValue = showBothOutcomes ? rawPrice * 100 : (isNoOutcome ? (1 - rawPrice) * 100 : rawPrice * 100)
+      if (!Number.isFinite(normalizedLineValue)) return []
       const sharesValue = Number.parseFloat(fromMicro(activity.amount, 4))
-      const sharesLabel = Number.isFinite(sharesValue)
-        ? formatSharesLabel(sharesValue)
-        : '—'
       const outcomeLabel = normalizeOutcomeLabel(activity.outcome.text)
-      const actionLabel = activity.side === 'sell' ? 'Sold' : 'Bought'
+      const actionLabel = activity.side === 'sell' ? 'Vendeu' : 'Comprou'
       const priceLabel = formatSharePriceLabel(rawPrice, { fallback: '—' })
       const totalValue = Number.parseFloat(fromMicro(activity.total_value, 2))
-      const totalValueLabel = formatCurrency(Number.isFinite(totalValue) ? totalValue : 0, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-      const outcomeIconUrl = resolveOutcomeIconUrl(activity.market.icon_url)
-      const outcomeColorClass = isYesOutcome ? 'text-yes' : 'text-no'
       const markerColor = isYesOutcome ? 'var(--color-yes)' : 'var(--color-no)'
 
       return [{
-        id: `trade-${activity.id}-${createdAtTimestamp}-${index}`,
+        id: `user-trade-${activity.id}-${index}`,
         date: new Date(createdAtTimestamp),
         value: normalizedLineValue,
         color: markerColor,
-        radius: 3.6,
+        radius: 4.5,
         tooltipContent: (
           <div className="flex items-center gap-2 text-xs whitespace-nowrap">
-            {outcomeIconUrl
-              ? (
-                  <EventIconImage
-                    src={outcomeIconUrl}
-                    alt={outcomeLabel}
-                    sizes="20px"
-                    containerClassName="size-5 rounded-full"
-                  />
-                )
-              : null}
+            <span className="font-bold text-primary">SUA APOSTA:</span>
             <span className="font-semibold text-foreground">{actionLabel}</span>
-            <span className={cn('font-semibold', outcomeColorClass)}>
-              {sharesLabel}
-              {' '}
-              {outcomeLabel}
-            </span>
-            <span className="text-foreground">
-              at
-              {' '}
-              {priceLabel}
-            </span>
-            <span className="text-muted-foreground">
-              (
-              {totalValueLabel}
-              )
+            <span className={cn('font-semibold', isYesOutcome ? 'text-yes' : 'text-no')}>
+              {formatSharesLabel(sharesValue)} {outcomeLabel}
             </span>
           </div>
         ),
       }]
     })
-  }, [markerConditionIds, normalizeOutcomeLabel, showBothOutcomes, userTradeActivities])
+
+    const combined = [...userMarkers, ...allTradeMarkers]
+    return combined.sort((a, b) => a.date.getTime() - b.date.getTime())
+  }, [markerConditionIds, normalizeOutcomeLabel, showBothOutcomes, userTradeActivities, allTradeMarkers])
   const outcomeTokenIds = useMemo(
     () => {
       return getOutcomeTokenIds(primaryMarket)
@@ -947,8 +998,8 @@ function EventChartComponent({
       return { points: [] as DataPoint[], latestSnapshot: {} as Record<string, number> }
     }
     return buildCombinedOutcomeHistory(
-      yesPriceHistory.normalizedHistory,
-      noPriceHistory.normalizedHistory,
+      yesPriceHistory.points,
+      noPriceHistory.points,
       primaryConditionId,
       yesSeriesKey,
       noSeriesKey,
@@ -958,14 +1009,14 @@ function EventChartComponent({
     primaryConditionId,
     yesSeriesKey,
     noSeriesKey,
-    yesPriceHistory.normalizedHistory,
-    noPriceHistory.normalizedHistory,
+    yesPriceHistory.points,
+    noPriceHistory.points,
   ])
 
   const normalizedHistory = showBothOutcomes
     ? bothOutcomeHistory.points
-    : chartHistory.normalizedHistory
-  const leadingGapStart = normalizedHistory[0]?.date ?? null
+    : chartHistory.points
+  const leadingGapStart = normalizedHistory?.[0]?.date ?? null
   const latestSnapshot = showBothOutcomes
     ? bothOutcomeHistory.latestSnapshot
     : chartHistory.latestSnapshot
@@ -1194,10 +1245,22 @@ function EventChartComponent({
   }
 
   if (!hasLegendSeries) {
+    // Para mercados categóricos, aguardar os dados mas mostrar um placeholder
+    if (isCategorical && allMarketIds.length > 0) {
+      return (
+        <div className="flex items-center justify-center min-h-[300px] text-muted-foreground text-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>Carregando histórico de preços...</span>
+          </div>
+        </div>
+      )
+    }
     return null
   }
   return (
     <>
+
       <EventChartLayout
         header={(
           <EventChartHeader
@@ -1239,6 +1302,7 @@ function EventChartComponent({
               leadingGapStart={leadingGapStart}
               legendContent={legendContent}
               showLegend={!isSingleMarket}
+              showVolumeBars={true}
               watermark={isSingleMarket ? undefined : watermark}
               lineCurve="monotoneX"
               plotClipPadding={{ right: EVENT_PLOT_CLIP_RIGHT_PADDING }}
@@ -1332,5 +1396,6 @@ function areChartPropsEqual(prev: EventChartProps, next: EventChartProps) {
 
   return buildMarketSignature(prev.event) === buildMarketSignature(next.event)
 }
-
 export default memo(EventChartComponent, areChartPropsEqual)
+
+// trigger HMR

@@ -7,7 +7,8 @@ import {
   CircleHelpIcon, ExternalLinkIcon, ImageIcon, ImageUp, 
   Loader2Icon, PlusIcon, SendHorizontal, FileText, 
   SparkleIcon, SquarePenIcon, Trash2Icon, XIcon,
-  ChevronDownIcon, SearchIcon, RotateCcwIcon, Image as ImageIconLucide
+  ChevronDownIcon, SearchIcon, RotateCcwIcon, Image as ImageIconLucide,
+  ZapIcon, LayersIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Link, useRouter } from '@/i18n/navigation'
@@ -50,6 +51,7 @@ function createInitialForm(overrides: any = {}) {
     options: overrides.options || [createOption('opt-1'), createOption('opt-2')],
     resolutionSource: overrides.resolutionSource || '',
     resolutionRules: overrides.resolutionRules || '',
+    marketType: overrides.marketType || 'clob',
   }
 }
 
@@ -184,6 +186,7 @@ export default function AdminCreateEventForm({
         autoResolve,
         publishStatus: publishImmediately ? 'published' : 'draft',
         image_url: form.image_url,
+        marketType: form.marketType,
       },
       markets: form.marketMode === 'binary' 
         ? [{
@@ -414,6 +417,40 @@ export default function AdminCreateEventForm({
                     <div className="text-center">
                       <p className="font-extrabold text-lg">Múltiplo</p>
                       <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest mt-1">ESCOLHA ENTRE VÁRIAS OPÇÕES</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t font-semibold">
+                <Label className="text-sm font-bold opacity-70">Engine de Execução (Motor)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange('marketType', 'clob')}
+                    className={cn(
+                      "group flex flex-col items-center gap-4 p-8 rounded-xl border transition-all h-full",
+                      form.marketType === 'clob' ? "border-primary bg-primary/10 ring-2 ring-primary ring-inset" : "bg-background hover:bg-muted/50"
+                    )}
+                  >
+                    <LayersIcon className={cn("size-10 transition-transform group-hover:scale-110", form.marketType === 'clob' ? "text-primary" : "text-muted-foreground")} />
+                    <div className="text-center">
+                      <p className="font-extrabold text-lg">CLOB (Web3)</p>
+                      <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest mt-1">Livro de Ordens / Tradicional</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange('marketType', 'livePool')}
+                    className={cn(
+                      "group flex flex-col items-center gap-4 p-8 rounded-xl border transition-all h-full",
+                      form.marketType === 'livePool' ? "border-primary bg-primary/10 ring-2 ring-primary ring-inset" : "bg-background hover:bg-muted/50"
+                    )}
+                  >
+                    <ZapIcon className={cn("size-10 transition-transform group-hover:scale-110", form.marketType === 'livePool' ? "text-primary" : "text-muted-foreground")} />
+                    <div className="text-center">
+                      <p className="font-extrabold text-lg">LivePool (Fast)</p>
+                      <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest mt-1">Pool de Liquidez / Resposta Rápida</p>
                     </div>
                   </button>
                 </div>

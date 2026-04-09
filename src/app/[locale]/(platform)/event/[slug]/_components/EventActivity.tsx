@@ -15,11 +15,13 @@ import ProfileLinkSkeleton from '@/components/ProfileLinkSkeleton'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
-import { MICRO_UNIT } from '@/lib/constants'
+import { MICRO_UNIT, ORDER_SIDE } from '@/lib/constants'
 import { EVENT_ACTIVITY_PAGE_SIZE, fetchEventTrades } from '@/lib/data-api/trades'
 import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro } from '@/lib/formatters'
 import { POLYGON_SCAN_BASE } from '@/lib/network'
 import { cn } from '@/lib/utils'
+import { useOrder } from '@/stores/useOrder'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 interface EventActivityProps {
   event: Event
@@ -276,7 +278,7 @@ export default function EventActivity({ event }: EventActivityProps) {
             <SelectValue placeholder={t('Min Amount:')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">{t('None')}</SelectItem>
+            <SelectItem value="none">{t('Nenhum')}</SelectItem>
             <SelectItem value="10">R$10</SelectItem>
             <SelectItem value="100">R$100</SelectItem>
             <SelectItem value="1000">R$1,000</SelectItem>
@@ -379,9 +381,33 @@ export default function EventActivity({ event }: EventActivityProps) {
                       </div>
                     )}
                     inlineContent={(
-                      <>
+                      <div 
+                        className="cursor-pointer hover:bg-muted/30 transition-all rounded-sm p-0.5"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          
+                          // Adicionando sincronização com a store de ordens
+                          const targetMarket = (event.markets ?? []).find(m => m.condition_id === activity.market.condition_id);
+                          if (targetMarket) {
+                            const useOrderStore = useOrder.getState();
+                            useOrderStore.setMarket(targetMarket);
+                            const targetOutcome = targetMarket.outcomes.find(o => o.token_id === activity.outcome.token_id) || targetMarket.outcomes[0];
+                            if (targetOutcome) {
+                               useOrderStore.setOutcome(targetOutcome);
+                            }
+                            useOrderStore.setSide(activity.side === 'buy' ? ORDER_SIDE.BUY : ORDER_SIDE.SELL);
+                            
+                            if (isMobile) {
+                               useOrderStore.setIsMobileOrderPanelOpen(true);
+                            } else {
+                               setTimeout(() => useOrderStore.inputRef?.current?.focus(), 100);
+                            }
+                          }
+                        }}
+                      >
                         <span className="text-foreground">
-                          {activity.side === 'buy' ? t('bought') : t('sold')}
+                          {activity.side === 'buy' ? 'comprou' : 'vendeu'}
                           {' '}
                         </span>
                         <span className={cn('font-semibold', outcomeColorClass)}>
@@ -392,7 +418,7 @@ export default function EventActivity({ event }: EventActivityProps) {
                           {' '}
                         </span>
                         <span className="text-foreground">
-                          {t('at')}
+                          {'por'}
                           {' '}
                         </span>
                         <span className="font-semibold text-foreground">
@@ -404,7 +430,7 @@ export default function EventActivity({ event }: EventActivityProps) {
                           {valueLabel}
                           )
                         </span>
-                      </>
+                      </div>
                     )}
                   />
                 </div>

@@ -15,6 +15,7 @@ import { db } from '@/lib/drizzle'
 import { eq } from 'drizzle-orm'
 import { events, markets, conditions } from '@/lib/db/schema/events/tables'
 import { syncSingleMarketAction } from '@/app/[locale]/admin/mercado-hype/_actions/sync-odds'
+import { isLivePoolMarketType, resolveMarketTypeFromSlug } from '@/lib/market-type'
 
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/event/[slug]'>): Promise<Metadata> {
@@ -32,7 +33,8 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/event/[s
 
 // Componente dinâmico que faz o db.select (roda só em runtime, nunca no build)
 async function LiveSyncContent({ slug }: { slug: string }) {
-  if (slug.includes('poly-')) {
+  const marketType = resolveMarketTypeFromSlug(slug)
+  if (!isLivePoolMarketType(marketType) && slug.includes('poly-')) {
     try {
       const match = await db.select()
         .from(conditions)

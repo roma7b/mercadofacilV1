@@ -30,6 +30,7 @@ const updateDraftSchema = z.object({
   binaryOutcomeNo: z.string().trim().max(120).optional().nullable(),
   resolutionSource: z.string().trim().max(1000).optional().nullable(),
   resolutionRules: z.string().trim().max(10_000).optional().nullable(),
+  marketType: z.enum(['clob', 'livePool']).optional().nullable(),
 })
 
 interface EventCreationDraftRouteProps {
@@ -135,6 +136,9 @@ export async function PATCH(request: NextRequest, { params }: EventCreationDraft
         : undefined,
       resolutionRules: hasOwnField(parsed.data, 'resolutionRules')
         ? (parsed.data.resolutionRules ?? null)
+        : undefined,
+      marketType: hasOwnField(parsed.data, 'marketType')
+        ? (parsed.data.marketType ?? null)
         : undefined,
     })
 

@@ -13,6 +13,8 @@ export const mercadosLive = pgTable('mercados_live', {
   vencedor_label: text('vencedor_label'),
   total_sim: numeric('total_sim', { precision: 20, scale: 6 }).default('0'),
   total_nao: numeric('total_nao', { precision: 20, scale: 6 }).default('0'),
+  volume: numeric('volume', { precision: 20, scale: 6 }).default('0'),
+  volume_24h: numeric('volume_24h', { precision: 20, scale: 6 }).default('0'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })
@@ -20,7 +22,7 @@ export const mercadosLive = pgTable('mercados_live', {
 export const mercadoBets = pgTable('bets', {
   id: uuid('id').primaryKey().defaultRandom(),
   user_id: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  live_id: text('live_id').references(() => mercadosLive.id), // Link com o mercado Mercado Fácil
+  live_id: text('live_id').references(() => mercadosLive.id, { onDelete: 'cascade' }), // Link com o mercado Mercado Fácil
   market_id: text('market_id'), // Link opcional com mercado Web3
   opcao: text('opcao').notNull(), // 'SIM' | 'NAO'
   valor: numeric('valor', { precision: 20, scale: 6 }).notNull(),

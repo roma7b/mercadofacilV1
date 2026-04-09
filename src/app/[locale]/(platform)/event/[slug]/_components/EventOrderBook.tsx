@@ -405,13 +405,13 @@ export default function EventOrderBook({
             </Tooltip>
           </div>
           <div className="flex h-full items-center justify-center">
-            <span className="inline-flex -translate-y-px">{t('Price')}</span>
+            <span className="inline-flex -translate-y-px">Preço</span>
           </div>
           <div className="flex h-full items-center justify-center">
-            <span className="inline-flex -translate-y-px">{t('Shares')}</span>
+            <span className="inline-flex -translate-y-px">Ações</span>
           </div>
           <div className="flex h-full items-center justify-center">
-            <span className="inline-flex -translate-y-px">{t('Total')}</span>
+            <span className="inline-flex -translate-y-px">Total</span>
           </div>
         </div>
 
@@ -450,12 +450,12 @@ export default function EventOrderBook({
           role="presentation"
         >
           <div className="flex h-full cursor-pointer items-center">
-            {t('Last')}
+            Último
             :&nbsp;
             {lastPrice == null ? '--' : formatDisplayedPrice(lastPrice)}
           </div>
           <div className="flex h-full cursor-pointer items-center justify-center">
-            {t('Spread')}
+            Spread
             :&nbsp;
             {formatOrderBookPrice(spread)}
           </div>

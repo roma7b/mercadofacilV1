@@ -173,7 +173,7 @@ export default function EventRules({ event, mode = 'accordion', showEndDate = fa
     })
   }
 
-  const primaryMarket = event.markets[0]
+  const primaryMarket = event.markets?.[0]
   const proposeTarget = resolveUmaProposeTarget(primaryMarket?.condition, siteIdentity.name)
   const resolverAddress = proposeTarget?.isMirror
     ? primaryMarket?.resolver

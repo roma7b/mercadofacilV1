@@ -33,6 +33,7 @@ export interface Event {
   active_markets_count: number
   total_markets_count: number
   volume: number
+  volume_24h: number
   start_date?: string | null
   end_date: string | null
   resolved_at?: string | null
@@ -46,6 +47,7 @@ export interface Event {
     isMainCategory: boolean
   }[]
   main_tag: string
+  market_type?: 'clob' | 'livePool'
   is_bookmarked: boolean
   is_trending: boolean
   chance?: number
@@ -173,6 +175,7 @@ interface Condition {
   resolution_liveness_seconds?: number | null
   resolution_deadline_at?: string | null
   volume: number
+  volume_24h: number
   open_interest: number
   active_positions_count: number
   created_at: string

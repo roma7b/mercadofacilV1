@@ -90,6 +90,8 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: {
+        market_type: 'livePool',
+        engine: 'pool',
         id: row.id,
         titulo: row.titulo,
         status: row.status,

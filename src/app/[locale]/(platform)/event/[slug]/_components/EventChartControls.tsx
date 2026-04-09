@@ -91,23 +91,29 @@ export default function EventChartControls({
       <div
         className="flex flex-wrap items-center justify-start gap-1 text-xs font-semibold"
       >
-        {timeRanges.map(range => (
-          <button
-            key={range}
-            type="button"
-            className={cn(
-              'relative px-2 py-1 transition-colors',
-              activeTimeRange === range
-                ? 'text-foreground'
-                : 'text-muted-foreground',
-            )}
-            data-range={range}
-            onClick={() => onTimeRangeChange(range)}
-            aria-pressed={activeTimeRange === range}
-          >
-            {range}
-          </button>
-        ))}
+        {(timeRanges as any).map((range: any) => {
+          const isObject = typeof range === 'object' && range !== null
+          const label = isObject ? range.label : range
+          const value = isObject ? range.value : range
+          
+          return (
+            <button
+              key={value}
+              type="button"
+              className={cn(
+                'relative px-2 py-1 transition-colors',
+                activeTimeRange === value
+                  ? 'text-foreground'
+                  : 'text-muted-foreground',
+              )}
+              data-range={value}
+              onClick={() => onTimeRangeChange(value)}
+              aria-pressed={activeTimeRange === value}
+            >
+              {label}
+            </button>
+          )
+        })}
       </div>
 
       {hasMarketSelector && (

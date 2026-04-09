@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       is_hidden: eventData.publishStatus === 'draft',
       creator: currentUser.wallet_address || null,
       icon_url: eventData.image_url || null,
+      market_type: eventData.marketType || 'clob',
     }).returning()
 
     if (!insertedEvent) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { authClient } from '@/lib/auth-client'
 import { useBalance } from '@/hooks/useBalance'
 
@@ -27,6 +27,8 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
   const [valor, setValor] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [feedback, setFeedback] = useState<{ tipo: 'sucesso' | 'erro'; mensagem: string } | null>(null)
+  const [isOptionPickerOpen, setIsOptionPickerOpen] = useState(false)
+  const [optionSearch, setOptionSearch] = useState('')
   const { data: session } = useSession()
   const { refetchBalance } = useBalance()
 
@@ -85,6 +87,14 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
     multiplicadorPreview = Math.min(Math.max(multiplicadorPreview, 1.01), 100)
   }
   const ganhoEstimado = valorNum > 0 ? valorNum * multiplicadorPreview : 0
+  const selectedOptionLabel = optionsEntries.find(option => option.key === opcaoSelecionada)?.label ?? '—'
+  const filteredOptions = useMemo(() => {
+    const normalizedQuery = optionSearch.trim().toLowerCase()
+    if (!normalizedQuery) {
+      return optionsEntries
+    }
+    return optionsEntries.filter(option => option.label.toLowerCase().includes(normalizedQuery))
+  }, [optionSearch, optionsEntries])
 
   async function handleApostar() {
     if (!opcaoSelecionada || valorNum <= 0) {
@@ -144,7 +154,8 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
     : '—'
 
   return (
-    <div className="flex flex-col gap-5 rounded-2xl border border-white/5 bg-[#0b0f1a]/80 p-6 text-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500">
+    <>
+      <div className="flex flex-col gap-5 rounded-2xl border border-white/5 bg-[#0b0f1a]/80 p-6 text-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500">
       {/* Header do Terminal */}
       <div className="flex items-center justify-between border-b border-white/5 pb-4">
         <div className="flex items-center gap-2">
@@ -173,6 +184,11 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
             )
           : (
               <>
+                <div className="rounded-xl border border-sky-400/20 bg-sky-500/5 px-4 py-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-sky-300/80">Como funciona</p>
+                  <p className="mt-1 text-xs text-white/80">1) Escolha uma opção  2) Defina o valor  3) Confirme sua aposta</p>
+                </div>
+
                 {/* Mostrador de Chance e Liquidez Centralizado */}
                 <div className="relative flex flex-col items-center justify-center p-6 rounded-2xl bg-gradient-to-b from-white/5 to-transparent border border-white/5 overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
@@ -201,44 +217,38 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
                   </div>
                 </div>
 
-                {/* Seleção de Opções com Layout Premium */}
+                {/* Seleção de Opções */}
                 <div className="space-y-3">
                   <label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Escolha sua Posição</label>
-                  <div className={`grid gap-3 ${optionsEntries.length > 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    {optionsEntries.map((opt) => {
-                      const isSelected = opcaoSelecionada === opt.key
-                      const isFirst = opt.key.toLowerCase().includes('sim') || opt.key === 'op_0' || opt.key === 'SIM'
-                      const chance = isFirst ? chanceSim : (opt.key === 'nao' || opt.key === 'NAO' || opt.key === 'op_1' ? chanceNao : '--')
-
-                      return (
-                        <button
-                          key={opt.key}
-                          type="button"
-                          onClick={() => setOpcaoSelecionada(opt.key)}
-                          className={`
-                            group relative overflow-hidden flex flex-col items-center justify-center py-4 rounded-xl border transition-all duration-300
-                            ${isSelected
-                            ? isFirst
-                              ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 scale-[1.02] shadow-[0_0_30px_rgba(16,185,129,0.2)]'
-                              : 'border-rose-500 bg-rose-500/20 text-rose-400 scale-[1.02] shadow-[0_0_30px_rgba(244,63,94,0.2)]'
-                            : 'border-white/5 bg-white/5 text-white/40 hover:border-white/20 hover:bg-white/10 hover:text-white/80'}
-                          `}
-                        >
-                          {/* Efeito de Gloss ao selecionar */}
-                          {isSelected && <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />}
-                          
-                          <span className="text-sm font-black uppercase tracking-widest relative z-10">{opt.label}</span>
-                          <span className="mt-1 text-[10px] font-mono font-bold opacity-60 relative z-10">
-                            {chance}% CHANCE
-                          </span>
-                        </button>
-                      )
-                    })}
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/35">Selecionado</p>
+                        <p className="truncate text-sm font-bold text-white">{selectedOptionLabel}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOptionSearch('')
+                          setIsOptionPickerOpen(true)
+                        }}
+                        className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white/80 transition-colors hover:bg-white/15"
+                      >
+                        Escolher
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Bloco de Aposta */}
                 <div className="space-y-4 pt-2">
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Passo atual</p>
+                    <p className="mt-1 text-sm font-semibold text-white">
+                      {opcaoSelecionada ? `Comprar ${selectedOptionLabel}` : 'Selecione uma opção para continuar'}
+                    </p>
+                  </div>
+
                   <div className="flex flex-col gap-3">
                     <div className="flex justify-between items-end px-1">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Valor para Investir</label>
@@ -336,7 +346,7 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
                           </span>
                         )
                       : opcaoSelecionada
-                        ? `Executar Aposta`
+                        ? `Confirmar Aposta`
                         : 'Selecione uma Opção'}
                   </button>
                 </div>
@@ -354,7 +364,62 @@ export default function PainelApostas({ marketId }: PainelApostasProps) {
                 </div>
               </>
             )}
-    </div>
+      </div>
+      {isOptionPickerOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#0b0f1a] p-4 shadow-2xl">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-black uppercase tracking-widest text-white/85">Escolher opção</h3>
+            <button
+              type="button"
+              onClick={() => setIsOptionPickerOpen(false)}
+              className="rounded-md border border-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white"
+            >
+              Fechar
+            </button>
+          </div>
+          <input
+            type="text"
+            value={optionSearch}
+            onChange={event => setOptionSearch(event.target.value)}
+            placeholder="Buscar nome..."
+            className="mb-3 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-white/30 focus:border-emerald-500/50"
+          />
+          <div className="max-h-[50vh] space-y-2 overflow-y-auto pr-1">
+            {filteredOptions.map((opt) => {
+              const isSelected = opcaoSelecionada === opt.key
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => {
+                    setOpcaoSelecionada(opt.key)
+                    setIsOptionPickerOpen(false)
+                  }}
+                  className={`
+                    flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-colors
+                    ${isSelected
+                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
+                      : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'}
+                  `}
+                >
+                  <span className="truncate pr-3 text-sm font-semibold">{opt.label}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                    {isSelected ? 'Selecionado' : 'Escolher'}
+                  </span>
+                </button>
+              )
+            })}
+            {filteredOptions.length === 0 && (
+              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-4 text-center text-xs text-white/50">
+                Nenhuma opção encontrada.
+              </div>
+            )}
+          </div>
+        </div>
+        </div>
+      )}
+    </>
   )
 }
 

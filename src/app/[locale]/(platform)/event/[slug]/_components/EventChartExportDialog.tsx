@@ -117,7 +117,7 @@ function sanitizeTsvValue(value: string) {
 
 function buildMarketTarget(market: Market): MarketTarget | null {
   const yesOutcome = market.outcomes.find(outcome => outcome.outcome_index === OUTCOME_INDEX.YES)
-    ?? market.outcomes[0]
+    ?? market?.outcomes?.[0]
   if (!yesOutcome?.token_id) {
     return null
   }
@@ -188,7 +188,7 @@ function buildCsvContent(
       })
     }
     else {
-      const value = lastKnown.get(targets[0]?.conditionId ?? '')
+      const value = lastKnown.get(targets?.[0]?.conditionId ?? '')
       row.push(value == null ? '-' : String(value))
     }
     rows.push(row)

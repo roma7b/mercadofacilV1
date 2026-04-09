@@ -21,6 +21,8 @@ export type MarketQuotesByMarket = Record<string, MarketQuote>
 
 const PRICE_REFRESH_INTERVAL_MS = 60_000
 const CLOB_BASE_URL = process.env.CLOB_URL
+// Proxy local para evitar CORS com clob.polymarket.com
+const CLOB_PROXY_URL = '/api/clob'
 
 function normalizePrice(value: string | number | undefined | null) {
   return normalizeClobMarketPrice(value)
@@ -42,22 +44,18 @@ function resolveQuote(
 }
 
 async function fetchMidpointByToken(tokenId: string): Promise<number | null> {
-  if (!CLOB_BASE_URL) {
-    return null
-  }
-
+  // Usa sempre o proxy local para evitar CORS com clob.polymarket.com
   try {
-    const response = await fetch(`${CLOB_BASE_URL}/midpoint?token_id=${encodeURIComponent(tokenId)}`)
-    if (!response.ok) {
-      return null
+    const response = await fetch(`/api/clob/midpoint?token_id=${encodeURIComponent(tokenId)}`)
+    if (response.ok) {
+      const payload = await response.json() as MidpointApiResponse
+      return normalizePrice(payload?.mid)
     }
-
-    const payload = await response.json() as MidpointApiResponse
-    return normalizePrice(payload?.mid)
   }
   catch {
-    return null
+    // silencioso
   }
+  return null
 }
 
 async function fetchQuotesByMarket(targets: MarketTokenTarget[]): Promise<MarketQuotesByMarket> {
@@ -69,49 +67,50 @@ async function fetchQuotesByMarket(targets: MarketTokenTarget[]): Promise<Market
     return {}
   }
 
-  if (!CLOB_BASE_URL) {
-    throw new Error('CLOB URL is not configured.')
+  // Usa sempre o proxy /api/clob para evitar CORS
+  try {
+    const response = await fetch('/api/clob/prices', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(uniqueTokenIds.map(tokenId => ({ token_id: tokenId }))),
+    })
+
+    if (!response.ok) {
+      console.warn(`[MarketQuotes] /api/clob/prices responded ${response.status}`)
+      return {}
+    }
+
+    const data = await response.json() as PriceApiResponse
+    const midpointResults = await Promise.allSettled(
+      uniqueTokenIds.map(tokenId => fetchMidpointByToken(tokenId)),
+    )
+    const quotesByToken = new Map<string, MarketQuote>()
+    const midpointByToken = new Map<string, number | null>()
+
+    midpointResults.forEach((result, index) => {
+      const tokenId = uniqueTokenIds[index]
+      midpointByToken.set(tokenId, result.status === 'fulfilled' ? result.value : null)
+    })
+
+    uniqueTokenIds.forEach((tokenId) => {
+      quotesByToken.set(tokenId, resolveQuote(data?.[tokenId], midpointByToken.get(tokenId) ?? null))
+    })
+
+    return targets.reduce<MarketQuotesByMarket>((acc, target) => {
+      const quote = quotesByToken.get(target.tokenId)
+      if (quote) {
+        acc[target.conditionId] = quote
+      }
+      return acc
+    }, {})
   }
-
-  const response = await fetch(`${CLOB_BASE_URL}/prices`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(uniqueTokenIds.map(tokenId => ({ token_id: tokenId }))),
-  })
-
-  if (!response.ok) {
-    const message = `Failed to fetch market quotes (${response.status} ${response.statusText}).`
-    console.warn(message)
-    // Fall back to empty rather than throwing to avoid crashing the view for custom or unlisted markets
+  catch (err) {
+    console.warn('[MarketQuotes] Fetch failed:', err)
     return {}
   }
-
-  const [data, midpointResults] = await Promise.all([
-    response.json() as Promise<PriceApiResponse>,
-    Promise.allSettled(uniqueTokenIds.map(tokenId => fetchMidpointByToken(tokenId))),
-  ])
-  const quotesByToken = new Map<string, MarketQuote>()
-  const midpointByToken = new Map<string, number | null>()
-
-  midpointResults.forEach((result, index) => {
-    const tokenId = uniqueTokenIds[index]
-    midpointByToken.set(tokenId, result.status === 'fulfilled' ? result.value : null)
-  })
-
-  uniqueTokenIds.forEach((tokenId) => {
-    quotesByToken.set(tokenId, resolveQuote(data?.[tokenId], midpointByToken.get(tokenId) ?? null))
-  })
-
-  return targets.reduce<MarketQuotesByMarket>((acc, target) => {
-    const quote = quotesByToken.get(target.tokenId)
-    if (quote) {
-      acc[target.conditionId] = quote
-    }
-    return acc
-  }, {})
 }
 
 export function useEventMarketQuotes(targets: MarketTokenTarget[]) {

@@ -96,7 +96,12 @@ export async function listHomeEventsPage({
 
   if (targetOffset === 0 && (tag === 'trending' || tag === 'all' || !tag)) {
     const liveEvents = await MercadoFacilRepository.listLiveEvents()
-    visibleEvents = [...liveEvents, ...visibleEvents]
+    
+    // Deduplicar: Se o ID já estiver nos liveEvents, não incluímos a versão do Engine padrão
+    const liveIds = new Set(liveEvents.map(e => e.id))
+    const filteredStandardEvents = visibleEvents.filter(e => !liveIds.has(e.id))
+    
+    visibleEvents = [...liveEvents, ...filteredStandardEvents]
   }
 
   console.log('--- RETURN DA HOME: ---', visibleEvents.length, 'events');

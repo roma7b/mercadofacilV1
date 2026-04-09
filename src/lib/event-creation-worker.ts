@@ -42,6 +42,7 @@ export interface EventCreationPreparePayload {
   options?: PreparePayloadOption[]
   resolutionSource: string
   resolutionRules: string
+  marketType: 'clob' | 'livePool' | null
   sports?: ReturnType<typeof buildAdminSportsDerivedContent>['payload']
 }
 
@@ -258,6 +259,7 @@ export function buildEventCreationPreparePayload(input: {
     marketMode: isSports ? 'multi_multiple' : marketMode,
     resolutionSource,
     resolutionRules,
+    marketType: record.marketType,
   }
 
   if (isSports) {

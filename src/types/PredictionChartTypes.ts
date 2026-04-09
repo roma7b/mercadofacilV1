@@ -81,6 +81,7 @@ export interface PredictionChartProps {
   showAreaFill?: boolean
   areaFillTopOpacity?: number
   areaFillBottomOpacity?: number
+  showVolumeBars?: boolean
   tooltipValueFormatter?: (value: number) => string
   tooltipDateFormatter?: (value: Date) => string
   showTooltipSeriesLabels?: boolean

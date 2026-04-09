@@ -39,11 +39,11 @@ export default function EventOrderPanelSubmitButton({
           ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                <span>{t('Processing...')}</span>
+                <span>Processando...</span>
               </div>
             )
           : (
-              <span>{label ?? t('Trade')}</span>
+              <span>{label ?? 'Apostar'}</span>
             )}
       </Button>
     </div>

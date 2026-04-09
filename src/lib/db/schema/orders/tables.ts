@@ -30,7 +30,7 @@ export const orders = pgTable('orders', {
   // end blockchain data
 
   user_id: text().notNull().references(() => users.id, { onDelete: 'cascade' }),
-  condition_id: text().notNull().references(() => conditions.id),
+  condition_id: text().notNull().references(() => conditions.id, { onDelete: 'cascade' }),
   type: text().notNull(),
   clob_order_id: text().notNull(),
   affiliate_user_id: text().references(() => users.id),

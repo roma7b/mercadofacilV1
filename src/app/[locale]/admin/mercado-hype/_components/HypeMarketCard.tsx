@@ -101,18 +101,21 @@ export default function HypeMarketCard({ market }: HypeMarketCardProps) {
   const handleImport = async () => {
     setImporting(true)
     try {
-      const outcomesMapped = outcomesToUse.map((text: string, idx: number) => ({
-        text: String(text || ''),
-        price: Number(market.outcomePrices?.[idx]) || 0
+      const outcomesMapped = outcomesToUse.map((label: string, idx: number) => ({
+        text: label,
+        price: market.outcomePrices?.[idx] || '0.5',
+        tokenId: market.outcomesTokens?.[idx] || `${market.id}-${idx}`,
       }))
 
       const res = await importExternalMarket({
         polyId: market.id,
-        titulo: translated?.question || market.question || 'Sem título',
-        descricao: translated?.description || market.description || '',
-        volumeUSD: volumeValue,
+        title: translated?.question || market.question || 'Sem título',
+        description: translated?.description || market.description || '',
+        image: market.image || '',
+        volume: String(market.volume || '0'),
+        volume_24h: String(market.volume_24h || '0'),
         outcomes: outcomesMapped,
-        imageUrl: market.image || ''
+        endDate: market.endDate || null
       })
       if (res.success) {
         if (res.alreadyExists) {
@@ -170,6 +173,11 @@ export default function HypeMarketCard({ market }: HypeMarketCardProps) {
             </h3>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-[9px] text-zinc-500 font-black uppercase tracking-[0.2em] bg-white/5 px-2 py-0.5 rounded">Polymarket Live</span>
+              {market.endDate && (
+                <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest border-l border-zinc-700 pl-2">
+                  Até {new Date(market.endDate).toLocaleDateString()}
+                </span>
+              )}
             </div>
           </div>
         </div>

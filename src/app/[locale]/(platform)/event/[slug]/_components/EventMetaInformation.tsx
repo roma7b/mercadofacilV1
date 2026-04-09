@@ -6,7 +6,7 @@ import { CheckIcon, Clock3Icon, PlusIcon, SparkleIcon, TrophyIcon } from 'lucide
 import { useExtracted } from 'next-intl'
 import { useMemo } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatDate } from '@/lib/formatters'
+import { formatDate, formatVolume } from '@/lib/formatters'
 import { isMarketNew } from '@/lib/utils'
 
 interface EventMetaInformationProps {
@@ -91,13 +91,8 @@ export default function EventMetaInformation({ event, currentTimestamp }: EventM
     'This is estimated end date.<br></br>See rules below for specific resolution details.',
     { br: () => ' ' },
   )
-  const formattedVolume = Number.isFinite(resolvedVolume)
-    ? (resolvedVolume || 0).toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    : '0.00'
-  const volumeLabel = t('{amount} Vol.', { amount: `$${formattedVolume}` })
+  const formattedVolume = formatVolume(resolvedVolume)
+  const volumeLabel = t('{amount} Vol.', { amount: formattedVolume })
 
   const maybeEndDate = event.end_date ? new Date(event.end_date) : null
   const expiryDate = maybeEndDate && !Number.isNaN(maybeEndDate.getTime()) ? maybeEndDate : null

@@ -59,7 +59,7 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
     else if (orderState.market && !selectedMarket) {
       queueMicrotask(() => setSelectedMarket(orderState.market!.condition_id))
     }
-    else if (!selectedMarket && event.markets.length > 0) {
+    else if (event.markets?.length > 0 && !selectedMarket) {
       queueMicrotask(() => setSelectedMarket(event.markets[0].condition_id))
     }
   }, [isSingleMarket, orderState.market, selectedMarket, event.markets])
@@ -87,7 +87,7 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
     const market = event.markets.find(m => m.condition_id === conditionId)
     if (market) {
       orderState.setMarket(market)
-      if (market.outcomes.length > 0) {
+      if (market && market.outcomes?.length > 0) {
         orderState.setOutcome(market.outcomes[0])
       }
     }

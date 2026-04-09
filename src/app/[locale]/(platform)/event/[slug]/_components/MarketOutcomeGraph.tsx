@@ -123,7 +123,7 @@ export default function MarketOutcomeGraph({
       : buildChartData(normalizedHistory, market.condition_id, activeOutcomeIndex)),
     [normalizedHistory, market.condition_id, activeOutcomeIndex, showBothOutcomes],
   )
-  const leadingGapStart = normalizedHistory[0]?.date ?? null
+  const leadingGapStart = normalizedHistory?.[0]?.date ?? null
 
   const series = useMemo(
     () => (showBothOutcomes

@@ -107,6 +107,7 @@ export const events = pgTable(
     start_date: timestamp({ withTimezone: true }),
     end_date: timestamp({ withTimezone: true }),
     resolved_at: timestamp({ withTimezone: true }),
+    market_type: text().$type<'clob' | 'livePool'>(),
   },
 )
 
@@ -215,6 +216,7 @@ export const event_creations = pgTable(
     pending_confirmed_txs: jsonb().$type<Record<string, unknown>[] | null>(),
     last_run_at: timestamp({ withTimezone: true }),
     last_error: text(),
+    market_type: text().$type<'clob' | 'livePool'>(),
     created_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updated_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },

@@ -43,6 +43,7 @@ import {
   resolveCanonicalSportsSportSlug,
   resolveSportsSportSlugQueryCandidates,
 } from '@/lib/sports-slug-mapping'
+import { resolveMarketType } from '@/lib/market-type'
 import { getPublicAssetUrl } from '@/lib/storage'
 
 type PriceApiResponse = Record<string, { BUY?: string, SELL?: string } | undefined>
@@ -941,6 +942,7 @@ function eventResource(
     main_tag: getEventMainTag(tagRecords),
     is_bookmarked: event.bookmarks?.some(bookmark => bookmark.user_id === userId) || false,
     is_trending: isTrending,
+    market_type: event.market_type || resolveMarketType(event),
   }
 }
 
@@ -1714,6 +1716,7 @@ export const EventRepository = {
         series_slug: events.series_slug,
         series_recurrence: events.series_recurrence,
         end_date: events.end_date,
+        market_type: events.market_type,
         created_at: events.created_at,
         updated_at: events.updated_at,
       })
@@ -1949,6 +1952,7 @@ export const EventRepository = {
           && sportsTagState?.hasGamesTag
           && moneylineEventIds.has(row.id),
         ),
+        market_type: row.market_type ?? 'clob',
         end_date: endDate && !Number.isNaN(endDate.getTime()) ? endDate.toISOString() : null,
         created_at: Number.isNaN(createdAt.getTime()) ? new Date().toISOString() : createdAt.toISOString(),
         updated_at: Number.isNaN(updatedAt.getTime()) ? new Date().toISOString() : updatedAt.toISOString(),
@@ -2524,141 +2528,47 @@ export const EventRepository = {
 
   async getEventBySlug(
     slug: string,
-  ): Promise<QueryResult<Event>> {
+    userId: string = '',
+    locale: SupportedLocale = DEFAULT_LOCALE,
+  ): Promise<QueryResult<Event | null>> {
     return runQuery(async () => {
-      // 1. Busca os dados brutos via Drizzle com inner join (Bypass RLS)
-      // Usa or() para suportar o slug ou o id do evento (fallback de URL quebrada)
-      const rows = await db
-        .select({
-          eventId: events.id,
-          eventSlug: events.slug,
-          eventTitle: events.title,
-          eventStatus: events.status,
-          eventRules: events.rules,
-          eventIconUrl: events.icon_url,
-          eventEndDate: events.end_date,
-          eventCreatedAt: events.created_at,
-          eventUpdatedAt: events.updated_at,
-          marketConditionId: markets.condition_id,
-          marketSlug: markets.slug,
-          marketTitle: markets.title,
-          marketIsActive: markets.is_active,
-          marketIsResolved: markets.is_resolved,
-          marketVolume: markets.volume,
-          outcomeTokenId: outcomes.token_id,
-          outcomeText: outcomes.outcome_text,
-          outcomeIndex: outcomes.outcome_index,
-        })
-        .from(events)
-        .leftJoin(markets, eq(markets.event_id, events.id))
-        .leftJoin(outcomes, eq(outcomes.condition_id, markets.condition_id))
-        .where(or(eq(events.slug, slug), eq(events.id, slug)))
+      const sportsSlugResolver = await getSportsSlugResolverFromDb()
 
-      if (!rows || rows.length === 0) {
-        return { data: null, error: 'Event not found' }
+      // 1. Tentar buscar na tabela de Eventos Padrão (Drizzle)
+      const trimmedSlug = slug.trim()
+      const eventResult = await db.query.events.findFirst({
+        where: or(eq(events.slug, trimmedSlug), eq(sql`TRIM(${events.id})`, trimmedSlug)),
+        with: {
+          eventTags: { with: { tag: true } },
+          markets: {
+            with: {
+              condition: { with: { outcomes: true } },
+            },
+          },
+        },
+      })
+
+      if (eventResult) {
+        const event = await buildEventResource(
+          eventResult as any,
+          userId,
+          sportsSlugResolver,
+          locale
+        )
+        return { data: event, error: null }
       }
 
-      // 2. Transforma os dados lidos (rows múltiplas) em um único objeto de Evento
-      const e = { ...rows[0] }
-      
-      const event: Event = {
-        id: e.eventId,
-        slug: e.eventSlug || e.eventId,
-        title: e.eventTitle || '—',
-        description: e.eventRules || e.eventTitle || '—',
-        status: e.eventStatus === 'active' ? 'active' : 'resolved',
-        icon_url: e.eventIconUrl || 'https://cdn-icons-png.flaticon.com/512/2965/2965395.png',
-        volume: 0,
-        active_markets_count: 1,
-        total_markets_count: 1,
-        created_at: e.eventCreatedAt?.toISOString() ?? new Date().toISOString(),
-        updated_at: e.eventUpdatedAt?.toISOString() ?? new Date().toISOString(),
-        end_date: e.eventEndDate?.toISOString() ?? null,
-        main_tag: null,
-        tags: [],
-        markets: [] as any[],
-        chance: 0.5,
-      } as any
+      // 2. Fallback: Tentar buscar no Mercado Fácil
+      // Removemos o prefixo 'live_' se existir para o ID real
+      const cleanId = trimmedSlug.replace(/^live_/, '')
+      const { MercadoFacilRepository } = await import('@/lib/db/queries/mercado-facil')
+      const liveEvent = await MercadoFacilRepository.getEventById(cleanId)
 
-      // Agrupa mercados
-      const marketMap = new Map<string, any>()
-      
-      for (const row of rows) {
-        if (!row.marketConditionId) continue
-
-        if (!marketMap.has(row.marketConditionId)) {
-          const isMarketActive = row.marketIsActive && !row.marketIsResolved
-          marketMap.set(row.marketConditionId, {
-            id: row.marketConditionId,
-            slug: row.marketSlug || row.marketConditionId,
-            title: row.marketTitle || e.eventTitle || '—',
-            condition_id: row.marketConditionId,
-            question_id: row.marketConditionId,
-            event_id: e.eventId,
-            status: isMarketActive ? 'active' : 'resolved',
-            is_active: Boolean(row.marketIsActive),
-            is_resolved: Boolean(row.marketIsResolved),
-            volume: Number(row.marketVolume) || 0,
-            volume_24h: 0,
-            price: 0.5,
-            probability: 0.5,
-            outcomes: [],
-            condition: {
-              id: row.marketConditionId,
-              oracle: 'Mercado Fácil AI',
-              question_id: row.marketConditionId,
-              outcome_slot_count: 2,
-              resolved: Boolean(row.marketIsResolved),
-              volume: Number(row.marketVolume) || 0,
-              open_interest: 0,
-              active_positions_count: 0,
-            }
-          })
-        }
-
-        const market = marketMap.get(row.marketConditionId)
-        if (row.outcomeTokenId) {
-          market.outcomes.push({
-            id: row.outcomeTokenId,
-            condition_id: row.marketConditionId,
-            name: row.outcomeText || `Outcome ${row.outcomeIndex}`,
-            outcome_text: row.outcomeText || `Outcome ${row.outcomeIndex}`,
-            outcome_index: Number(row.outcomeIndex) || 0,
-            token_id: row.outcomeTokenId,
-            price: 0.5,
-            probability: 0.5,
-            price_24h_ago: 0.5,
-            is_winning_outcome: false,
-          })
-        }
+      if (liveEvent) {
+        return { data: liveEvent as any, error: null }
       }
 
-      event.markets = Array.from(marketMap.values())
-
-      if (event.markets.length === 0) {
-        event.markets.push({
-          id: e.eventId,
-          slug: e.eventId,
-          title: event.title,
-          status: event.status,
-          is_resolved: event.status !== 'active',
-          volume: 0,
-          outcomes: [
-            { id: `yes-${e.eventId}`, outcome_text: 'Sim', outcome_index: 0, price: 0.5, price_24h_ago: 0.5 },
-            { id: `no-${e.eventId}`, outcome_text: 'Não', outcome_index: 1, price: 0.5, price_24h_ago: 0.5 },
-          ],
-        } as any)
-      } else {
-        const totalVolume = event.markets.reduce((acc: number, m: any) => acc + (m.volume || 0), 0)
-        event.volume = totalVolume
-
-        const firstSim = event.markets[0].outcomes?.find((o: any) => o.outcome_text === 'Sim' || o.outcome_index === 0)
-        if (firstSim) {
-          event.chance = firstSim.probability || 0.5
-        }
-      }
-
-      return { data: event, error: null }
+      return { data: null, error: null }
     })
   },
 

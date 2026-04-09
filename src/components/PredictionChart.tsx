@@ -191,6 +191,7 @@ export function PredictionChart({
   showAreaFill = false,
   areaFillTopOpacity = 0.16,
   areaFillBottomOpacity = 0,
+  showVolumeBars = false,
   tooltipValueFormatter,
   tooltipDateFormatter,
   showTooltipSeriesLabels = true,
@@ -323,6 +324,26 @@ export function PredictionChart({
     }
     return defaultYAxisTicks
   }, [defaultYAxisTicks, yAxis?.ticks])
+
+  const maxVolume = useMemo(() => {
+    if (!showVolumeBars || !data.length) return 0
+    let maxV = 0
+    data.forEach(d => {
+      series.forEach(s => {
+        const v = d[`${s.key}-volume`] as number
+        if (v > maxV) maxV = v
+      })
+    })
+    return maxV
+  }, [showVolumeBars, data, series])
+
+  const volumeScale = useMemo(() => {
+    if (!showVolumeBars) return null
+    return scaleLinear<number>({
+      range: [0, plotHeight * 0.2], // volume bars take 20% of height
+      domain: [0, maxVolume * 1.1 || 1],
+    })
+  }, [showVolumeBars, plotHeight, maxVolume])
   const domainBounds = useMemo(() => {
     const explicitStart = toDomainTimestamp(xDomain?.start)
     const explicitEnd = toDomainTimestamp(xDomain?.end)
@@ -1458,6 +1479,33 @@ export function PredictionChart({
                 opacity={resolvedGridLineOpacity}
               />
             ))}
+
+            {showVolumeBars && volumeScale && (
+              <Group>
+                {data.map((d, i) => {
+                  const x = xScale(d.date)
+                  // We sum volumes or just show the main one? Let's sum for simplicity in bars
+                  let totalV = 0
+                  series.forEach(s => {
+                    totalV += (d[`${s.key}-volume`] as number) || 0
+                  })
+                  if (totalV <= 0) return null
+                  const barHeight = volumeScale(totalV)
+                  return (
+                    <rect
+                      key={`vol-bar-${i}`}
+                      x={x - 1}
+                      y={innerHeight - barHeight}
+                      width={2}
+                      height={barHeight}
+                      fill={isDarkMode ? '#ffffff' : '#000000'}
+                      opacity={0.15}
+                      pointerEvents="none"
+                    />
+                  )
+                })}
+              </Group>
+            )}
 
             <g clipPath={`url(#${plotAreaClipId})`}>
               {series.map((seriesItem) => {

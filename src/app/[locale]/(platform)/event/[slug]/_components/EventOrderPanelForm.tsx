@@ -46,6 +46,7 @@ import { defaultNetwork } from '@/lib/appkit'
 import { CLOB_ORDER_TYPE, DEFAULT_ERROR_MESSAGE, getExchangeEip712Domain, ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { resolveEventPagePath } from '@/lib/events-routing'
 import { formatCentsLabel, formatCurrency, formatSharesLabel, toCents } from '@/lib/formatters'
+import { isLivePoolEvent } from '@/lib/market-type'
 import { resolveFallbackOutcomeUnitPrice, resolveMarketOutcome } from '@/lib/market-pricing'
 import {
   applyPositionDeltasToUserPositions,
@@ -190,7 +191,7 @@ export default function EventOrderPanelForm({
     if (initialOutcome) {
       return initialOutcome
     }
-    return activeMarket?.outcomes[0] ?? null
+    return activeMarket?.outcomes?.[0] ?? null
   }, [activeMarket, initialOutcome])
   const hasMatchingStoreOutcome = Boolean(
     state.outcome
@@ -199,6 +200,7 @@ export default function EventOrderPanelForm({
   )
   const activeOutcome = hasMatchingStoreOutcome ? state.outcome : fallbackOutcome
   const isSingleMarket = activeEvent.total_markets_count === 1
+  const isLivePool = isLivePoolEvent(activeEvent)
   const amountNumber = useAmountAsNumber()
   const isLimitOrder = useIsLimitOrder()
   const shouldShowEarnings = amountNumber > 0
@@ -810,10 +812,7 @@ export default function EventOrderPanelForm({
     return { payout, cost, profit, changePct, multiplier }
   }, [amountNumber, currentBuyPriceCents, isLimitOrder, marketBuyFill, state.limitPrice, state.limitShares, state.side])
 
-  const avgBuyPriceDollars = typeof currentBuyPriceCents === 'number' && Number.isFinite(currentBuyPriceCents)
-    ? currentBuyPriceCents / 100
-    : null
-  const avgBuyPriceLabel = formatCentsLabel(avgBuyPriceDollars, { fallback: '—' })
+  const avgBuyPriceLabel = formatCentsLabel(currentBuyPriceCents, { fallback: '—' })
   const avgBuyPriceCentsValue = typeof currentBuyPriceCents === 'number' && Number.isFinite(currentBuyPriceCents)
     ? currentBuyPriceCents
     : null
@@ -821,6 +820,12 @@ export default function EventOrderPanelForm({
     ? sellOrderSnapshot.priceCents
     : null
   const sellAmountLabel = formatCurrency(sellAmountValue)
+  const selectedMarketLabel = activeMarket?.short_title || activeMarket?.title || event.title
+  const sideLabel = state.side === ORDER_SIDE.BUY ? t('Comprar') : t('Vender')
+  const selectedOutcomeLabel = selectedShareLabel ?? t('Selecione uma opção')
+  const beginnerHint = state.side === ORDER_SIDE.BUY
+    ? t('Se o resultado acontecer, cada cota vale R$1,00 na liquidação.')
+    : t('Você está vendendo suas cotas atuais ao melhor preço disponível.')
   useEffect(() => {
     if (!isLimitOrder || limitSharesNumber >= MIN_LIMIT_ORDER_SHARES) {
       setShowLimitMinimumWarning(false)
@@ -1448,7 +1453,7 @@ export default function EventOrderPanelForm({
 
   const normalizedPrimaryOutcomeIndex = typeof primaryOutcomeIndex === 'number' 
     ? primaryOutcomeIndex 
-    : (activeMarket?.outcomes[0]?.outcome_index ?? 0)
+    : (activeMarket?.outcomes?.[0]?.outcome_index ?? 0)
 
   // isCategorical already declared above
   
@@ -1459,7 +1464,7 @@ export default function EventOrderPanelForm({
 
   const primaryOutcome = activeMarket?.outcomes.find(
     outcome => outcome.outcome_index === normalizedPrimaryOutcomeIndex,
-  ) ?? activeMarket?.outcomes[0]
+  ) ?? activeMarket?.outcomes?.[0]
 
   const secondaryOutcome = isCategorical 
     ? null 
@@ -1469,6 +1474,8 @@ export default function EventOrderPanelForm({
 
   const primaryPrice = normalizedPrimaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
   const secondaryPrice = normalizedSecondaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
+  const shouldShowOutcomePickerInPanel = isMobile || isSingleMarket
+  const selectedOutcomePrice = activeOutcome?.outcome_index === OUTCOME_INDEX.NO ? noPrice : yesPrice
   function handleTypeChange(nextType: typeof state.type) {
     state.setType(nextType)
     if (nextType !== ORDER_TYPE.LIMIT) {
@@ -1486,13 +1493,23 @@ export default function EventOrderPanelForm({
     state.setLimitPrice(cents.toFixed(1))
   }
 
+  if (isLivePool) {
+    return (
+      <div className={cn({
+        'rounded-xl border lg:w-85': !isMobile,
+      }, 'w-full p-4 lg:shadow-xl/5')}>
+        <div className="rounded-lg border border-border/50 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+          {t('This market uses live pool betting. Use the live panel to place bets.')}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Form
       action={onSubmit}
       id="event-order-form"
-      className={cn({
-        'rounded-xl border lg:w-85': !isMobile,
-      }, 'w-full p-4 lg:shadow-xl/5')}
+      className={cn('w-full', isMobile ? 'p-4' : 'px-4 pb-4 pt-1')}
     >
       {!isResolvedMarket && !isMobile && (
         desktopMarketInfo ?? (!isSingleMarket ? <EventOrderPanelMarketInfo market={activeMarket} /> : null)
@@ -1555,6 +1572,12 @@ export default function EventOrderPanelForm({
           )
         : (
             <>
+              <div className="mb-3 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5">
+                <p className="text-[11px] font-semibold text-muted-foreground">{t('Passo atual')}</p>
+                <p className="mt-0.5 text-sm font-semibold text-foreground">{`${sideLabel} • ${selectedOutcomeLabel}`}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedMarketLabel}</p>
+              </div>
+
               <EventOrderPanelBuySellTabs
                 side={state.side}
                 type={state.type}
@@ -1574,63 +1597,72 @@ export default function EventOrderPanelForm({
                 onFocusInput={focusInput}
               />
 
-              <div className={cn("mb-2 flex", isCategorical ? "flex-col gap-1.5" : "gap-2")}>
-                {isCategorical ? (
-                  // For categorical, we show the active one specifically if needed, 
-                  // but usually we just want to show YES/NO for the SELECED candidate
-                  // Standard Polymarket style: Buy/Sell for the selected outcome
-                  <>
-                    <EventOrderPanelOutcomeButton
-                      variant="yes"
-                      price={yesPrice}
-                      label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) || t('Buy')}
-                      isSelected={true}
-                      oddsFormat={oddsFormat}
-                      styleVariant={outcomeButtonStyleVariant}
-                      onSelect={() => {}} // Already selected from URL/Home card
-                    />
-                  </>
-                ) : (
-                  <>
-                    <EventOrderPanelOutcomeButton
-                      variant="yes"
-                      price={primaryPrice}
-                      label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) ?? t('Yes')}
-                      isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
-                      oddsFormat={oddsFormat}
-                      styleVariant={outcomeButtonStyleVariant}
-                      onSelect={() => {
-                        if (!activeMarket || !primaryOutcome) {
-                          return
-                        }
-                        if (!state.market) {
-                          state.setMarket(activeMarket)
-                        }
-                        state.setOutcome(primaryOutcome)
-                        focusInput()
-                      }}
-                    />
-                    <EventOrderPanelOutcomeButton
-                      variant="no"
-                      price={secondaryPrice}
-                      label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) ?? t('No')}
-                      isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
-                      oddsFormat={oddsFormat}
-                      styleVariant={outcomeButtonStyleVariant}
-                      onSelect={() => {
-                        if (!activeMarket || !secondaryOutcome) {
-                          return
-                        }
-                        if (!state.market) {
-                          state.setMarket(activeMarket)
-                        }
-                        state.setOutcome(secondaryOutcome)
-                        focusInput()
-                      }}
-                    />
-                  </>
-                )}
-              </div>
+              {shouldShowOutcomePickerInPanel
+                ? (
+                    <div className={cn("mb-2 flex", isCategorical ? "flex-col gap-1.5" : "gap-2")}>
+                      {isCategorical ? (
+                        <EventOrderPanelOutcomeButton
+                          variant="yes"
+                          price={selectedOutcomePrice}
+                          label={selectedShareLabel ?? t('Buy')}
+                          isSelected={true}
+                          oddsFormat={oddsFormat}
+                          styleVariant={outcomeButtonStyleVariant}
+                          onSelect={() => focusInput()}
+                        />
+                      ) : (
+                        <>
+                          <EventOrderPanelOutcomeButton
+                            variant="yes"
+                            price={primaryPrice}
+                            label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) ?? t('Yes')}
+                            isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
+                            oddsFormat={oddsFormat}
+                            styleVariant={outcomeButtonStyleVariant}
+                            onSelect={() => {
+                              if (!activeMarket || !primaryOutcome) {
+                                return
+                              }
+                              if (!state.market) {
+                                state.setMarket(activeMarket)
+                              }
+                              state.setOutcome(primaryOutcome)
+                              focusInput()
+                            }}
+                          />
+                          <EventOrderPanelOutcomeButton
+                            variant="no"
+                            price={secondaryPrice}
+                            label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) ?? t('No')}
+                            isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
+                            oddsFormat={oddsFormat}
+                            styleVariant={outcomeButtonStyleVariant}
+                            onSelect={() => {
+                              if (!activeMarket || !secondaryOutcome) {
+                                return
+                              }
+                              if (!state.market) {
+                                state.setMarket(activeMarket)
+                              }
+                              state.setOutcome(secondaryOutcome)
+                              focusInput()
+                            }}
+                          />
+                        </>
+                      )}
+                    </div>
+                  )
+                : (
+                    <div className="mb-3 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5">
+                      <p className="text-[11px] font-semibold text-muted-foreground">{t('Seleção atual')}</p>
+                      <p className="mt-0.5 text-sm font-semibold text-foreground">
+                        {selectedShareLabel ?? t('Escolha uma opção na lista ao lado')}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t('Preço atual')}: {formatCentsLabel(selectedOutcomePrice)}
+                      </p>
+                    </div>
+                  )}
 
               {isLimitOrder
                 ? (
@@ -1769,10 +1801,10 @@ export default function EventOrderPanelForm({
                 }}
                 label={(() => {
                   if (!isInteractiveWalletReady) {
-                    return t('Trade')
+                    return t('Conectar carteira')
                   }
                   if (shouldShowDepositCta) {
-                    return t('Deposit')
+                    return t('Depositar saldo')
                   }
                   const outcomeLabel = selectedShareLabel
                   if (outcomeLabel) {
@@ -1782,6 +1814,7 @@ export default function EventOrderPanelForm({
                   return t('Trade')
                 })()}
               />
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">{beginnerHint}</p>
             </>
           )}
     </Form>
