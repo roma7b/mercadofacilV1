@@ -226,6 +226,7 @@ export function mapDataApiActivityToActivityOrder(activity: DataApiActivity): Ac
     outcome: {
       index: outcomeIndex ?? 0,
       text: outcomeText,
+      token_id: activity.asset,
     },
     market: {
       condition_id: activity.conditionId,
@@ -444,4 +445,3 @@ export async function fetchUserPositionsForMarket({
 
   return (result as DataApiPosition[]).map(item => mapDataApiPositionToUserPosition(item, status))
 }
-

@@ -343,6 +343,7 @@ export interface ActivityOrder {
   outcome: {
     index: number
     text: string
+    token_id?: string
   }
   market: {
     condition_id?: string
@@ -487,4 +488,3 @@ export interface PublicActivity {
   timestamp: number
   txHash?: string
 }
-

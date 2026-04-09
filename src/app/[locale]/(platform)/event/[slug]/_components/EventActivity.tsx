@@ -14,6 +14,7 @@ import ProfileLink from '@/components/ProfileLink'
 import ProfileLinkSkeleton from '@/components/ProfileLinkSkeleton'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
 import { MICRO_UNIT, ORDER_SIDE } from '@/lib/constants'
 import { EVENT_ACTIVITY_PAGE_SIZE, fetchEventTrades } from '@/lib/data-api/trades'
@@ -21,7 +22,6 @@ import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro } from 
 import { POLYGON_SCAN_BASE } from '@/lib/network'
 import { cn } from '@/lib/utils'
 import { useOrder } from '@/stores/useOrder'
-import { useIsMobile } from '@/hooks/useIsMobile'
 
 interface EventActivityProps {
   event: Event
@@ -52,6 +52,7 @@ export default function EventActivity({ event }: EventActivityProps) {
   const wsRefreshThrottleMs = 2000
   const normalizeOutcomeLabel = useOutcomeLabel()
   const isSportsEvent = Boolean(event.sports_sport_slug?.trim())
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     queueMicrotask(() => setInfiniteScrollError(null))
@@ -381,27 +382,32 @@ export default function EventActivity({ event }: EventActivityProps) {
                       </div>
                     )}
                     inlineContent={(
-                      <div 
-                        className="cursor-pointer hover:bg-muted/30 transition-all rounded-sm p-0.5"
+                      <div
+                        className="cursor-pointer rounded-sm p-0.5 transition-all hover:bg-muted/30"
                         onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          
+                          e.preventDefault()
+                          e.stopPropagation()
+
                           // Adicionando sincronização com a store de ordens
-                          const targetMarket = (event.markets ?? []).find(m => m.condition_id === activity.market.condition_id);
+                          const targetMarket = (event.markets ?? []).find(m => m.condition_id === activity.market.condition_id)
                           if (targetMarket) {
-                            const useOrderStore = useOrder.getState();
-                            useOrderStore.setMarket(targetMarket);
-                            const targetOutcome = targetMarket.outcomes.find(o => o.token_id === activity.outcome.token_id) || targetMarket.outcomes[0];
+                            const useOrderStore = useOrder.getState()
+                            useOrderStore.setMarket(targetMarket)
+                            const targetOutcome = targetMarket.outcomes.find(o =>
+                              (activity.outcome.token_id && o.token_id === activity.outcome.token_id)
+                              || (o.outcome_index === activity.outcome.index),
+                            ) || targetMarket.outcomes[0]
+
                             if (targetOutcome) {
-                               useOrderStore.setOutcome(targetOutcome);
+                              useOrderStore.setOutcome(targetOutcome)
                             }
-                            useOrderStore.setSide(activity.side === 'buy' ? ORDER_SIDE.BUY : ORDER_SIDE.SELL);
-                            
+                            useOrderStore.setSide(activity.side === 'buy' ? ORDER_SIDE.BUY : ORDER_SIDE.SELL)
+
                             if (isMobile) {
-                               useOrderStore.setIsMobileOrderPanelOpen(true);
-                            } else {
-                               setTimeout(() => useOrderStore.inputRef?.current?.focus(), 100);
+                              useOrderStore.setIsMobileOrderPanelOpen(true)
+                            }
+                            else {
+                              setTimeout(() => useOrderStore.inputRef?.current?.focus(), 100)
                             }
                           }
                         }}
@@ -418,7 +424,7 @@ export default function EventActivity({ event }: EventActivityProps) {
                           {' '}
                         </span>
                         <span className="text-foreground">
-                          {'por'}
+                          por
                           {' '}
                         </span>
                         <span className="font-semibold text-foreground">
