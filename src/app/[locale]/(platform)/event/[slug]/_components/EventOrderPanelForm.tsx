@@ -1493,7 +1493,7 @@ export default function EventOrderPanelForm({
     state.setLimitPrice(cents.toFixed(1))
   }
 
-  if (isLivePool) {
+  if (isLivePool && !isMobile) {
     return (
       <div className={cn({
         'rounded-xl border lg:w-85': !isMobile,
@@ -1509,8 +1509,51 @@ export default function EventOrderPanelForm({
     <Form
       action={onSubmit}
       id="event-order-form"
-      className={cn('w-full', isMobile ? 'p-4' : 'px-4 pb-4 pt-1')}
+      className={cn('w-full flex flex-col gap-6', isMobile ? 'px-6 pb-6 pt-2 bg-background' : 'px-4 pb-4 pt-1')}
     >
+      {isMobile && !isResolvedMarket && (
+        <div className="flex flex-col gap-5 py-2">
+            {/* Mobile Header Card (Arredondado e Glassmorphism) */}
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-zinc-900/50 p-6 ring-1 ring-white/15 backdrop-blur-3xl shadow-2xl">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <div className="size-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                            <span className="truncate text-xl font-black text-white uppercase tracking-tighter">
+                                {activeOutcome?.outcome_text ? (normalizeOutcomeLabel(activeOutcome.outcome_text) || activeOutcome.outcome_text) : (activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? t('Yes') : t('No'))}
+                            </span>
+                        </div>
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none truncate opacity-60">
+                            {event.title}
+                        </p>
+                    </div>
+                    <div className="bg-zinc-800/80 p-2 rounded-2xl border border-white/5">
+                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1.5L6 6.5L11 1.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div className="mt-8 mb-4 flex flex-col items-center justify-center">
+                    <div className="relative group p-[2px] rounded-[2.2rem] bg-gradient-to-b from-white/10 to-transparent">
+                        <div className="absolute inset-0 bg-emerald-500/10 blur-3xl rounded-full opacity-40 animate-pulse" />
+                        <div className="relative flex flex-col items-center justify-center px-10 py-5 rounded-[2.1rem] bg-[#1a1b1e] border border-white/5 shadow-inner min-w-[220px]">
+                            <div className="pointer-events-none select-none text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-1 opacity-50">
+                                {activeOutcome?.outcome_text ? (normalizeOutcomeLabel(activeOutcome.outcome_text) || activeOutcome.outcome_text) : (activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? t('Yes') : t('No'))}
+                            </div>
+                            <div className="text-3xl font-black text-white font-mono tracking-tighter drop-shadow-sm">
+                                R$ {yesPrice != null ? formatCentsLabel(yesPrice).replace('R$', '').trim() : '0,00'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex justify-center mt-2 opacity-20">
+                    <div className="size-1 bg-white rounded-full mx-1" />
+                </div>
+            </div>
+        </div>
+      )}
       {!isResolvedMarket && !isMobile && (
         desktopMarketInfo ?? (!isSingleMarket ? <EventOrderPanelMarketInfo market={activeMarket} /> : null)
       )}
