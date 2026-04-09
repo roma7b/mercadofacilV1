@@ -10,6 +10,7 @@ const BASE_URL = (process.env.NEXT_PUBLIC_YOLO_SERVICE_URL || 'http://localhost:
 const API_URL = BASE_URL
 
 const WS_URL = API_URL.replace(/^https/, 'wss').replace(/^http/, 'ws')
+const FALLBACK_STREAM_URL = 'https://34.104.32.249.nip.io/SP055-KM092/stream.m3u8'
 
 const FLASH_DURATION_MS = 1600
 
@@ -191,16 +192,15 @@ export default function LiveCameraFeed({
 
   // HLS Video Stream
   useEffect(() => {
-    if (!videoRef.current || !originalStreamUrl) return
-    const video = videoRef.current
+    const streamToLoad = originalStreamUrl || FALLBACK_STREAM_URL
 
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: true, maxBufferLength: 20, manifestLoadingTimeOut: 8000 })
       hlsRef.current = hls
-      hls.loadSource(originalStreamUrl)
+      hls.loadSource(streamToLoad)
       hls.attachMedia(video)
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('[DEBUG_STREAM] HLS Manifest Parsed for:', originalStreamUrl)
+        console.log('[DEBUG_STREAM] HLS Manifest Parsed for:', streamToLoad)
         video.play().catch(e => console.error('[DEBUG_STREAM] Play failed:', e))
         setStatus('live')
         setImgError(false)
@@ -217,7 +217,7 @@ export default function LiveCameraFeed({
         }
       })
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = originalStreamUrl
+      video.src = streamToLoad
       video.addEventListener('loadedmetadata', () => {
         video.play()
         setStatus('live')
