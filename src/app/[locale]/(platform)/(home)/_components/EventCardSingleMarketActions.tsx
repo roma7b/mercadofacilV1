@@ -122,7 +122,7 @@ export default function EventCardSingleMarketActions({
           <IntentPrefetchLink
             href={resolveEventOutcomePath(event, { outcomeIndex: OUTCOME_INDEX.YES })}
           >
-            {t('Yes')}
+            {t('Yes') || yesOutcome.outcome_text || 'Sim'}
           </IntentPrefetchLink>
         </Button>
       </div>
@@ -143,7 +143,7 @@ export default function EventCardSingleMarketActions({
           <IntentPrefetchLink
             href={resolveEventOutcomePath(event, { outcomeIndex: OUTCOME_INDEX.NO })}
           >
-            {t('No')}
+            {t('No') || noOutcome.outcome_text || 'Não'}
           </IntentPrefetchLink>
         </Button>
       </div>
