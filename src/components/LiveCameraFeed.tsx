@@ -192,6 +192,8 @@ export default function LiveCameraFeed({
 
   // HLS Video Stream
   useEffect(() => {
+    if (!videoRef.current) return
+    const video = videoRef.current
     const streamToLoad = originalStreamUrl || FALLBACK_STREAM_URL
 
     if (Hls.isSupported()) {
