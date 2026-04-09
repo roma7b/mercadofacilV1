@@ -461,7 +461,7 @@ function EventChartComponent({
     enabled: Boolean(event.slug && (event.slug.startsWith('poly-') || event.slug.startsWith('live_')))
   })
 
-  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('ALL')
+  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('all')
   const [activeOutcomeIndex, setActiveOutcomeIndex] = useState<
     typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO
   >(OUTCOME_INDEX.YES)
@@ -692,11 +692,11 @@ function EventChartComponent({
           })
           // Fallback: se não tiver token_ids, usa condition_id do mercado
           if (addedCount === 0) {
-            const id = market.condition_id || market.id
+            const id = market.condition_id
             if (id) ids.push(id)
           }
         } else {
-          const id = market.condition_id || market.id
+          const id = market.condition_id
           if (id) ids.push(id)
         }
       })
@@ -1335,7 +1335,7 @@ function EventChartComponent({
                 {hasChartData
                   ? (
                       <EventChartControls
-                        timeRanges={TIME_RANGES}
+                        timeRanges={TIME_RANGES as unknown as TimeRange[]}
                         activeTimeRange={activeTimeRange}
                         onTimeRangeChange={setActiveTimeRange}
                         showOutcomeSwitch={isSingleMarket}

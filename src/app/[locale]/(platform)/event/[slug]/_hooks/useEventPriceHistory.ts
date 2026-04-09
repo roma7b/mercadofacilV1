@@ -20,6 +20,11 @@ export function buildMarketTargets(markets: Market[] = [], outcomeIndex: number 
     .filter(t => t.tokenId)
 }
 
+export interface MarketTokenTarget {
+  conditionId: string
+  tokenId: string
+}
+
 export interface PriceHistoryPoint {
   t: number // timestamp em segundos
   p: number // preço entre 0 e 1
@@ -241,7 +246,7 @@ export function useEventPriceHistory({
             if (o.token_id) keysToSimulate.push(o.token_id)
           })
         } else {
-          const key = market.condition_id || market.id
+          const key = market.condition_id
           if (key) keysToSimulate.push(key)
         }
       })

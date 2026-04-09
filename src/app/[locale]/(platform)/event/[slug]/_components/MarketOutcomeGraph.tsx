@@ -55,7 +55,7 @@ export default function MarketOutcomeGraph({
   const t = useExtracted()
   const site = useSiteIdentity()
   const normalizeOutcomeLabel = useOutcomeLabel()
-  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('ALL')
+  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('all')
   const [activeOutcomeIndex, setActiveOutcomeIndex] = useState(outcome.outcome_index)
   const [cursorSnapshot, setCursorSnapshot] = useState<PredictionChartCursorSnapshot | null>(null)
   const [chartSettings, setChartSettings] = useState(() => ({ ...defaultChartSettings }))
@@ -109,8 +109,9 @@ export default function MarketOutcomeGraph({
   ) ?? t('No')
 
   const {
-    normalizedHistory,
+    points: normalizedHistory,
   } = useEventPriceHistory({
+    event: { id: market.event_id, created_at: eventCreatedAt, markets: allMarkets } as any,
     eventId: market.event_id,
     range: activeTimeRange,
     targets: marketTargets,
@@ -252,7 +253,7 @@ export default function MarketOutcomeGraph({
             {hasChartData && (
               <div className="ml-auto">
                 <EventChartControls
-                  timeRanges={TIME_RANGES}
+                  timeRanges={TIME_RANGES as unknown as TimeRange[]}
                   activeTimeRange={activeTimeRange}
                   onTimeRangeChange={setActiveTimeRange}
                   showOutcomeSwitch={showOutcomeSwitch}

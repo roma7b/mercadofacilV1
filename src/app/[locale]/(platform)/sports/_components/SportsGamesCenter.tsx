@@ -44,6 +44,7 @@ import EventOrderPanelTermsDisclaimer
   from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelTermsDisclaimer'
 import EventRules from '@/app/[locale]/(platform)/event/[slug]/_components/EventRules'
 import ResolutionTimelinePanel from '@/app/[locale]/(platform)/event/[slug]/_components/ResolutionTimelinePanel'
+import type { TimeRange } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventPriceHistory'
 import { TIME_RANGES, useEventPriceHistory } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventPriceHistory'
 import { loadStoredChartSettings, storeChartSettings } from '@/app/[locale]/(platform)/event/[slug]/_utils/chartSettingsStorage'
 import { fetchOrderBookSummaries } from '@/app/[locale]/(platform)/event/[slug]/_utils/EventOrderBookUtils'
@@ -1045,18 +1046,18 @@ export function SportsGameGraph({
   card,
   selectedMarketType,
   selectedConditionId,
-  defaultTimeRange = '1W',
+  defaultTimeRange = '1w',
   variant = 'default',
 }: {
   card: SportsGamesCard
   selectedMarketType: SportsGamesMarketType
   selectedConditionId: string | null
-  defaultTimeRange?: (typeof TIME_RANGES)[number]
+  defaultTimeRange?: TimeRange
   variant?: SportsGameGraphVariant
 }) {
   const { width: windowWidth } = useWindowSize()
   const [cursorSnapshot, setCursorSnapshot] = useState<PredictionChartCursorSnapshot | null>(null)
-  const [activeTimeRange, setActiveTimeRange] = useState<(typeof TIME_RANGES)[number]>(defaultTimeRange)
+  const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>(defaultTimeRange)
   const [chartSettings, setChartSettings] = useState(() => ({ ...defaultChartSettings, bothOutcomes: false }))
   const [hasLoadedChartSettings, setHasLoadedChartSettings] = useState(false)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
@@ -1289,7 +1290,8 @@ export function SportsGameGraph({
     [graphSeriesTargets],
   )
 
-  const { normalizedHistory } = useEventPriceHistory({
+  const { points: normalizedHistory } = useEventPriceHistory({
+    event: { id: card.id, created_at: card.eventCreatedAt, markets: card.detailMarkets } as any,
     eventId: card.id,
     range: activeTimeRange,
     targets: marketTargets,
@@ -1341,7 +1343,7 @@ export function SportsGameGraph({
 
   const historyChartData = useMemo<DataPoint[]>(() => {
     return normalizedHistory
-      .map((point) => {
+      .map((point: any) => {
         const nextPoint: DataPoint = { date: point.date }
         let hasValue = false
 
@@ -1357,7 +1359,7 @@ export function SportsGameGraph({
 
         return hasValue ? nextPoint : null
       })
-      .filter((point): point is DataPoint => point !== null)
+      .filter((point: any): point is DataPoint => point !== null)
   }, [chartSeries, normalizedHistory])
 
   const pairedHistoryChartData = useMemo<DataPoint[]>(() => {
@@ -1367,7 +1369,7 @@ export function SportsGameGraph({
 
     const [firstSeries, secondSeries] = chartSeries
     return historyChartData
-      .map((point) => {
+      .map((point: any) => {
         const firstRaw = point[firstSeries.key]
         const secondRaw = point[secondSeries.key]
         const firstValue = typeof firstRaw === 'number' && Number.isFinite(firstRaw) ? firstRaw : null
@@ -1387,7 +1389,7 @@ export function SportsGameGraph({
 
         return nextPoint
       })
-      .filter((point): point is DataPoint => point !== null)
+      .filter((point: any): point is DataPoint => point !== null)
   }, [chartSeries, historyChartData, isSecondaryMarketGraph])
 
   const fallbackChartData = useMemo<DataPoint[]>(() => {
@@ -1839,7 +1841,7 @@ export function SportsGameGraph({
 
         <div className="mt-2 flex items-center justify-end pb-2">
           <EventChartControls
-            timeRanges={TIME_RANGES}
+            timeRanges={TIME_RANGES as unknown as TimeRange[]}
             activeTimeRange={activeTimeRange}
             onTimeRangeChange={setActiveTimeRange}
             showOutcomeSwitch={false}
@@ -2342,7 +2344,7 @@ interface SportsGameDetailsPanelProps {
   activeDetailsTab: DetailsTab
   selectedButtonKey: string | null
   showBottomContent: boolean
-  defaultGraphTimeRange?: (typeof TIME_RANGES)[number]
+  defaultGraphTimeRange?: TimeRange
   allowedConditionIds?: Set<string> | null
   positionsTitle?: string
   showAboutTab?: boolean
@@ -2362,7 +2364,7 @@ export function SportsGameDetailsPanel({
   activeDetailsTab,
   selectedButtonKey,
   showBottomContent,
-  defaultGraphTimeRange = '1W',
+  defaultGraphTimeRange = '1w',
   allowedConditionIds = null,
   positionsTitle,
   showAboutTab = false,
@@ -4897,7 +4899,7 @@ export default function SportsGamesCenter({
               activeDetailsTab={activeDetailsTab}
               selectedButtonKey={selectedButtonKey}
               showBottomContent={shouldRenderDetailsPanel ? isDetailsContentVisible : false}
-              defaultGraphTimeRange={pageMode === 'games' ? '1H' : '1W'}
+              defaultGraphTimeRange={pageMode === 'games' ? '1h' : '1w'}
               oddsFormat={oddsFormat}
               onChangeTab={setActiveDetailsTab}
               onSelectButton={(buttonKey, renderOptions) => selectCardButton(card, buttonKey, renderOptions)}

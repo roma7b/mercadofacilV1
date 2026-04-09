@@ -9,7 +9,7 @@ import type {
   Outcome,
   User,
 } from '@/types'
-import { ArrowUpIcon, Trophy, Timeline, Info, ChevronRight } from 'lucide-react'
+import { ArrowUpIcon, Trophy, Info, ChevronRight } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -25,7 +25,7 @@ import EventOrderPanelForm from '@/app/[locale]/(platform)/event/[slug]/_compone
 import EventOrderPanelMobile from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelMobile'
 import EventOrderPanelTermsDisclaimer from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelTermsDisclaimer'
 import { EventOutcomeChanceProvider } from '@/app/[locale]/(platform)/event/[slug]/_components/EventOutcomeChanceProvider'
-import EventRelated, { EventRelatedSkeleton } from '@/app/[locale]/(platform)/event/[slug]/_components/EventRelated'
+import EventRelated from '@/app/[locale]/(platform)/event/[slug]/_components/EventRelated'
 import EventRules from '@/app/[locale]/(platform)/event/[slug]/_components/EventRules'
 import EventSingleMarketOrderBook from '@/app/[locale]/(platform)/event/[slug]/_components/EventSingleMarketOrderBook'
 import EventTabs from '@/app/[locale]/(platform)/event/[slug]/_components/EventTabs'
@@ -135,7 +135,7 @@ export default function EventContent({
               ) : (
                 <div className="bg-card/30 backdrop-blur-2xl rounded-[2.5rem] border border-white/5 overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
                   <div className="p-0 md:p-1 min-h-[300px] md:min-h-[480px] bg-gradient-to-b from-white/[0.03] to-transparent">
-                    <EventChart event={event} isMobile={isMobile} seriesEvents={seriesEvents} />
+                    <EventChart event={event} isMobile={!!isMobile} seriesEvents={seriesEvents} />
                   </div>
                 </div>
               )}
@@ -153,7 +153,7 @@ export default function EventContent({
                </div>
 
                <div className="bg-card/20 backdrop-blur-xl rounded-3xl border border-white/5 p-4 md:p-6 shadow-2xl">
-                  <EventMarkets event={event} isMobile={isMobile} />
+                  <EventMarkets event={event} isMobile={!!isMobile} />
                </div>
             </section>
 

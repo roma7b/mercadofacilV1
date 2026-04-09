@@ -2763,7 +2763,7 @@ export default function SportsEventCenter({
               activeDetailsTab={activeTab}
               selectedButtonKey={selectedButtonKey}
               showBottomContent={isOpen}
-              defaultGraphTimeRange="ALL"
+              defaultGraphTimeRange="all"
               allowedConditionIds={new Set(singleConditionId ? [singleConditionId] : entry.markets.map(market => market.condition_id))}
               showAboutTab
               aboutEvent={activeCard.event}
@@ -2903,7 +2903,7 @@ export default function SportsEventCenter({
             activeDetailsTab={activeTab}
             selectedButtonKey={selectedButtonKey}
             showBottomContent={isOpen}
-            defaultGraphTimeRange="ALL"
+            defaultGraphTimeRange="all"
             allowedConditionIds={new Set(entry.markets.map(market => market.condition_id))}
             showAboutTab
             aboutEvent={activeCard.event}
@@ -2935,7 +2935,7 @@ export default function SportsEventCenter({
                 activeDetailsTab="orderBook"
                 selectedButtonKey={moneylineButtonKey}
                 showBottomContent={false}
-                defaultGraphTimeRange="ALL"
+                defaultGraphTimeRange="all"
                 allowedConditionIds={allCardConditionIds}
                 positionsTitle="All Positions"
                 showRedeemInPositions
@@ -3229,7 +3229,7 @@ export default function SportsEventCenter({
                         activeDetailsTab={activeTab}
                         selectedButtonKey={selectedButtonKey}
                         showBottomContent={isSectionOpen}
-                        defaultGraphTimeRange="ALL"
+                        defaultGraphTimeRange="all"
                         allowedConditionIds={sectionConditionIds}
                         showAboutTab
                         aboutEvent={activeCard.event}
@@ -3532,7 +3532,7 @@ export default function SportsEventCenter({
               card={heroCard}
               selectedMarketType="moneyline"
               selectedConditionId={graphConditionId}
-              defaultTimeRange="ALL"
+              defaultTimeRange="all"
               variant="sportsEventHero"
             />
           </div>

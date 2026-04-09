@@ -118,7 +118,7 @@ export default function HypeMarketCard({ market }: HypeMarketCardProps) {
         endDate: market.endDate || null
       })
       if (res.success) {
-        if (res.alreadyExists) {
+        if ((res as any).alreadyExists) {
           setAlreadyPublished(true)
           toast.info('Este mercado já está ativo no Kuest.')
         } else {

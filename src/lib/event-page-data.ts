@@ -122,7 +122,7 @@ export async function loadEventPagePublicContentData(
     eventResult = fetchedEvent
     // Busca changelog se não for UUID
     if (!isUUID) {
-      changeLogResult = await EventRepository.getEventConditionChangeLogBySlug(eventResult.data.slug)
+      changeLogResult = await EventRepository.getEventConditionChangeLogBySlug(eventResult.data!.slug)
     }
   } else {
     // 2. Fallback: Se não encontrar no banco principal, verifica se é um mercado legado do Mercado Fácil (Supabase)

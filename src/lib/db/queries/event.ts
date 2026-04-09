@@ -932,6 +932,7 @@ function eventResource(
       (sum: number, market: { volume: number }) => sum + (market.volume ?? 0),
       0,
     ),
+    volume_24h: totalRecentVolume,
     markets: marketsWithDerivedValues,
     tags: tagRecords.map(tag => ({
       id: tag.id,
