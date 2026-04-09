@@ -383,9 +383,9 @@ export default function EventActivity({ event }: EventActivityProps) {
                     inlineContent={(
                       <div 
                         className="cursor-pointer hover:bg-muted/30 transition-all rounded-sm p-0.5"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           
                           // Adicionando sincronização com a store de ordens
                           const targetMarket = (event.markets ?? []).find(m => m.condition_id === activity.market.condition_id);
