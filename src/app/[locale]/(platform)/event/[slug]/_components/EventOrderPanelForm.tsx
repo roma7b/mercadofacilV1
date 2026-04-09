@@ -1557,18 +1557,7 @@ export default function EventOrderPanelForm({
       {!isResolvedMarket && !isMobile && (
         desktopMarketInfo ?? (!isSingleMarket ? <EventOrderPanelMarketInfo market={activeMarket} /> : null)
       )}
-      {!isResolvedMarket && isMobile && (
-        mobileMarketInfo
-        ?? (
-          <EventOrderPanelMobileMarketInfo
-            event={event}
-            market={activeMarket}
-            isSingleMarket={isSingleMarket}
-            balanceText={formattedBalanceText}
-            isBalanceLoading={isLoadingBalance}
-          />
-        )
-      )}
+
       {isResolvedMarket
         ? (
             <div className="flex flex-col items-center gap-3 px-2 py-4 text-center">
@@ -1615,7 +1604,7 @@ export default function EventOrderPanelForm({
           )
         : (
             <>
-              <div className="mb-3 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5">
+              <div className={cn("mb-3 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5", isMobile ? "hidden" : "block")}>
                 <p className="text-[11px] font-semibold text-muted-foreground">{t('Passo atual')}</p>
                 <p className="mt-0.5 text-sm font-semibold text-foreground">{`${sideLabel} • ${selectedOutcomeLabel}`}</p>
                 <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedMarketLabel}</p>
@@ -1644,15 +1633,17 @@ export default function EventOrderPanelForm({
                 ? (
                     <div className={cn("mb-2 flex", isCategorical ? "flex-col gap-1.5" : "gap-2")}>
                       {isCategorical ? (
-                        <EventOrderPanelOutcomeButton
-                          variant="yes"
-                          price={selectedOutcomePrice}
-                          label={selectedShareLabel ?? t('Buy')}
-                          isSelected={true}
-                          oddsFormat={oddsFormat}
-                          styleVariant={outcomeButtonStyleVariant}
-                          onSelect={() => focusInput()}
-                        />
+                        <div className={isMobile ? "hidden" : "block w-full"}>
+                          <EventOrderPanelOutcomeButton
+                            variant="yes"
+                            price={selectedOutcomePrice}
+                            label={selectedShareLabel ?? t('Buy')}
+                            isSelected={true}
+                            oddsFormat={oddsFormat}
+                            styleVariant={outcomeButtonStyleVariant}
+                            onSelect={() => focusInput()}
+                          />
+                        </div>
                       ) : (
                         <>
                           <EventOrderPanelOutcomeButton

@@ -74,7 +74,8 @@ export default function EventOrderPanelMobile({
   const buyNoOutcomeLabel = buyNoOutcome?.outcome_text
     ? (normalizeOutcomeLabel(buyNoOutcome.outcome_text) ?? buyNoOutcome.outcome_text)
     : t('No')
-  const shouldShowDefaultTrigger = showDefaultTrigger
+  const isCategorical = event.markets.some(m => m.outcomes && m.outcomes.length > 2)
+  const shouldShowDefaultTrigger = showDefaultTrigger && !isCategorical
   const yesPriceLabel = oddsFormat === 'price'
     ? formatCentsLabel(yesPrice)
     : formatOddsFromPrice(yesPrice, oddsFormat)
