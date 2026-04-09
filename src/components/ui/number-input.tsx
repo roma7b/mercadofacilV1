@@ -140,7 +140,7 @@ export function NumberInput({
         <span
           className={cn(`text-lg font-bold ${hasValue ? 'text-foreground' : 'text-muted-foreground'}`)}
         >
-          ¢
+          %
         </span>
       </div>
 

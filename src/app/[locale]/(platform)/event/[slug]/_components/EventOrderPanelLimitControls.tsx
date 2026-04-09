@@ -289,8 +289,7 @@ export default function EventOrderPanelLimitControls({
           {isLimitOrder && side === ORDER_SIDE.BUY && (
             <span className="text-xs text-muted-foreground">
               {t('Balance')}
-              {' '}
-              {areValuesHidden ? '****' : `$${formattedBalanceText}`}
+              {areValuesHidden ? '****' : `R$ ${formattedBalanceText}`}
             </span>
           )}
         </div>
@@ -505,7 +504,7 @@ export default function EventOrderPanelLimitControls({
                           </div>
                           <span className="text-base font-bold">
                             {limitPriceNumber.toFixed(1)}
-                            ¢
+                            %
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
