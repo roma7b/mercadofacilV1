@@ -7,9 +7,7 @@ import Hls from 'hls.js'
 import { cn } from '@/lib/utils'
 
 const BASE_URL = (process.env.NEXT_PUBLIC_YOLO_SERVICE_URL || 'http://localhost:8000').replace(/\/$/, '')
-const API_URL =  typeof window !== 'undefined' && window.location.protocol === 'https:' 
-  ? BASE_URL.replace(/^http:/, 'https:') 
-  : BASE_URL
+const API_URL = BASE_URL
 
 const WS_URL = API_URL.replace(/^https/, 'wss').replace(/^http/, 'ws')
 
@@ -202,7 +200,8 @@ export default function LiveCameraFeed({
       hls.loadSource(originalStreamUrl)
       hls.attachMedia(video)
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(() => {})
+        console.log('[DEBUG_STREAM] HLS Manifest Parsed for:', originalStreamUrl)
+        video.play().catch(e => console.error('[DEBUG_STREAM] Play failed:', e))
         setStatus('live')
         setImgError(false)
       })
