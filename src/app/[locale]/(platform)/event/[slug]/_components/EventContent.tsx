@@ -1,6 +1,14 @@
 'use client'
 
-import type { Event, EventSeriesEntry, Market, Outcome } from '@/types'
+import type {
+  ConditionChangeLogEntry,
+  Event,
+  EventLiveChartConfig,
+  EventSeriesEntry,
+  Market,
+  Outcome,
+  User,
+} from '@/types'
 import { ArrowUpIcon, Trophy, Timeline, Info, ChevronRight } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
@@ -33,8 +41,12 @@ interface EventContentProps {
   event: Event
   marketSlug?: string | null
   seriesEvents?: EventSeriesEntry[]
-  isMobile: boolean
+  isMobile?: boolean
   isLiveMercadoEventFallback?: boolean
+  changeLogEntries?: ConditionChangeLogEntry[]
+  user?: User | null
+  marketContextEnabled?: boolean
+  liveChartConfig?: EventLiveChartConfig | null
 }
 
 function OrderStoreSync({ event }: { event: Event }) {
