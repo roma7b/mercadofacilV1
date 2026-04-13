@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+ 
+export const dynamic = 'force-dynamic'
 import { EventRepository } from '@/lib/db/queries/event'
 
 export async function GET() {

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import SettingsProfilePanel from '@/app/[locale]/(platform)/settings/_components/SettingsProfilePanel'
 import { UserRepository } from '@/lib/db/queries/user'
+ 
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings'>): Promise<Metadata> {
   const { locale } = await params

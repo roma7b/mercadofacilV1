@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { getExtracted, setRequestLocale } from 'next-intl/server'
 import SettingsSidebar from '@/app/[locale]/(platform)/settings/_components/SettingsSidebar'
+ 
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: LayoutProps<'/[locale]/settings'>): Promise<Metadata> {
   const { locale } = await params

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import SettingsTwoFactorAuthContent from '@/app/[locale]/(platform)/settings/_components/SettingsTwoFactorAuthContent'
 import { UserRepository } from '@/lib/db/queries/user'
+ 
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings/two-factor'>): Promise<Metadata> {
   const { locale } = await params
