@@ -151,8 +151,14 @@ export function WalletFlow({
   return (
     <>
       <Dialog open={depositOpen} onOpenChange={onDepositOpenChange}>
-        <DialogContent className="max-w-[400px] gap-0 border-zinc-800 bg-zinc-950 p-0 shadow-2xl">
-          <div className="max-h-[85vh] overflow-y-auto p-8">
+        <DialogContent className="max-w-[400px] gap-0 border-zinc-800 bg-zinc-950 p-0 shadow-2xl" showCloseButton={false}>
+          <div className="relative max-h-[85vh] overflow-y-auto p-8">
+            <button
+              onClick={() => onDepositOpenChange(false)}
+              className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+            >
+              <X className="size-5" />
+            </button>
             {step === 'IDLE' && (
               <div className="space-y-6 pt-4">
                 <div className="text-center">
@@ -272,8 +278,14 @@ export function WalletFlow({
       </Dialog>
 
       <Dialog open={withdrawOpen} onOpenChange={onWithdrawOpenChange}>
-        <DialogContent className="max-w-[400px] gap-0 border-zinc-800 bg-zinc-950 p-0 shadow-2xl">
-          <div className="max-h-[85vh] overflow-y-auto p-8">
+        <DialogContent className="max-w-[400px] gap-0 border-zinc-800 bg-zinc-950 p-0 shadow-2xl" showCloseButton={false}>
+          <div className="relative max-h-[85vh] overflow-y-auto p-8">
+            <button
+              onClick={() => onWithdrawOpenChange(false)}
+              className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+            >
+              <X className="size-5" />
+            </button>
             <div className="space-y-6 pt-4">
               <div className="text-center">
                 <h2 className="mb-2 text-2xl font-bold text-white">Solicitar Saque</h2>
