@@ -1802,7 +1802,7 @@ export default function EventOrderPanelForm({
                   // even if it triggers a deposit flow due to insufficient balance.
                   const outcomeLabel = selectedShareLabel
                   if (outcomeLabel) {
-                    const verb = state.side === ORDER_SIDE.SELL ? (t('Sell') || 'Vender') : (t('Buy') || 'Comprar')
+                    const verb = state.side === ORDER_SIDE.SELL ? 'Venda' : 'Compre'
                     return `${verb} ${outcomeLabel}`
                   }
                   return t('Trade') || 'Negociar'
