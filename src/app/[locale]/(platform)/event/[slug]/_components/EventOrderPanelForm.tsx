@@ -1798,9 +1798,8 @@ export default function EventOrderPanelForm({
                   if (!isInteractiveWalletReady) {
                     return t('Connect wallet') || 'CONECTAR CARTEIRA'
                   }
-                  if (shouldShowDepositCta) {
-                    return t('Deposit balance') || 'DEPOSITAR SALDO'
-                  }
+                  // Always show the intent label (e.g. "Buy Thunder"), 
+                  // even if it triggers a deposit flow due to insufficient balance.
                   const outcomeLabel = selectedShareLabel
                   if (outcomeLabel) {
                     const verb = state.side === ORDER_SIDE.SELL ? (t('Sell') || 'Vender') : (t('Buy') || 'Comprar')
