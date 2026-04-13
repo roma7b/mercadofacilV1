@@ -1796,10 +1796,10 @@ export default function EventOrderPanelForm({
                   if (!isInteractiveWalletReady) {
                     return t('Connect wallet') || 'CONECTAR CARTEIRA'
                   }
-                  const isSell = Number(state.side) === 1
-                  const verb = isSell ? 'Venda' : 'Compre'
-                  const outcomeLabel = selectedShareLabel || ''
-                  return `${verb} ${outcomeLabel}`.trim()
+                  const isSellSide = Number(state.side) === 1
+                  const verb = isSellSide ? 'Venda' : 'Compre'
+                  const outcomeText = selectedShareLabel || ''
+                  return `${verb} ${outcomeText}`.trim() || verb
                 })()}
               />
               <p className="mt-2 text-center text-[11px] text-muted-foreground">{beginnerHint}</p>

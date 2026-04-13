@@ -37,10 +37,10 @@ export default function EventOrderPanelSubmitButton({
           'w-full h-14 rounded-[16px] text-[16px] font-bold tracking-tight transition-all duration-300',
           'hover:brightness-110 active:scale-[0.98] shadow-lg',
           'flex items-center justify-center gap-2',
-          // Cores baseadas no variant
-          isYes && 'bg-emerald-500 text-white shadow-emerald-500/20',
-          isNo && 'bg-rose-500 text-white shadow-rose-500/20',
-          (!isYes && !isNo) && 'bg-primary text-primary-foreground',
+          // Cores baseadas no variant com fallback seguro
+          isYes && 'bg-[#10b981] text-white shadow-[#10b981]/20',
+          isNo && 'bg-[#f43f5e] text-white shadow-[#f43f5e]/20',
+          (!isYes && !isNo) && 'bg-[#3b82f6] text-white',
           // Estado desabilitado
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none',
         )}
