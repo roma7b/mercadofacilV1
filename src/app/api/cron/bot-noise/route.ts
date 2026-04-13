@@ -5,8 +5,7 @@ import { runNoise } from '@/lib/bot/noise'
 // Vercel Cron: a cada 15 minutos
 // { "crons": [{ "path": "/api/cron/bot-noise", "schedule": "*/15 * * * *" }] }
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+// Segment configs removidos para compatibilidade com 'use cache'
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')

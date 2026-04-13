@@ -6,8 +6,7 @@ import { runOracleAdjust } from '@/lib/bot/oracle-adjust'
 // Definir em vercel.json:
 // { "crons": [{ "path": "/api/cron/bot-oracle", "schedule": "*/5 * * * *" }] }
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+// Segment configs removidos para compatibilidade com 'use cache'
 
 export async function GET(req: NextRequest) {
   // Verificar token de segurança do cron

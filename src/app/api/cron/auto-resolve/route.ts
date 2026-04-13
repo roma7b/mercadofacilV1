@@ -8,8 +8,7 @@ import { resolveByExternalResult } from '@/lib/mercado-payout'
 // Vercel Cron: a cada hora
 // { "crons": [{ "path": "/api/cron/auto-resolve", "schedule": "0 * * * *" }] }
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+// Segment configs removidos para compatibilidade com 'use cache' (Route is dynamic by header usage)
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
