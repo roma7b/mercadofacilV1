@@ -1,5 +1,6 @@
 'use cache'
 
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
 import { setRequestLocale } from 'next-intl/server'
@@ -50,11 +51,13 @@ export default async function PlatformSlugPage({ params }: PageProps<'/[locale]/
   if (profileSlug.type !== 'invalid') {
     return (
       <TradingOnboardingProvider>
-        <main className="container py-8">
-          <div className="mx-auto grid max-w-6xl gap-12">
-            <PublicProfilePageContent slug={slug} />
-          </div>
-        </main>
+        <Suspense fallback={null}>
+          <main className="container py-8">
+            <div className="mx-auto grid max-w-6xl gap-12">
+              <PublicProfilePageContent slug={slug} />
+            </div>
+          </main>
+        </Suspense>
       </TradingOnboardingProvider>
     )
   }
@@ -63,5 +66,9 @@ export default async function PlatformSlugPage({ params }: PageProps<'/[locale]/
     notFound()
   }
 
-  return <DynamicHomeCategoryPageContent locale={resolvedLocale} slug={slug} />
+  return (
+    <Suspense fallback={null}>
+      <DynamicHomeCategoryPageContent locale={resolvedLocale} slug={slug} />
+    </Suspense>
+  )
 }

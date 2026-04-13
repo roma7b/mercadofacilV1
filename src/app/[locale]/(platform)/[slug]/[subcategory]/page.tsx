@@ -1,5 +1,4 @@
-'use cache'
-
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
 import { setRequestLocale } from 'next-intl/server'
@@ -43,5 +42,9 @@ export default async function PlatformSubcategoryPage({ params }: PageProps<'/[l
     notFound()
   }
 
-  return <DynamicHomeSubcategoryPageContent locale={resolvedLocale} slug={slug} subcategory={subcategory} />
+  return (
+    <Suspense fallback={null}>
+      <DynamicHomeSubcategoryPageContent locale={resolvedLocale} slug={slug} subcategory={subcategory} />
+    </Suspense>
+  )
 }
