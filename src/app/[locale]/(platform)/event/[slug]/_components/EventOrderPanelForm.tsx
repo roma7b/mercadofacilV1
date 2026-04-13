@@ -787,8 +787,7 @@ export default function EventOrderPanelForm({
     : 0
   const isInteractiveWalletReady = hasMounted && Boolean(user)
   const shouldShowDepositCta = isInteractiveWalletReady
-    && state.side === ORDER_SIDE.BUY
-    && (balance.raw < 1 || (state.type === ORDER_TYPE.MARKET && Math.max(effectiveMarketBuyCost, amountNumber) > balance.raw))
+    && (balance.raw < 1 || (state.side === 0 && state.type === ORDER_TYPE.MARKET && Math.max(effectiveMarketBuyCost, amountNumber) > balance.raw))
 
   const buyPayoutSummary = useMemo(() => {
     if (state.side !== ORDER_SIDE.BUY) {
@@ -1781,7 +1780,7 @@ export default function EventOrderPanelForm({
                 type={!isInteractiveWalletReady || shouldShowDepositCta ? 'button' : 'submit'}
                 isLoading={state.isLoading}
                 isDisabled={state.isLoading}
-                outcomeVariant={Number(state.side) === 0 ? 'yes' : 'no'}
+                outcomeVariant={Number(state.side) === 1 ? 'no' : 'yes'}
                 onClick={(event) => {
                   if (!ensureTradingReady()) {
                     return
@@ -1797,8 +1796,8 @@ export default function EventOrderPanelForm({
                   if (!isInteractiveWalletReady) {
                     return t('Connect wallet') || 'CONECTAR CARTEIRA'
                   }
-                  // Force label even if outcomeLabel is missing for some reason
-                  const verb = Number(state.side) === 1 ? 'Venda' : 'Compre'
+                  const isSell = Number(state.side) === 1
+                  const verb = isSell ? 'Venda' : 'Compre'
                   const outcomeLabel = selectedShareLabel || ''
                   return `${verb} ${outcomeLabel}`.trim()
                 })()}
