@@ -2,7 +2,6 @@
 
 import type { MouseEvent } from 'react'
 import { useExtracted } from 'next-intl'
-import { cn } from '@/lib/utils'
 
 interface EventOrderPanelSubmitButtonProps {
   isLoading: boolean
@@ -12,6 +11,12 @@ interface EventOrderPanelSubmitButtonProps {
   type?: 'button' | 'submit'
   /** 'yes' = verde, 'no' = vermelho */
   outcomeVariant?: 'yes' | 'no' | null
+}
+
+const VARIANT_STYLES: Record<string, { background: string, shadow: string }> = {
+  yes: { background: '#10b981', shadow: 'rgba(16,185,129,0.35)' },
+  no: { background: '#f43f5e', shadow: 'rgba(244,63,94,0.35)' },
+  default: { background: '#3b82f6', shadow: 'rgba(59,130,246,0.25)' },
 }
 
 export default function EventOrderPanelSubmitButton({
@@ -24,8 +29,8 @@ export default function EventOrderPanelSubmitButton({
 }: EventOrderPanelSubmitButtonProps) {
   const t = useExtracted()
 
-  const isYes = outcomeVariant === 'yes'
-  const isNo = outcomeVariant === 'no'
+  const variantKey = outcomeVariant === 'yes' ? 'yes' : outcomeVariant === 'no' ? 'no' : 'default'
+  const { background, shadow } = VARIANT_STYLES[variantKey]
 
   return (
     <div className="relative w-full">
@@ -33,17 +38,12 @@ export default function EventOrderPanelSubmitButton({
         type={type}
         disabled={isDisabled}
         onClick={onClick}
-        className={cn(
-          'w-full h-14 rounded-[16px] text-[16px] font-bold tracking-tight transition-all duration-300',
-          'hover:brightness-110 active:scale-[0.98] shadow-lg',
-          'flex items-center justify-center gap-2',
-          // Cores baseadas no variant com fallback seguro
-          isYes && 'bg-[#10b981] text-white shadow-[#10b981]/20',
-          isNo && 'bg-[#f43f5e] text-white shadow-[#f43f5e]/20',
-          (!isYes && !isNo) && 'bg-[#3b82f6] text-white',
-          // Estado desabilitado
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none',
-        )}
+        style={{
+          background,
+          boxShadow: `0 8px 20px ${shadow}`,
+          opacity: isDisabled ? 0.5 : 1,
+        }}
+        className="w-full h-14 rounded-[16px] text-[16px] font-bold text-white tracking-tight transition-all duration-300 hover:brightness-110 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:scale-100"
       >
         {isLoading ? (
           <>
