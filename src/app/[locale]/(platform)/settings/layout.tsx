@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { getExtracted, setRequestLocale } from 'next-intl/server'
 import SettingsSidebar from '@/app/[locale]/(platform)/settings/_components/SettingsSidebar'
- 
-export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: LayoutProps<'/[locale]/settings'>): Promise<Metadata> {
   const { locale } = await params
@@ -23,7 +22,9 @@ export default async function SettingsLayout({ params, children }: LayoutProps<'
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 lg:grid-cols-[200px_1fr] lg:gap-16">
           <SettingsSidebar />
-          {children}
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
         </div>
       </div>
     </main>

@@ -5,7 +5,7 @@ import { connection } from 'next/server'
 import SettingsTradingContent from '@/app/[locale]/(platform)/settings/_components/SettingsTradingContent'
 import { UserRepository } from '@/lib/db/queries/user'
  
-export const dynamic = 'force-dynamic'
+ 
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings/trading'>): Promise<Metadata> {
   const { locale } = await params

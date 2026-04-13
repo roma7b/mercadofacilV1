@@ -5,7 +5,7 @@ import { connection } from 'next/server'
 import SettingsNotificationsContent from '@/app/[locale]/(platform)/settings/_components/SettingsNotificationsContent'
 import { UserRepository } from '@/lib/db/queries/user'
  
-export const dynamic = 'force-dynamic'
+ 
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings/notifications'>): Promise<Metadata> {
   const { locale } = await params

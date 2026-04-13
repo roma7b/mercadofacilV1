@@ -11,7 +11,7 @@ const optimizedImageHostPatterns = getOptimizedImageHostPatterns(process.env)
 
 const config: NextConfig = {
   output: process.env.VERCEL_ENV ? undefined : 'standalone',
-  cacheComponents: false,
+  cacheComponents: true,
   typedRoutes: false,
   eslint: {
     ignoreDuringBuilds: true,
