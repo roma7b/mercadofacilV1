@@ -1785,7 +1785,7 @@ export default function EventOrderPanelForm({
                 type={!isInteractiveWalletReady || shouldShowDepositCta ? 'button' : 'submit'}
                 isLoading={state.isLoading}
                 isDisabled={state.isLoading}
-                outcomeVariant={outcomeIndex === OUTCOME_INDEX.YES ? 'yes' : outcomeIndex === OUTCOME_INDEX.NO ? 'no' : null}
+                outcomeVariant={state.side === ORDER_SIDE.BUY ? 'yes' : 'no'}
                 onClick={(event) => {
                   if (!isInteractiveWalletReady) {
                     void open()

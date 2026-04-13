@@ -123,11 +123,11 @@ export default function EventOrderPanelInput({
     <div className="mb-3 flex flex-col gap-2">
       {/* Header Info: Quantia e Saldo */}
       <div className="flex flex-col px-1 mb-1">
-        <span className="text-[13px] font-bold text-white tracking-wide">{t('Quantia')}</span>
+        <span className="text-[13px] font-bold text-foreground tracking-wide">{t('Quantia')}</span>
         <button 
           type="button"
           onClick={handleBalanceClick}
-          className="text-left text-[12px] font-medium text-white/40 hover:text-white transition-colors"
+          className="text-left text-[12px] font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           {side === ORDER_SIDE.SELL ? t('Minhas cotas') : t('Saldo')}: 
           <span className="ml-1">R$ {areValuesHidden ? '****' : (side === ORDER_SIDE.SELL ? availableShares.toFixed(2) : formattedBalanceText)}</span>
@@ -136,25 +136,25 @@ export default function EventOrderPanelInput({
 
       {/* Main Input Component - Dashboard Style */}
       <div className={cn(
-        "flex items-center gap-2 bg-[#212b36] rounded-xl p-1.5 border border-transparent",
+        "flex items-center gap-2 bg-muted/30 rounded-xl p-1.5 border border-border/50",
         shouldShake && "animate-order-shake"
       )}>
         {/* Minus Button */}
         <button
           type="button"
           onClick={() => decrementAmount(1)}
-          className="flex size-11 items-center justify-center rounded-lg bg-[#1e2836] text-white hover:bg-zinc-800 transition-all border border-white/5 active:scale-95"
+          className="flex size-11 items-center justify-center rounded-lg bg-muted/50 text-foreground hover:bg-muted transition-all border border-border/10 active:scale-95"
         >
           <Minus className="size-5" strokeWidth={3} />
         </button>
 
         {/* Input Area */}
         <div className="flex flex-1 items-center justify-center gap-1 group">
-          <span className="text-2xl font-black text-white/50">R$</span>
+          <span className="text-2xl font-black text-muted-foreground/50">R$</span>
           <input
             ref={inputRef}
             type="text"
-            className="w-full bg-transparent p-0 text-center text-3xl font-black text-white outline-none placeholder:text-zinc-600 appearance-none"
+            className="w-full bg-transparent p-0 text-center text-3xl font-black text-foreground outline-none placeholder:text-muted-foreground/30 appearance-none"
             placeholder="0"
             value={formattedAmount}
             onChange={e => handleInputChange(e.target.value)}
@@ -166,7 +166,7 @@ export default function EventOrderPanelInput({
         <button
           type="button"
           onClick={() => incrementAmount(1)}
-          className="flex size-11 items-center justify-center rounded-lg bg-[#1e2836] text-white hover:bg-zinc-800 transition-all border border-white/5 active:scale-95"
+          className="flex size-11 items-center justify-center rounded-lg bg-muted/50 text-foreground hover:bg-muted transition-all border border-border/10 active:scale-95"
         >
           <Plus className="size-5" strokeWidth={3} />
         </button>
@@ -179,8 +179,8 @@ export default function EventOrderPanelInput({
             type="button"
             key={chip}
             className="
-              min-w-[50px] px-3 py-1.5 rounded-full bg-[#1e2836] text-[11px] font-black 
-              text-zinc-500 border border-white/5 hover:bg-[#2a3648] hover:text-white 
+              min-w-[50px] px-3 py-1.5 rounded-full bg-muted/40 text-[11px] font-black 
+              text-muted-foreground border border-border/10 hover:bg-muted hover:text-foreground 
               transition-all active:scale-95
             "
             onClick={() => {

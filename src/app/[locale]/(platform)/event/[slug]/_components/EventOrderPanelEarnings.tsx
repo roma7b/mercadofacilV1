@@ -35,10 +35,10 @@ export default function EventOrderPanelEarnings({
       <div className="flex items-center justify-between">
         {/* Lado Esquerdo - Ícone e Texto */}
         <div className="flex flex-col">
-          <span className="text-[15px] font-bold text-white tracking-wide">
+          <span className="text-[15px] font-bold text-foreground tracking-wide">
             {isBuy ? t('Para ganhar 💰') : t('Preço Médio')}
           </span>
-          <span className="text-[12px] font-medium text-white/40">
+          <span className="text-[12px] font-medium text-muted-foreground">
             {isBuy ? `${buyMultiplier.toFixed(2)}x` : avgPrice}
           </span>
         </div>
@@ -47,7 +47,7 @@ export default function EventOrderPanelEarnings({
         <div className="flex items-center justify-end">
           <span className={cn(
             'text-[22px] font-black tracking-tight',
-            isBuy ? 'text-emerald-500' : 'text-white',
+            isBuy ? 'text-emerald-500' : 'text-foreground',
           )}
           >
             {isBuy ? buyToWinLabel : sellAmountLabel}

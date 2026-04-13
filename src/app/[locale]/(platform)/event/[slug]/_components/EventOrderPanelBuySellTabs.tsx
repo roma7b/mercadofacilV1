@@ -43,7 +43,7 @@ export default function EventOrderPanelBuySellTabs({
   ]
 
   return (
-    <div className="mt-4 mb-2 border-b border-white/5 pb-0">
+    <div className="mt-4 mb-2 border-b border-border/10 pb-0">
       <div className="flex gap-6">
         {tabs.map((tab) => {
           const isActive = side === tab.id
@@ -55,8 +55,8 @@ export default function EventOrderPanelBuySellTabs({
               className={cn(
                 'relative pb-2 text-[14px] font-bold capitalize transition-all duration-200 border-b-2',
                 isActive
-                  ? 'text-white border-white'
-                  : 'text-zinc-500 border-transparent hover:text-zinc-300',
+                  ? 'text-foreground border-foreground'
+                  : 'text-muted-foreground hover:text-foreground/80',
               )}
             >
               {tab.label}
