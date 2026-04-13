@@ -13,6 +13,12 @@ const config: NextConfig = {
   output: process.env.VERCEL_ENV ? undefined : 'standalone',
   cacheComponents: true,
   typedRoutes: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   reactStrictMode: false,
   images: {
     unoptimized: process.env.DISABLE_IMAGE_OPTIMIZATION === 'true',

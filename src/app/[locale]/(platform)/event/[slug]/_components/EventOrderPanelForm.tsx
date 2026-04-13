@@ -1,6 +1,5 @@
 'use client'
 
-import EventMarketCountdown from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketCountdown'
 import type { InfiniteData } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import type { PortfolioUserOpenOrder } from '@/app/[locale]/(platform)/portfolio/_types/PortfolioOpenOrdersTypes'
@@ -16,6 +15,7 @@ import { toast } from 'sonner'
 import { hashTypedData } from 'viem'
 import { getSafeNonceAction, submitSafeTransactionAction } from '@/app/[locale]/(platform)/_actions/approve-tokens'
 import { useTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingProvider'
+import EventMarketCountdown from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketCountdown'
 import { useOrderBookSummaries } from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderBook'
 import EventOrderPanelBuySellTabs from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelBuySellTabs'
 import EventOrderPanelEarnings from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelEarnings'
@@ -36,8 +36,8 @@ import { inferResolvedTweetMarketOutcome, isTweetMarketsEvent } from '@/app/[loc
 import {
   resolveResolvedOrderPanelDisplay,
 } from '@/app/[locale]/(platform)/event/[slug]/_utils/resolved-order-panel-market'
-import { Button } from '@/components/ui/button'
 import { GenericAuthModal } from '@/components/GenericAuthModal'
+import { Button } from '@/components/ui/button'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit, useAppKitAccount, useSignMessage, useSignTypedData } from '@/hooks/useAppKitMock'
 
@@ -265,15 +265,11 @@ export default function EventOrderPanelForm({
   const noPrice = isCategorical
     ? null
     : (activeLiveNoPrice ?? fallbackPrices.data?.nao ?? resolveFallbackOutcomeUnitPrice(activeMarket, noOutcome))
-  const formatProb = (val: number | null | undefined) => {
+  function _formatProb(val: number | null | undefined) {
     if (val == null || !Number.isFinite(val)) { return 0 }
-    // Se o valor for > 1, assumimos que já é porcentagem (ex: 94)
-    // Se for <= 1, assumimos que é decimal (ex: 0.94)
     const prob = val > 1 ? val : val * 100
     return Math.min(100, Math.max(0, Math.round(prob)))
   }
-  const displayYesPrice = formatProb(yesPrice)
-  const displayNoPrice = formatProb(noPrice)
 
   const outcomeTokenId = activeOutcome?.token_id ? String(activeOutcome.token_id) : null
   const shouldLoadOrderBookSummary = Boolean(
@@ -531,8 +527,6 @@ export default function EventOrderPanelForm({
   const availableNoTokenShares = Math.max(0, noTokenShares - lockedNoShares)
   const availableYesPositionShares = Math.max(0, yesPositionShares - lockedYesShares)
   const availableNoPositionShares = Math.max(0, noPositionShares - lockedNoShares)
-  const mergeableYesShares = Math.max(availableYesTokenShares, availableYesPositionShares)
-  const mergeableNoShares = Math.max(availableNoTokenShares, availableNoPositionShares)
   const outcomeIndex = activeOutcome?.outcome_index as typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO | undefined
   const selectedTokenShares = outcomeIndex === undefined
     ? 0
@@ -1519,7 +1513,7 @@ export default function EventOrderPanelForm({
       id="event-order-form"
       className={cn('flex w-full flex-col', isMobile
         ? 'max-h-[90vh] overflow-y-auto bg-background px-6 pt-2 pb-20'
-        : `flex flex-col gap-1 px-4 pt-4 pb-4`)}
+        : `flex flex-col gap-1 p-4`)}
     >
       {isMobile && !isResolvedMarket && (
         <div className="flex flex-col gap-6 py-4">
@@ -1814,4 +1808,3 @@ export default function EventOrderPanelForm({
     </Form>
   )
 }
-
