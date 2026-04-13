@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { connection } from 'next/server'
  
  
 
-export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  await connection()
   try {
     const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''

@@ -11,7 +11,6 @@ import {
 import { isPlatformReservedRootSlug, normalizePublicProfileSlug } from '@/lib/platform-routing'
 import { STATIC_PARAMS_PLACEHOLDER } from '@/lib/static-params'
 
-export const dynamic = 'force-dynamic'
 export const generateStaticParams = generateDynamicHomeSubcategoryStaticParams
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/[slug]/[subcategory]'>): Promise<Metadata> {
@@ -30,7 +29,15 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/[slug]/[
   return buildDynamicHomeSubcategoryMetadata(resolvedLocale, slug, subcategory)
 }
 
-export default async function PlatformSubcategoryPage({ params }: PageProps<'/[locale]/[slug]/[subcategory]'>) {
+export default function PlatformSubcategoryPage({ params }: PageProps<'/[locale]/[slug]/[subcategory]'>) {
+  return (
+    <Suspense fallback={null}>
+      <InnerPlatformSubcategoryPage params={params} />
+    </Suspense>
+  )
+}
+
+async function InnerPlatformSubcategoryPage({ params }: { params: PageProps<'/[locale]/[slug]/[subcategory]'>['params'] }) {
   const { locale, slug, subcategory } = await params
   const resolvedLocale = locale as SupportedLocale
   setRequestLocale(resolvedLocale)
@@ -44,8 +51,6 @@ export default async function PlatformSubcategoryPage({ params }: PageProps<'/[l
   }
 
   return (
-    <Suspense fallback={null}>
-      <DynamicHomeSubcategoryPageContent locale={resolvedLocale} slug={slug} subcategory={subcategory} />
-    </Suspense>
+    <DynamicHomeSubcategoryPageContent locale={resolvedLocale} slug={slug} subcategory={subcategory} />
   )
 }

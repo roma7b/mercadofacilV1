@@ -1,3 +1,4 @@
+'use cache'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
 import { notFound } from 'next/navigation'
@@ -11,6 +12,7 @@ import {
 import { STATIC_PARAMS_PLACEHOLDER } from '@/lib/static-params'
 
 async function getMainTags(locale: SupportedLocale) {
+  'use cache'
   const { data: mainTags } = await TagRepository.getMainTags(locale)
   return mainTags ?? []
 }

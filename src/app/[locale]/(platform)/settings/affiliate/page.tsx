@@ -134,7 +134,6 @@ async function AffiliateSettingsPageInner({ locale }: { locale: string }) {
   )
 }
 
-export const dynamic = 'force-dynamic'
 
 export default async function AffiliateSettingsPage({ params }: PageProps<'/[locale]/settings/affiliate'>) {
   const { locale } = await params

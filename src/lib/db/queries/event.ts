@@ -1367,6 +1367,195 @@ function getEventMainTag(tags: any[] | undefined): string {
   return mainTag?.name || tags[0].name
 }
 
+export async function cachedGetCanonicalEventSlugBySportsPath(
+  sportsSportSlug: string,
+  sportsEventSlug: string,
+): Promise<QueryResult<{ slug: string }>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+
+  return runQuery(async () => {
+    const sportsSlugResolver = await getSportsSlugResolverFromDb()
+    const requestedCanonicalSportsSlug = resolveCanonicalSportsSportSlug(sportsSlugResolver, {
+      sportsSportSlug,
+      sportsTags: null,
+    })
+    const normalizedSportsEventSlug = sportsEventSlug.trim().toLowerCase()
+
+    if (!requestedCanonicalSportsSlug || !normalizedSportsEventSlug) {
+      throw new Error('Event not found')
+    }
+
+    const normalizedSportsEventSlugColumn = sql<string>`
+      LOWER(TRIM(COALESCE(${event_sports.sports_event_slug}, '')))
+    `
+    const result = await db
+      .select({
+        slug: events.slug,
+        created_at: events.created_at,
+        sports_sport_slug: event_sports.sports_sport_slug,
+        sports_series_slug: event_sports.sports_series_slug,
+        sports_tags: event_sports.sports_tags,
+      })
+      .from(event_sports)
+      .innerJoin(events, eq(event_sports.event_id, events.id))
+      .where(and(
+        eq(normalizedSportsEventSlugColumn, normalizedSportsEventSlug),
+        eq(events.is_hidden, false),
+      ))
+      .orderBy(desc(events.created_at))
+
+    const matchingRow = result
+      .filter((row) => {
+        const canonicalSportsSlug = resolveCanonicalSportsSportSlug(sportsSlugResolver, {
+          sportsSportSlug: row.sports_sport_slug,
+          sportsSeriesSlug: row.sports_series_slug,
+          sportsTags: toOptionalStringArray(row.sports_tags),
+        })
+
+        return canonicalSportsSlug === requestedCanonicalSportsSlug
+      })
+      .sort((left, right) => {
+        const leftIsAuxiliary = isSportsAuxiliaryEventSlug(left.slug)
+        const rightIsAuxiliary = isSportsAuxiliaryEventSlug(right.slug)
+        if (leftIsAuxiliary !== rightIsAuxiliary) {
+          return Number(leftIsAuxiliary) - Number(rightIsAuxiliary)
+        }
+
+        return right.created_at.getTime() - left.created_at.getTime()
+      })[0]
+
+    if (matchingRow) {
+      return { data: { slug: matchingRow.slug }, error: null }
+    }
+
+    return { data: null, error: 'Event not found' }
+  })
+}
+
+export async function cachedGetEventTitleBySlug(
+  slug: string,
+  locale: SupportedLocale = DEFAULT_LOCALE,
+): Promise<QueryResult<{ title: string }>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+  cacheTag(cacheTags.event(slug))
+
+  return runQuery(async () => {
+    const result = await db
+      .select({ id: events.id, title: events.title })
+      .from(events)
+      .where(and(
+        or(eq(events.slug, slug), eq(events.id, slug)),
+        eq(events.is_hidden, false),
+      ))
+      .limit(1)
+
+    if (result.length === 0) {
+      return { data: null, error: 'Event not found' }
+    }
+
+    const eventRow = result[0]
+    if (!eventRow) {
+      return { data: null, error: 'Event not found' }
+    }
+
+    if (locale === DEFAULT_LOCALE) {
+      return { data: { title: eventRow.title }, error: null }
+    }
+
+    const localizedTitles = await getLocalizedEventTitlesById([eventRow.id], locale)
+
+    return {
+      data: {
+        title: localizedTitles.get(eventRow.id) ?? eventRow.title,
+      },
+      error: null,
+    }
+  })
+}
+
+export async function cachedGetEventRouteBySlug(slug: string): Promise<QueryResult<{
+  slug: string
+  sports_sport_slug: string | null
+  sports_event_slug: string | null
+  sports_section: 'games' | 'props' | null
+  tags: Array<{ slug: string }>
+}>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+  cacheTag(cacheTags.event(slug))
+
+  return runQuery(async () => {
+    interface EventRouteRow {
+      slug: string
+      eventTags: Array<{
+        tag: {
+          slug: string
+        }
+      }>
+      sports: {
+        sports_sport_slug: string | null
+        sports_series_slug: string | null
+        sports_event_slug: string | null
+        sports_tags: unknown
+      } | null
+    }
+
+    const result = await db.query.events.findFirst({
+      where: and(
+        or(eq(events.slug, slug), eq(events.id, slug)),
+        eq(events.is_hidden, false),
+      ),
+      columns: { slug: true },
+      with: {
+        eventTags: {
+          with: {
+            tag: {
+              columns: {
+                slug: true,
+              },
+            },
+          },
+        },
+        sports: {
+          columns: {
+            sports_sport_slug: true,
+            sports_series_slug: true,
+            sports_event_slug: true,
+            sports_tags: true,
+          },
+        },
+      },
+    }) as EventRouteRow | undefined
+
+    if (!result) {
+      return { data: null, error: 'Event not found' }
+    }
+
+    const sportsSlugResolver = await getSportsSlugResolverFromDb()
+    const normalizedSportsTags = toOptionalStringArray(result.sports?.sports_tags)
+
+    return {
+      data: {
+        slug: result.slug,
+        sports_sport_slug: resolveCanonicalSportsSportSlug(sportsSlugResolver, {
+          sportsSportSlug: result.sports?.sports_sport_slug ?? null,
+          sportsSeriesSlug: result.sports?.sports_series_slug ?? null,
+          sportsTags: normalizedSportsTags,
+        }),
+        sports_event_slug: result.sports?.sports_event_slug ?? null,
+        sports_section: resolveSportsSection(result.slug),
+        tags: (result.eventTags ?? [])
+          .map(et => et.tag?.slug)
+          .filter((tagSlug): tagSlug is string => Boolean(tagSlug))
+          .map(slug => ({ slug })),
+      },
+      error: null,
+    }
+  })
+}
+
 export const EventRepository = {
   async listEvents({
     offset = 0,
@@ -2126,63 +2315,7 @@ export const EventRepository = {
     sportsSportSlug: string,
     sportsEventSlug: string,
   ): Promise<QueryResult<{ slug: string }>> {
-    return runQuery(async () => {
-      const sportsSlugResolver = await getSportsSlugResolverFromDb()
-      const requestedCanonicalSportsSlug = resolveCanonicalSportsSportSlug(sportsSlugResolver, {
-        sportsSportSlug,
-        sportsTags: null,
-      })
-      const normalizedSportsEventSlug = sportsEventSlug.trim().toLowerCase()
-
-      if (!requestedCanonicalSportsSlug || !normalizedSportsEventSlug) {
-        throw new Error('Event not found')
-      }
-
-      const normalizedSportsEventSlugColumn = sql<string>`
-        LOWER(TRIM(COALESCE(${event_sports.sports_event_slug}, '')))
-      `
-      const result = await db
-        .select({
-          slug: events.slug,
-          created_at: events.created_at,
-          sports_sport_slug: event_sports.sports_sport_slug,
-          sports_series_slug: event_sports.sports_series_slug,
-          sports_tags: event_sports.sports_tags,
-        })
-        .from(event_sports)
-        .innerJoin(events, eq(event_sports.event_id, events.id))
-        .where(and(
-          eq(normalizedSportsEventSlugColumn, normalizedSportsEventSlug),
-          eq(events.is_hidden, false),
-        ))
-        .orderBy(desc(events.created_at))
-
-      const matchingRow = result
-        .filter((row) => {
-          const canonicalSportsSlug = resolveCanonicalSportsSportSlug(sportsSlugResolver, {
-            sportsSportSlug: row.sports_sport_slug,
-            sportsSeriesSlug: row.sports_series_slug,
-            sportsTags: toOptionalStringArray(row.sports_tags),
-          })
-
-          return canonicalSportsSlug === requestedCanonicalSportsSlug
-        })
-        .sort((left, right) => {
-          const leftIsAuxiliary = isSportsAuxiliaryEventSlug(left.slug)
-          const rightIsAuxiliary = isSportsAuxiliaryEventSlug(right.slug)
-          if (leftIsAuxiliary !== rightIsAuxiliary) {
-            return Number(leftIsAuxiliary) - Number(rightIsAuxiliary)
-          }
-
-          return right.created_at.getTime() - left.created_at.getTime()
-        })[0]
-
-      if (matchingRow) {
-        return { data: { slug: matchingRow.slug }, error: null }
-      }
-
-      throw new Error('Event not found')
-    })
+    return cachedGetCanonicalEventSlugBySportsPath(sportsSportSlug, sportsEventSlug)
   },
 
   async existsBySlug(slug: string): Promise<QueryResult<boolean>> {
@@ -2204,42 +2337,7 @@ export const EventRepository = {
     slug: string,
     locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<QueryResult<{ title: string }>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-    cacheTag(cacheTags.event(slug))
-
-    return runQuery(async () => {
-      const result = await db
-        .select({ id: events.id, title: events.title })
-        .from(events)
-        .where(and(
-          or(eq(events.slug, slug), eq(events.id, slug)),
-          eq(events.is_hidden, false),
-        ))
-        .limit(1)
-
-      if (result.length === 0) {
-        return { data: null, error: 'Event not found' }
-      }
-
-      const eventRow = result[0]
-      if (!eventRow) {
-        return { data: null, error: 'Event not found' }
-      }
-
-      if (locale === DEFAULT_LOCALE) {
-        return { data: { title: eventRow.title }, error: null }
-      }
-
-      const localizedTitles = await getLocalizedEventTitlesById([eventRow.id], locale)
-
-      return {
-        data: {
-          title: localizedTitles.get(eventRow.id) ?? eventRow.title,
-        },
-        error: null,
-      }
-    })
+    return cachedGetEventTitleBySlug(slug, locale)
   },
 
   async getEventRouteBySlug(slug: string): Promise<QueryResult<{
@@ -2249,77 +2347,7 @@ export const EventRepository = {
     sports_section: 'games' | 'props' | null
     tags: Array<{ slug: string }>
   }>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-    cacheTag(cacheTags.event(slug))
-
-    return runQuery(async () => {
-      interface EventRouteRow {
-        slug: string
-        eventTags: Array<{
-          tag: {
-            slug: string
-          }
-        }>
-        sports: {
-          sports_sport_slug: string | null
-          sports_series_slug: string | null
-          sports_event_slug: string | null
-          sports_tags: unknown
-        } | null
-      }
-
-      const result = await db.query.events.findFirst({
-        where: and(
-          or(eq(events.slug, slug), eq(events.id, slug)),
-          eq(events.is_hidden, false),
-        ),
-        columns: { slug: true },
-        with: {
-          eventTags: {
-            with: {
-              tag: {
-                columns: {
-                  slug: true,
-                },
-              },
-            },
-          },
-          sports: {
-            columns: {
-              sports_sport_slug: true,
-              sports_series_slug: true,
-              sports_event_slug: true,
-              sports_tags: true,
-            },
-          },
-        },
-      }) as EventRouteRow | undefined
-
-      if (!result) {
-        return { data: null, error: 'Event not found' }
-      }
-
-      const sportsSlugResolver = await getSportsSlugResolverFromDb()
-      const normalizedSportsTags = toOptionalStringArray(result.sports?.sports_tags)
-
-      return {
-        data: {
-          slug: result.slug,
-          sports_sport_slug: resolveCanonicalSportsSportSlug(sportsSlugResolver, {
-            sportsSportSlug: result.sports?.sports_sport_slug ?? null,
-            sportsSeriesSlug: result.sports?.sports_series_slug ?? null,
-            sportsTags: normalizedSportsTags,
-          }),
-          sports_event_slug: result.sports?.sports_event_slug ?? null,
-          sports_section: resolveSportsSection({ tags: result.eventTags.map(eventTag => eventTag.tag) }),
-          tags: result.eventTags.map(eventTag => ({
-            slug: eventTag.tag.slug,
-          })),
-        },
-        error: null,
-      }
-    })
+    return cachedGetEventRouteBySlug(slug)
   },
 
   async getEventConditionChangeLogBySlug(slug: string): Promise<QueryResult<ConditionChangeLogEntry[]>> {

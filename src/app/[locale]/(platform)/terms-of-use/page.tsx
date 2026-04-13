@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { setRequestLocale } from 'next-intl/server'
 import { loadRuntimeThemeState } from '@/lib/theme-settings'
@@ -13,12 +14,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TermsOfUsePage({ params }: PageProps<'/[locale]/terms-of-use'>) {
+  return (
+    <Suspense fallback={null}>
+      <InnerTermsOfUsePage params={params} />
+    </Suspense>
+  )
+}
+
+async function InnerTermsOfUsePage({ params }: { params: PageProps<'/[locale]/terms-of-use'>['params'] }) {
   const { locale } = await params
   setRequestLocale(locale)
 
   const runtimeTheme = await loadRuntimeThemeState()
   const siteName = runtimeTheme.site.name
-  const siteNameUpper = siteName.toUpperCase()
   const siteUrl = (process.env.SITE_URL?.trim()?.replace(/\/$/, '') ?? '') || undefined
 
   return (

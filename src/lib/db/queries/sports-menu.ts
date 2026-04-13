@@ -344,88 +344,92 @@ export async function getSportsCountsBySlugFromDb() {
   return buildCountsBySlug(resolver, activeCountRows)
 }
 
+export async function cachedGetMenuEntries(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuEntry[]>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+
+  return runQuery(async () => {
+    const rows = await getCachedSportsMenuRows()
+    return { data: buildSportsSidebarEntries(rows, vertical), error: null }
+  })
+}
+
+export async function cachedGetLayoutData(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuLayoutData>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+
+  return runQuery(async () => {
+    const [rows, activeCountRows] = await Promise.all([
+      getCachedSportsMenuRows(),
+      getCachedActiveSportsCountRows(),
+    ])
+    const resolver = buildSportsSlugResolver(toMappingEntries(rows))
+    const menuEntries = buildSportsSidebarEntries(rows, vertical)
+    const countsBySlug = buildCountsBySlug(resolver, activeCountRows)
+
+    return {
+      data: {
+        menuEntries,
+        countsBySlug,
+        canonicalSlugByAliasKey: Object.fromEntries(resolver.canonicalByAliasKey),
+        h1TitleBySlug: Object.fromEntries(resolver.h1TitleBySlug),
+        sectionsBySlug: Object.fromEntries(resolver.sectionsBySlug),
+      },
+      error: null,
+    }
+  })
+}
+
+export async function cachedResolveCanonicalSlugByAlias(alias: string): Promise<QueryResult<string | null>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+
+  return runQuery(async () => {
+    const resolver = await getSportsSlugResolverFromDb()
+    return { data: resolveCanonicalSportsSlugAlias(resolver, alias), error: null }
+  })
+}
+
+export async function cachedGetLandingHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+
+  return runQuery(async () => {
+    const rows = await getCachedSportsMenuRows()
+    const menuEntries = buildSportsSidebarEntries(rows, vertical)
+    return { data: findDefaultLandingHref(menuEntries), error: null }
+  })
+}
+
+export async function cachedGetFuturesHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
+  'use cache'
+  cacheTag(cacheTags.eventsGlobal)
+
+  return runQuery(async () => {
+    const rows = await getCachedSportsMenuRows()
+    const menuEntries = buildSportsSidebarEntries(rows, vertical)
+    return { data: findDefaultFuturesHref(menuEntries), error: null }
+  })
+}
+
 export const SportsMenuRepository = {
   async getMenuEntries(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuEntry[]>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-
-    return runQuery(async () => {
-      const rows = await getCachedSportsMenuRows()
-
-      return {
-        data: buildSportsSidebarEntries(rows, vertical),
-        error: null,
-      }
-    })
+    return cachedGetMenuEntries(vertical)
   },
 
   async getLayoutData(vertical: SportsVertical = 'sports'): Promise<QueryResult<SportsMenuLayoutData>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-
-    return runQuery(async () => {
-      const [rows, activeCountRows] = await Promise.all([
-        getCachedSportsMenuRows(),
-        getCachedActiveSportsCountRows(),
-      ])
-      const resolver = buildSportsSlugResolver(toMappingEntries(rows))
-      const menuEntries = buildSportsSidebarEntries(rows, vertical)
-      const countsBySlug = buildCountsBySlug(resolver, activeCountRows)
-
-      return {
-        data: {
-          menuEntries,
-          countsBySlug,
-          canonicalSlugByAliasKey: Object.fromEntries(resolver.canonicalByAliasKey),
-          h1TitleBySlug: Object.fromEntries(resolver.h1TitleBySlug),
-          sectionsBySlug: Object.fromEntries(resolver.sectionsBySlug),
-        },
-        error: null,
-      }
-    })
+    return cachedGetLayoutData(vertical)
   },
 
   async resolveCanonicalSlugByAlias(alias: string): Promise<QueryResult<string | null>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-
-    return runQuery(async () => {
-      const resolver = await getSportsSlugResolverFromDb()
-
-      return {
-        data: resolveCanonicalSportsSlugAlias(resolver, alias),
-        error: null,
-      }
-    })
+    return cachedResolveCanonicalSlugByAlias(alias)
   },
 
   async getLandingHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-
-    return runQuery(async () => {
-      const rows = await getCachedSportsMenuRows()
-      const menuEntries = buildSportsSidebarEntries(rows, vertical)
-
-      return {
-        data: findDefaultLandingHref(menuEntries),
-        error: null,
-      }
-    })
+    return cachedGetLandingHref(vertical)
   },
 
   async getFuturesHref(vertical: SportsVertical = 'sports'): Promise<QueryResult<string | null>> {
-    'use cache'
-    cacheTag(cacheTags.eventsGlobal)
-
-    return runQuery(async () => {
-      const rows = await getCachedSportsMenuRows()
-      const menuEntries = buildSportsSidebarEntries(rows, vertical)
-
-      return {
-        data: findDefaultFuturesHref(menuEntries),
-        error: null,
-      }
-    })
+    return cachedGetFuturesHref(vertical)
   },
 }

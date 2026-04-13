@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import SettingsNotificationsContent from '@/app/[locale]/(platform)/settings/_components/SettingsNotificationsContent'
 import { UserRepository } from '@/lib/db/queries/user'
- 
-export const dynamic = 'force-dynamic'
+import { Suspense } from 'react'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings/notifications'>): Promise<Metadata> {
   const { locale } = await params
@@ -17,8 +16,7 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/settings
   }
 }
 
-export default async function NotificationsSettingsPage({ params }: PageProps<'/[locale]/settings/notifications'>) {
-  const { locale } = await params
+async function NotificationsSettingsPageInner({ locale }: { locale: string }) {
   setRequestLocale(locale)
 
   await connection()
@@ -43,5 +41,14 @@ export default async function NotificationsSettingsPage({ params }: PageProps<'/
         <SettingsNotificationsContent user={user} />
       </div>
     </section>
+  )
+}
+
+export default async function NotificationsSettingsPage({ params }: PageProps<'/[locale]/settings/notifications'>) {
+  const { locale } = await params
+  return (
+    <Suspense fallback={null}>
+      <NotificationsSettingsPageInner locale={locale} />
+    </Suspense>
   )
 }

@@ -17,8 +17,9 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/settings
   }
 }
 
-export default async function TradingSettingsPage({ params }: PageProps<'/[locale]/settings/trading'>) {
-  const { locale } = await params
+import { Suspense } from 'react'
+
+async function TradingSettingsPageInner({ locale }: { locale: string }) {
   setRequestLocale(locale)
 
   await connection()
@@ -43,5 +44,14 @@ export default async function TradingSettingsPage({ params }: PageProps<'/[local
         <SettingsTradingContent user={user} />
       </div>
     </section>
+  )
+}
+
+export default async function TradingSettingsPage({ params }: PageProps<'/[locale]/settings/trading'>) {
+  const { locale } = await params
+  return (
+    <Suspense fallback={null}>
+      <TradingSettingsPageInner locale={locale} />
+    </Suspense>
   )
 }

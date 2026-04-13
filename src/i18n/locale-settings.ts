@@ -34,6 +34,7 @@ export function getEnabledLocalesFromSettings(settings?: SettingsMap): Supported
 }
 
 export async function loadEnabledLocales(): Promise<SupportedLocale[]> {
+  'use cache'
   const { data } = await SettingsRepository.getSettings()
   return getEnabledLocalesFromSettings(data ?? undefined)
 }

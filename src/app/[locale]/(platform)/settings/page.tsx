@@ -17,8 +17,9 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/settings
   }
 }
 
-export default async function SettingsPage({ params }: PageProps<'/[locale]/settings'>) {
-  const { locale } = await params
+import { Suspense } from 'react'
+
+async function SettingsPageInner({ locale }: { locale: string }) {
   setRequestLocale(locale)
 
   await connection()
@@ -41,5 +42,14 @@ export default async function SettingsPage({ params }: PageProps<'/[locale]/sett
 
       <SettingsProfilePanel user={user} />
     </section>
+  )
+}
+
+export default async function SettingsPage({ params }: PageProps<'/[locale]/settings'>) {
+  const { locale } = await params
+  return (
+    <Suspense fallback={null}>
+      <SettingsPageInner locale={locale} />
+    </Suspense>
   )
 }

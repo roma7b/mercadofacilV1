@@ -1,5 +1,3 @@
-'use cache'
-
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
@@ -38,7 +36,15 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/[slug]'>
   return buildDynamicHomeCategoryMetadata(resolvedLocale, slug)
 }
 
-export default async function PlatformSlugPage({ params }: PageProps<'/[locale]/[slug]'>) {
+export default function PlatformSlugPage({ params }: PageProps<'/[locale]/[slug]'>) {
+  return (
+    <Suspense fallback={null}>
+      <InnerPlatformSlugPage params={params} />
+    </Suspense>
+  )
+}
+
+async function InnerPlatformSlugPage({ params }: { params: PageProps<'/[locale]/[slug]'>['params'] }) {
   const { locale, slug } = await params
   const resolvedLocale = locale as SupportedLocale
   setRequestLocale(resolvedLocale)
@@ -51,13 +57,11 @@ export default async function PlatformSlugPage({ params }: PageProps<'/[locale]/
   if (profileSlug.type !== 'invalid') {
     return (
       <TradingOnboardingProvider>
-        <Suspense fallback={null}>
-          <main className="container py-8">
-            <div className="mx-auto grid max-w-6xl gap-12">
-              <PublicProfilePageContent slug={slug} />
-            </div>
-          </main>
-        </Suspense>
+        <main className="container py-8">
+          <div className="mx-auto grid max-w-6xl gap-12">
+            <PublicProfilePageContent slug={slug} />
+          </div>
+        </main>
       </TradingOnboardingProvider>
     )
   }
@@ -67,8 +71,6 @@ export default async function PlatformSlugPage({ params }: PageProps<'/[locale]/
   }
 
   return (
-    <Suspense fallback={null}>
-      <DynamicHomeCategoryPageContent locale={resolvedLocale} slug={slug} />
-    </Suspense>
+    <DynamicHomeCategoryPageContent locale={resolvedLocale} slug={slug} />
   )
 }

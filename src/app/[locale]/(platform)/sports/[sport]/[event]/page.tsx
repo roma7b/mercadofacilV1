@@ -21,13 +21,24 @@ export async function generateMetadata({
   return await generateSportsVerticalEventMetadata(await params)
 }
 
+import { Suspense } from 'react'
+
 export default async function SportsEventPage({
   params,
 }: {
   params: RouteParams
 }) {
+  return (
+    <Suspense fallback={null}>
+      <InnerSportsEventPage params={params} />
+    </Suspense>
+  )
+}
+
+async function InnerSportsEventPage({ params }: { params: RouteParams }) {
+  const resolvedParams = await params
   return await renderSportsVerticalEventPage({
-    ...(await params),
+    ...resolvedParams,
     vertical: 'sports',
   })
 }

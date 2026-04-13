@@ -1,3 +1,4 @@
+'use cache'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
 import { setRequestLocale } from 'next-intl/server'
@@ -11,6 +12,7 @@ import {
   DEFAULT_PREDICTION_RESULTS_STATUS,
 } from '@/lib/prediction-results-filters'
 import { STATIC_PARAMS_PLACEHOLDER } from '@/lib/static-params'
+import { Suspense } from 'react'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/predictions/[slug]'>): Promise<Metadata> {
   const { locale, slug } = await params
@@ -30,6 +32,14 @@ export async function generateStaticParams() {
 export default async function PredictionResultsPage({
   params,
 }: PageProps<'/[locale]/predictions/[slug]'>) {
+  return (
+    <Suspense fallback={null}>
+      <InnerPredictionResultsPage params={params} />
+    </Suspense>
+  )
+}
+
+async function InnerPredictionResultsPage({ params }: { params: PageProps<'/[locale]/predictions/[slug]'>['params'] }) {
   const { locale, slug } = await params
   const resolvedLocale = locale as SupportedLocale
   setRequestLocale(resolvedLocale)

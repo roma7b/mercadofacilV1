@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata, Viewport } from 'next'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
@@ -71,7 +72,21 @@ async function getCachedThemeState() {
   return await loadRuntimeThemeState()
 }
 
-export default async function LocaleLayout({ params, children }: LayoutProps<'/[locale]'>) {
+export default function LocaleLayout({ params, children }: LayoutProps<'/[locale]'>) {
+  return (
+    <Suspense fallback={null}>
+      <InnerLocaleLayout params={params}>{children}</InnerLocaleLayout>
+    </Suspense>
+  )
+}
+
+async function InnerLocaleLayout({ 
+  params, 
+  children 
+}: { 
+  params: LayoutProps<'/[locale]'>['params'],
+  children: React.ReactNode
+}) {
   const { locale } = await params
 
   if (!hasLocale(routing.locales, locale)) {

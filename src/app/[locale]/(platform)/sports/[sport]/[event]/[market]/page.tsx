@@ -71,6 +71,18 @@ export default async function SportsEventMarketPage({
 }: {
   params: Promise<{ locale: string, sport: string, event: string, market: string }>
 }) {
+  return (
+    <Suspense fallback={null}>
+      <InnerSportsEventMarketPage params={params} />
+    </Suspense>
+  )
+}
+
+async function InnerSportsEventMarketPage({ 
+  params 
+}: { 
+  params: Promise<{ locale: string, sport: string, event: string, market: string }> 
+}) {
   const { locale, sport, event, market } = await params
   setRequestLocale(locale)
   const resolvedLocale = locale as SupportedLocale
@@ -164,3 +176,5 @@ export default async function SportsEventMarketPage({
     </>
   )
 }
+
+import { Suspense } from 'react'

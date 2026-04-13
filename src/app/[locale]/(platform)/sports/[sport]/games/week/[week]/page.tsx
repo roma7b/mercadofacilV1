@@ -32,12 +32,18 @@ function parseWeekParam(value: string) {
   return parsed
 }
 
-export default async function SportsGamesBySportWeekPage({
-  params,
+import { Suspense } from 'react'
+import { connection } from 'next/server'
+
+async function SportsGamesBySportWeekPageInner({
+  locale,
+  sport,
+  week,
 }: {
-  params: Promise<{ locale: string, sport: string, week: string }>
+  locale: string
+  sport: string
+  week: string
 }) {
-  const { locale, sport, week } = await params
   setRequestLocale(locale)
 
   if (sport === STATIC_PARAMS_PLACEHOLDER || week === STATIC_PARAMS_PLACEHOLDER) {
@@ -98,5 +104,19 @@ export default async function SportsGamesBySportWeekPage({
         vertical="sports"
       />
     </div>
+  )
+}
+
+export default async function SportsGamesBySportWeekPage({
+  params,
+}: {
+  params: Promise<{ locale: string, sport: string, week: string }>
+}) {
+  const { locale, sport, week } = await params
+  
+  return (
+    <Suspense fallback={null}>
+      <SportsGamesBySportWeekPageInner locale={locale} sport={sport} week={week} />
+    </Suspense>
   )
 }
