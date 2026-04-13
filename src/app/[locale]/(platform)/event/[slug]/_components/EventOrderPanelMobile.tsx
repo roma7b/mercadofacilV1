@@ -116,14 +116,11 @@ export default function EventOrderPanelMobile({
                   state.setIsMobileOrderPanelOpen(true)
                 }}
               >
-                <div className="flex w-full items-center justify-between px-1">
-                  <span className="truncate text-[11px] tracking-tight uppercase opacity-90">
+                <div className="flex w-full items-center justify-center px-1">
+                  <span className="truncate text-[13px] font-black tracking-wider uppercase opacity-90">
                     {t('Buy')}
                     {' '}
                     {buyYesOutcomeLabel}
-                  </span>
-                  <span className="ml-2 shrink-0 text-sm font-black text-yes">
-                    {yesPriceLabel}
                   </span>
                 </div>
               </Button>
@@ -140,14 +137,11 @@ export default function EventOrderPanelMobile({
                   state.setIsMobileOrderPanelOpen(true)
                 }}
               >
-                <div className="flex w-full items-center justify-between px-1">
-                  <span className="truncate text-[11px] tracking-tight uppercase opacity-90">
+                <div className="flex w-full items-center justify-center px-1">
+                  <span className="truncate text-[13px] font-black tracking-wider uppercase opacity-90">
                     {t('Buy')}
                     {' '}
                     {buyNoOutcomeLabel}
-                  </span>
-                  <span className="ml-2 shrink-0 text-sm font-black text-no">
-                    {noPriceLabel}
                   </span>
                 </div>
               </Button>

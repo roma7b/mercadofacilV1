@@ -788,8 +788,7 @@ export default function EventOrderPanelForm({
   const isInteractiveWalletReady = hasMounted && Boolean(user)
   const shouldShowDepositCta = isInteractiveWalletReady
     && state.side === ORDER_SIDE.BUY
-    && state.type === ORDER_TYPE.MARKET
-    && Math.max(effectiveMarketBuyCost, amountNumber) > balance.raw
+    && (balance.raw < 1 || (state.type === ORDER_TYPE.MARKET && Math.max(effectiveMarketBuyCost, amountNumber) > balance.raw))
 
   const buyPayoutSummary = useMemo(() => {
     if (state.side !== ORDER_SIDE.BUY) {
