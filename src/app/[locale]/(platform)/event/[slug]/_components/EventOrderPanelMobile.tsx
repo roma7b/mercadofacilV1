@@ -16,6 +16,7 @@ import { formatCentsLabel } from '@/lib/formatters'
 import { resolveFallbackOutcomeUnitPrice, resolveMarketOutcome } from '@/lib/market-pricing'
 import { formatOddsFromPrice } from '@/lib/odds-format'
 import { useIsSingleMarket, useOrder, useOutcomeTopOfBookPrice } from '@/stores/useOrder'
+import { cn } from '@/lib/utils'
 
 interface EventMobileOrderPanelProps {
   event: Event
