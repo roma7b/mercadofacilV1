@@ -53,7 +53,9 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
             </Suspense>
             <div className="mx-auto flex w-full max-w-[1332px] gap-2 px-4 md:px-6">
               <div className="min-w-0 flex-1">
-                {children}
+                <Suspense fallback={null}>
+                  {children}
+                </Suspense>
               </div>
               <aside className="relative hidden w-[320px] shrink-0 py-4 xl:block">
                 <div className="sticky top-28 flex max-h-[calc(100vh-120px)] flex-col gap-4">
