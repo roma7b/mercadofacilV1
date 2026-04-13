@@ -1781,10 +1781,9 @@ export default function EventOrderPanelForm({
                 type={!isInteractiveWalletReady || shouldShowDepositCta ? 'button' : 'submit'}
                 isLoading={state.isLoading}
                 isDisabled={state.isLoading}
-                outcomeVariant={state.side === ORDER_SIDE.BUY ? 'yes' : 'no'}
+                outcomeVariant={Number(state.side) === 0 ? 'yes' : 'no'}
                 onClick={(event) => {
-                  if (!isInteractiveWalletReady) {
-                    void open()
+                  if (!ensureTradingReady()) {
                     return
                   }
                   if (shouldShowDepositCta) {
@@ -1798,14 +1797,10 @@ export default function EventOrderPanelForm({
                   if (!isInteractiveWalletReady) {
                     return t('Connect wallet') || 'CONECTAR CARTEIRA'
                   }
-                  // Always show the intent label (e.g. "Buy Thunder"), 
-                  // even if it triggers a deposit flow due to insufficient balance.
-                  const outcomeLabel = selectedShareLabel
-                  if (outcomeLabel) {
-                    const verb = state.side === ORDER_SIDE.SELL ? 'Venda' : 'Compre'
-                    return `${verb} ${outcomeLabel}`
-                  }
-                  return t('Trade') || 'Negociar'
+                  // Force label even if outcomeLabel is missing for some reason
+                  const verb = Number(state.side) === 1 ? 'Venda' : 'Compre'
+                  const outcomeLabel = selectedShareLabel || ''
+                  return `${verb} ${outcomeLabel}`.trim()
                 })()}
               />
               <p className="mt-2 text-center text-[11px] text-muted-foreground">{beginnerHint}</p>

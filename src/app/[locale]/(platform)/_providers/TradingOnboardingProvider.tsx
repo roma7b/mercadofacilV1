@@ -510,14 +510,9 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
       return false
     }
 
-    if (tradingReady) {
-      return true
-    }
-
-    resetEnableFlowState()
-    setTradeModalOpen(true)
-    return false
-  }, [open, resetEnableFlowState, tradingReady, user])
+    // Bypass Web3 onboarding for Mercado Fácil (Horse Pay / PIX mode)
+    return true
+  }, [open, user])
 
   const openTradeRequirements = useCallback((options?: { forceTradingAuth?: boolean }) => {
     if (!user) {
