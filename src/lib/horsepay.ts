@@ -14,7 +14,7 @@ export interface HorsePayToken {
 export interface HorsePayOrderResponse {
   payment: string // Base64 QR Code
   copy_past: string // PIX Copy and Paste
-  external_id: string 
+  external_id: string
   status: number // 0 for success
   message?: string
 }
@@ -58,7 +58,7 @@ export class HorsePayService {
     const res = await fetch(`${BASE_URL}/transaction/neworder`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(params),
@@ -98,7 +98,7 @@ export class HorsePayService {
     const res = await fetch(`${BASE_URL}/transaction/withdraw`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(params),
@@ -113,4 +113,3 @@ export class HorsePayService {
     return data
   }
 }
-

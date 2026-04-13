@@ -115,4 +115,3 @@ export default function PwaInstallIosInstructions({ className }: { className?: s
     </span>
   )
 }
-

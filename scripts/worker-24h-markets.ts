@@ -34,7 +34,7 @@ async function updateMarkets() {
     // 2. Simular nova aposta aleatória (R$ 5 a R$ 50)
     const side = Math.random() > 0.5 ? 'total_sim' : 'total_nao'
     const amount = Math.floor(Math.random() * 45) + 5
-    
+
     const newTotal = Number(market[side]) + amount
     const newVolume = Number(market.volume || 0) + amount
 
@@ -47,13 +47,14 @@ async function updateMarkets() {
         updated_at: new Date().toISOString(),
         // Atualiza o created_at a cada 2 minutos para manter no topo
         // (Simulamos que é um "novo" mercado se renovando)
-        created_at: new Date().toISOString() 
+        created_at: new Date().toISOString(),
       })
       .eq('id', id)
 
     if (updateError) {
       console.error(`❌ Erro ao atualizar mercado ${id}:`, updateError.message)
-    } else {
+    }
+    else {
       console.log(`✅ Mercado ${id} renovado! Lado: ${side}, Valor: R$ ${amount}`)
     }
   }

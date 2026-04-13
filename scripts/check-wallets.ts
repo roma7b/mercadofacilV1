@@ -1,5 +1,6 @@
-import postgres from 'postgres'
 import * as dotenv from 'dotenv'
+import postgres from 'postgres'
+
 dotenv.config()
 
 async function checkWalletColumns() {
@@ -11,9 +12,11 @@ async function checkWalletColumns() {
       WHERE table_name = 'wallets' AND table_schema = 'public'
     `
     console.log('Colunas de wallets:', columns.map(c => `${c.column_name} (${c.data_type})`).join(', '))
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Erro:', err)
-  } finally {
+  }
+  finally {
     await sql.end()
   }
 }

@@ -236,8 +236,6 @@ export const UserRepository = {
     sortOrder?: 'asc' | 'desc'
     searchByUsernameOnly?: boolean
   } = {}) {
-    
-
     const { data, error } = await runQuery(async () => {
       const {
         limit: rawLimit = 100,
@@ -468,4 +466,3 @@ async function ensureUserProxyWallet(user: any): Promise<string | null> {
 
   return null
 }
-

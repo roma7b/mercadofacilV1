@@ -5,7 +5,6 @@ import { formatCurrency } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
 interface EventOrderPanelEarningsProps {
-  isMobile: boolean
   side: OrderSide
   sellAmountLabel: string
   avgSellPriceLabel: string
@@ -13,60 +12,46 @@ interface EventOrderPanelEarningsProps {
   avgSellPriceCents: number | null
   avgBuyPriceCents: number | null
   buyPayout: number
-  buyProfit: number
-  buyChangePct: number
   buyMultiplier: number
 }
 
 export default function EventOrderPanelEarnings({
-  isMobile: _isMobile,
   side,
   sellAmountLabel,
   avgSellPriceLabel,
   avgBuyPriceLabel,
   buyPayout,
-  buyProfit,
-  buyChangePct,
+  buyMultiplier,
 }: EventOrderPanelEarningsProps) {
   const t = useExtracted()
-  
+
   const isBuy = side === ORDER_SIDE.BUY
   const buyToWinLabel = formatCurrency(Math.max(0, buyPayout))
-  const buyProfitLabel = formatCurrency(buyProfit)
-  const buyChangeLabel = `${buyChangePct >= 0 ? '+' : ''}${Math.abs(buyChangePct).toFixed(0)}%`
 
   const avgPrice = isBuy ? avgBuyPriceLabel : avgSellPriceLabel
 
   return (
-    <div className="mt-4 space-y-4">
-      <div className="rounded-xl border border-border/50 bg-muted/30 p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            {isBuy ? 'Para ganhar' : 'Você receberá'}
+    <div className="mt-2 flex flex-col px-1">
+      <div className="flex items-center justify-between">
+        {/* Lado Esquerdo - Ícone e Texto */}
+        <div className="flex flex-col">
+          <span className="text-[15px] font-bold text-white tracking-wide">
+            {isBuy ? t('Para ganhar 💰') : t('Preço Médio')}
           </span>
-          <span className="text-xs font-bold text-foreground/70">
-            {`Preço Médio ${avgPrice}`}
+          <span className="text-[12px] font-medium text-white/40">
+            {isBuy ? `${buyMultiplier.toFixed(2)}x` : avgPrice}
           </span>
         </div>
 
-        <div className="flex items-baseline justify-between">
+        {/* Lado Direito - Valores */}
+        <div className="flex items-center justify-end">
           <span className={cn(
-            "text-2xl font-black font-mono tracking-tighter",
-            isBuy ? "text-emerald-500 dark:text-emerald-400" : "text-foreground"
-          )}>
+            'text-[22px] font-black tracking-tight',
+            isBuy ? 'text-emerald-500' : 'text-white',
+          )}
+          >
             {isBuy ? buyToWinLabel : sellAmountLabel}
           </span>
-          
-          {isBuy && buyProfit > 0 && (
-            <div className="flex flex-col items-end">
-              <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">
-                +{buyProfitLabel} Lucro
-              </span>
-              <span className="text-[10px] font-black text-emerald-500/70 dark:text-emerald-500/50">
-                {buyChangeLabel}
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -63,20 +63,20 @@ export async function fetchOrderBookSummaries(tokenIds: string[]): Promise<Order
     if (bids.length === 0 && asks.length === 0) {
       // Fake Life injection
       const anchorValue = 0.5 + (Math.random() * 0.1 - 0.05)
-      
+
       const makeMockLevels = (start: number, direction: -1 | 1) => {
-         const levels = []
-         let current = start
-         for (let i = 0; i < 12; i++) {
-            current = Math.max(0.01, Math.min(0.99, current + direction * (0.01 + Math.random() * 0.02)))
-            levels.push({
-               price: current.toFixed(3),
-               size: (10 + Math.random() * 1000).toFixed(2)
-            })
-         }
-         return levels
+        const levels = []
+        let current = start
+        for (let i = 0; i < 12; i++) {
+          current = Math.max(0.01, Math.min(0.99, current + direction * (0.01 + Math.random() * 0.02)))
+          levels.push({
+            price: current.toFixed(3),
+            size: (10 + Math.random() * 1000).toFixed(2),
+          })
+        }
+        return levels
       }
-      
+
       bids = makeMockLevels(Math.max(0.01, anchorValue - 0.01), -1)
       asks = makeMockLevels(Math.min(0.99, anchorValue + 0.01), 1)
       lastTradePrice = lastTradePrice || anchorValue.toFixed(3)

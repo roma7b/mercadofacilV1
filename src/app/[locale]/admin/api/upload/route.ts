@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { uploadPublicAsset, getPublicAssetUrl } from '@/lib/storage'
 import { UserRepository } from '@/lib/db/queries/user'
+import { getPublicAssetUrl, uploadPublicAsset } from '@/lib/storage'
 
 export async function POST(request: Request) {
   try {
@@ -40,12 +40,12 @@ export async function POST(request: Request) {
     console.log('Upload success:', assetPath, publicUrl)
 
     return NextResponse.json({ success: true, url: publicUrl, path: assetPath })
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('SERVER UPLOAD ERROR:', error)
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error.message || 'Internal Server Error',
-      details: error.stack
+      details: error.stack,
     }, { status: 500 })
   }
 }

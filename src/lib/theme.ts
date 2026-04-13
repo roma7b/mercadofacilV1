@@ -327,4 +327,3 @@ ${darkLines.join('\n')}
 
   return blocks.join('\n')
 }
-

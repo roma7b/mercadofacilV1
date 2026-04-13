@@ -169,4 +169,3 @@ export const config = {
     '/:locale/docs/:path*.mdx',
   ],
 }
-

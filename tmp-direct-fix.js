@@ -1,24 +1,23 @@
-
-const postgres = require('postgres');
-const path = require('node:path');
-const fs = require('node:fs');
+const fs = require('node:fs')
+const path = require('node:path')
+const postgres = require('postgres')
 
 // Load .env manually for this plain node script
-const envContent = fs.readFileSync('.env', 'utf8');
-const env = {};
-envContent.split('\n').forEach(line => {
-    const parts = line.split('=');
-    if (parts.length >= 2) {
-        env[parts[0].trim()] = parts.slice(1).join('=').trim();
-    }
-});
+const envContent = fs.readFileSync('.env', 'utf8')
+const env = {}
+envContent.split('\n').forEach((line) => {
+  const parts = line.split('=')
+  if (parts.length >= 2) {
+    env[parts[0].trim()] = parts.slice(1).join('=').trim()
+  }
+})
 
-const sql = postgres(env.POSTGRES_URL);
+const sql = postgres(env.POSTGRES_URL)
 
 async function fix() {
-    try {
-        console.log('Attempting to create view via postgres.js...');
-        await sql`
+  try {
+    console.log('Attempting to create view via postgres.js...')
+    await sql`
           CREATE OR REPLACE VIEW v_main_tag_subcategories AS
           SELECT main_tag.id                    AS main_tag_id,
                  main_tag.slug                  AS main_tag_slug,
@@ -56,18 +55,20 @@ async function fix() {
                    sub_tag.slug,
                    sub_tag.is_main_category,
                    sub_tag.is_hidden;
-        `;
-        console.log('SUCCESS!');
-    } catch (e) {
-        console.error('ERROR DETAILED:');
-        console.error('Message:', e.message);
-        console.error('Code:', e.code);
-        console.error('Detail:', e.detail);
-        console.error('Hint:', e.hint);
-        console.error('Where:', e.where);
-    } finally {
-        await sql.end();
-    }
+        `
+    console.log('SUCCESS!')
+  }
+  catch (e) {
+    console.error('ERROR DETAILED:')
+    console.error('Message:', e.message)
+    console.error('Code:', e.code)
+    console.error('Detail:', e.detail)
+    console.error('Hint:', e.hint)
+    console.error('Where:', e.where)
+  }
+  finally {
+    await sql.end()
+  }
 }
 
-fix();
+fix()

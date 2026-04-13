@@ -69,4 +69,3 @@ export function buildEmbedEvent(event: Event) {
     markets: event.markets.map(market => buildEmbedMarket(market, event)),
   }
 }
-

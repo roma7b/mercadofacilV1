@@ -1,16 +1,16 @@
 'use server'
 
-import { db } from '@/lib/drizzle'
-import { 
-  events, 
-  markets, 
-  conditions, 
-  outcomes, 
-  mercadosLive 
-} from '@/lib/db/schema'
-import { orders } from '@/lib/db/schema/orders/tables'
 import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import {
+  conditions,
+  events,
+  markets,
+  mercadosLive,
+  outcomes,
+} from '@/lib/db/schema'
+import { orders } from '@/lib/db/schema/orders/tables'
+import { db } from '@/lib/drizzle'
 
 export async function deleteEventAction(eventId: string) {
   try {
@@ -26,7 +26,7 @@ export async function deleteEventAction(eventId: string) {
 
     // 1. Buscar mercados vinculados para uma limpeza profunda
     const eventMarkets = await db.select().from(markets).where(eq(markets.event_id, eventId))
-    
+
     for (const market of eventMarkets) {
       const conditionId = market.condition_id
       if (conditionId) {
@@ -44,8 +44,8 @@ export async function deleteEventAction(eventId: string) {
     console.log('[DELETE_EVENT_SUCCESS]', eventId)
     revalidatePath('/admin/events')
     return { success: true }
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('[DELETE_EVENT_ERROR]', error)
     return { success: false, error: error.message }
   }

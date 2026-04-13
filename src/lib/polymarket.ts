@@ -18,7 +18,7 @@ export interface PolymarketMarket {
 export async function fetchPolymarketHype(limit = 15): Promise<PolymarketMarket[]> {
   const url = `${POLYMARKET_GAMMA_API}/markets?active=true&closed=false&order=volume&limit=${limit}`
   const res = await fetch(url)
-  if (!res.ok) throw new Error('Failed to fetch from Polymarket')
+  if (!res.ok) { throw new Error('Failed to fetch from Polymarket') }
   return res.json()
 }
 
@@ -37,7 +37,8 @@ export async function fetchBrazillianHype(limit = 10): Promise<PolymarketMarket[
         const data = await res.json() as PolymarketMarket[]
         allResults.push(...data)
       }
-    } catch (e) {
+    }
+    catch (e) {
       console.warn(`Failed to fetch keyword: ${keyword}`)
     }
   }
@@ -49,12 +50,12 @@ export async function fetchBrazillianHype(limit = 10): Promise<PolymarketMarket[
 /**
  * Busca odds atuais (preços Yes/No) e volume total de um mercado específico via Gamma API.
  */
-export async function fetchPolymarketOdds(conditionId: string): Promise<{ yes: number; no: number; volume: number; success: boolean }> {
+export async function fetchPolymarketOdds(conditionId: string): Promise<{ yes: number, no: number, volume: number, success: boolean }> {
   try {
     const url = `${POLYMARKET_GAMMA_API}/markets?condition_id=${conditionId}`
     const res = await fetch(url)
-    if (!res.ok) return { yes: 0.5, no: 0.5, volume: 0, success: false }
-    
+    if (!res.ok) { return { yes: 0.5, no: 0.5, volume: 0, success: false } }
+
     const data = await res.json() as any[]
     if (data.length > 0) {
       const m = data[0]
@@ -62,12 +63,12 @@ export async function fetchPolymarketOdds(conditionId: string): Promise<{ yes: n
         yes: Number(m.outcomePrices?.[0]) || 0.5,
         no: Number(m.outcomePrices?.[1]) || 0.5,
         volume: Number(m.volume) || 0,
-        success: true
+        success: true,
       }
     }
     return { yes: 0.5, no: 0.5, volume: 0, success: false }
-  } catch (e) {
+  }
+  catch (e) {
     return { yes: 0.5, no: 0.5, volume: 0, success: false }
   }
 }
-

@@ -27,4 +27,3 @@ export const allowed_market_creators = pgTable(
     sourceUrlIdx: index('idx_allowed_market_creators_source_url').on(table.source_url),
   }),
 )
-

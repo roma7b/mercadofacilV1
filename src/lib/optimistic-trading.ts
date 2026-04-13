@@ -573,4 +573,3 @@ export function updateQueryDataWhere<TData>(
     queryClient.setQueryData<TData>(currentQueryKey, current => updater(current))
   })
 }
-

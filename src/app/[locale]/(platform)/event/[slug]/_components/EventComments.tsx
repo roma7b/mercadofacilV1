@@ -178,44 +178,8 @@ export default function EventComments({ event, user }: EventCommentsProps) {
         isCreatingComment={isCreatingComment}
         onCommentAddedAction={() => refetch()}
       />
-      <Badge className="mt-2 h-8 w-full md:hidden [&>svg]:size-4" variant="outline">
-        <ShieldIcon />
-        {t('Beware of external links')}
-      </Badge>
-      <div className="mt-3 flex items-center gap-3">
-        <Select value={sortBy} onValueChange={value => setSortBy(value as 'newest' | 'most_liked')}>
-          <SelectTrigger size="default" className="h-9 px-3 text-sm dark:bg-transparent">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="p-1">
-            <SelectItem value="newest" className="my-0.5 cursor-pointer rounded-sm py-1.5 pl-2">
-              {t('Newest')}
-            </SelectItem>
-            <SelectItem value="most_liked" className="my-0.5 cursor-pointer rounded-sm py-1.5 pl-2">
-              {t('Most liked')}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <label
-          htmlFor={holdersCheckboxId}
-          suppressHydrationWarning
-          className="ml-2 inline-flex items-center gap-2 text-sm font-medium text-foreground"
-        >
-          <Checkbox
-            id={holdersCheckboxId}
-            checked={holdersOnly}
-            onCheckedChange={checked => setHoldersOnly(Boolean(checked))}
-            className="size-5 rounded-sm dark:bg-transparent"
-          />
-          {t('Holders')}
-        </label>
-        <Badge className="ml-auto hidden h-8 md:inline-flex [&>svg]:size-4" variant="outline">
-          <ShieldIcon />
-          {t('Beware of external links')}
-        </Badge>
-      </div>
 
-      <div className="mt-1">
+      <div className="mt-4">
         {status === 'pending'
           ? (
               <>
@@ -226,8 +190,8 @@ export default function EventComments({ event, user }: EventCommentsProps) {
             )
           : comments.length === 0
             ? (
-                <div className="text-center text-sm text-muted-foreground">
-                  {t('No comments yet. Be the first to comment!')}
+                <div className="text-center text-sm text-muted-foreground p-8">
+                  {t('Nenhum comentário ainda. Seja o primeiro a comentar!')}
                 </div>
               )
             : comments.map(comment => (

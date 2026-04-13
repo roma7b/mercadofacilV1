@@ -1,16 +1,15 @@
-
-import { db } from './src/lib/drizzle';
-import { sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm'
+import { db } from './src/lib/drizzle'
 
 async function fix() {
-  console.log('--- STARTING DATABASE FIX (WITH DROP) ---');
-  
-  try {
-    console.log('Dropping existing view if any...');
-    await db.execute(sql`DROP VIEW IF EXISTS v_main_tag_subcategories CASCADE`);
-    console.log('View dropped.');
+  console.log('--- STARTING DATABASE FIX (WITH DROP) ---')
 
-    console.log('Creating view v_main_tag_subcategories...');
+  try {
+    console.log('Dropping existing view if any...')
+    await db.execute(sql`DROP VIEW IF EXISTS v_main_tag_subcategories CASCADE`)
+    console.log('View dropped.')
+
+    console.log('Creating view v_main_tag_subcategories...')
     await db.execute(sql`
       CREATE VIEW v_main_tag_subcategories AS
       SELECT main_tag.id                    AS main_tag_id,
@@ -49,15 +48,16 @@ async function fix() {
                sub_tag.slug,
                sub_tag.is_main_category,
                sub_tag.is_hidden;
-    `);
-    console.log('SUCCESS: v_main_tag_subcategories created.');
-  } catch (e: any) {
-    console.error('CRITICAL ERROR:', e.message);
-    if (e.detail) console.error('DETAIL:', e.detail);
-    if (e.hint) console.error('HINT:', e.hint);
+    `)
+    console.log('SUCCESS: v_main_tag_subcategories created.')
+  }
+  catch (e: any) {
+    console.error('CRITICAL ERROR:', e.message)
+    if (e.detail) { console.error('DETAIL:', e.detail) }
+    if (e.hint) { console.error('HINT:', e.hint) }
   }
 
-  process.exit(0);
+  process.exit(0)
 }
 
-fix();
+fix()

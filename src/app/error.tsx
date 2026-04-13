@@ -16,13 +16,18 @@ export default function Error({
           {error.message || 'An unexpected error occurred. Please check back in a few minutes.'}
         </p>
         {error.digest && (
-          <p className="mt-1 text-xs text-muted-foreground/50 font-mono">
-            ID: {error.digest}
+          <p className="mt-1 font-mono text-xs text-muted-foreground/50">
+            ID:
+            {' '}
+            {error.digest}
           </p>
         )}
         <button
           onClick={() => reset()}
-          className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+          className="
+            mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity
+            hover:opacity-90
+          "
         >
           Try again
         </button>
@@ -30,4 +35,3 @@ export default function Error({
     </div>
   )
 }
-

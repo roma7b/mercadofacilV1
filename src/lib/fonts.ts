@@ -10,4 +10,3 @@ export const openSauceOne = localFont({
   display: 'swap',
   variable: '--font-sans',
 })
-

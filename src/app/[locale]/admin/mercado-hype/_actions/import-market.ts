@@ -1,9 +1,9 @@
 'use server'
 
-import { db } from '@/lib/drizzle'
-import { mercadosLive } from '@/lib/db/schema/mercado_facil_tables'
 import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { mercadosLive } from '@/lib/db/schema/mercado_facil_tables'
+import { db } from '@/lib/drizzle'
 
 interface ImportMarketParams {
   polyId: string
@@ -36,7 +36,7 @@ export async function importExternalMarket(params: ImportMarketParams) {
     outcomes.forEach((oc, idx) => {
       opcoesObj[`op_${idx}`] = {
         text: String(oc.text || ''),
-        tokenId: String(oc.tokenId || `${marketId}-${idx}`)
+        tokenId: String(oc.tokenId || `${marketId}-${idx}`),
       }
     })
 
@@ -53,25 +53,26 @@ export async function importExternalMarket(params: ImportMarketParams) {
       volume: String(volume || '0'),
       volume_24h: String(volume_24h || '0'),
       end_date: endDate ? new Date(endDate).toISOString() : null,
-      rules: String(rules || description || '')
+      rules: String(rules || description || ''),
     }
 
     // Inserir ou atualizar na tabela mercados_live
     await db.insert(mercadosLive).values(marketData).onConflictDoUpdate({
       target: mercadosLive.id,
-      set: marketData
+      set: marketData,
     })
 
     // Revalidar as rotas para atualizar o frontend
     revalidatePath('/')
     revalidatePath('/admin/mercado-hype')
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       id: marketId, // Retorna o ID correto para o feedback do usuário
-      slug: `live_${marketId}` 
+      slug: `live_${marketId}`,
     }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('[IMPORT_MARKET_DB_ERROR]', error)
     return { success: false, error: 'Falha ao salvar no banco. Verifique os dados.' }
   }

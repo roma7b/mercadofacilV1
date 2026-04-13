@@ -146,53 +146,53 @@ export default function NavigationTabs() {
     <nav className="sticky top-15 z-20 w-full border-b border-border/10 bg-background/95 backdrop-blur-sm md:top-17">
       <div className="mx-auto flex w-full max-w-[1332px] flex-col px-4 md:px-6">
         <div className="flex w-full min-w-0">
-        <div
-          id="navigation-main-tags"
-          ref={containerRef}
-          className={cn(
-            `
-              flex h-12 w-full min-w-0 snap-x snap-mandatory scroll-px-3 items-center overflow-x-auto text-sm
-              font-medium
-            `,
-            showLeftShadow && showRightShadow
-            && `
-              mask-[linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
-              [-webkit-mask-image:linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
-            `,
-            showLeftShadow && !showRightShadow
-            && `
-              mask-[linear-gradient(to_right,transparent,black_32px,black)]
-              [-webkit-mask-image:linear-gradient(to_right,transparent,black_32px,black)]
-            `,
-            showRightShadow && !showLeftShadow
-            && `
-              mask-[linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
-              [-webkit-mask-image:linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
-            `,
-          )}
-        >
-          {tags.map((tag, index) => (
-            <div key={tag.slug} className="flex snap-start items-center">
-              <NavigationTab
-                tag={tag}
-                href={getMainTagHref(tag.slug, dynamicHomeCategorySlugSet)}
-                isActive={navigationSelection.activeMainTagSlug === tag.slug}
-                tabPaddingClass={index === 0 ? 'px-2.5 pl-0' : 'px-3'}
-                containerRef={(element) => {
-                  tabItemRef.current[index] = element
-                }}
-              />
+          <div
+            id="navigation-main-tags"
+            ref={containerRef}
+            className={cn(
+              `
+                flex h-12 w-full min-w-0 snap-x snap-mandatory scroll-px-3 items-center overflow-x-auto text-sm
+                font-medium
+              `,
+              showLeftShadow && showRightShadow
+              && `
+                mask-[linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
+                [-webkit-mask-image:linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
+              `,
+              showLeftShadow && !showRightShadow
+              && `
+                mask-[linear-gradient(to_right,transparent,black_32px,black)]
+                [-webkit-mask-image:linear-gradient(to_right,transparent,black_32px,black)]
+              `,
+              showRightShadow && !showLeftShadow
+              && `
+                mask-[linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
+                [-webkit-mask-image:linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
+              `,
+            )}
+          >
+            {tags.map((tag, index) => (
+              <div key={tag.slug} className="flex snap-start items-center">
+                <NavigationTab
+                  tag={tag}
+                  href={getMainTagHref(tag.slug, dynamicHomeCategorySlugSet)}
+                  isActive={navigationSelection.activeMainTagSlug === tag.slug}
+                  tabPaddingClass={index === 0 ? 'px-2.5 pl-0' : 'px-3'}
+                  containerRef={(element) => {
+                    tabItemRef.current[index] = element
+                  }}
+                />
 
-              {index === 1 && <div className="mx-3 h-5 w-px shrink-0 bg-border" />}
+                {index === 1 && <div className="mx-3 h-5 w-px shrink-0 bg-border" />}
+              </div>
+            ))}
+
+            <div className="flex snap-start items-center">
+              <NavigationMoreMenu />
             </div>
-          ))}
-
-          <div className="flex snap-start items-center">
-            <NavigationMoreMenu />
           </div>
         </div>
       </div>
-    </div>
-  </nav>
+    </nav>
   )
 }

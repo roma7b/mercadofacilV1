@@ -56,4 +56,3 @@ export function ensureEnabledLocales(locales: string[]): SupportedLocale[] {
   const normalized = normalizeEnabledLocales(locales)
   return normalized.length > 0 ? normalized : [DEFAULT_LOCALE]
 }
-

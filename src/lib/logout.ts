@@ -45,4 +45,3 @@ export async function signOutAndRedirect({
 
   window.location.href = localizePathname(redirectPath, currentPathname)
 }
-

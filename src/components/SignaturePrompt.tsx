@@ -1,6 +1,5 @@
 'use client'
 
-import { useWalletInfo } from '@/hooks/useAppKitMock'
 import { Loader2Icon, WalletIcon, XIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import Image from 'next/image'
@@ -12,7 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useWalletInfo } from '@/hooks/useAppKitMock'
+
 import { useSignaturePrompt } from '@/stores/useSignaturePrompt'
 
 export function SignaturePrompt() {
@@ -122,4 +122,3 @@ function SignatureWalletIcon() {
     />
   )
 }
-

@@ -86,4 +86,3 @@ export async function fetchEventTrades({
   const activities = (result as DataApiActivity[]).map(mapDataApiActivityToActivityOrder)
   return filterActivitiesByMinAmount(activities, minAmountMicro)
 }
-

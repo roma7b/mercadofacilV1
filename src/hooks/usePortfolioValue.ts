@@ -67,4 +67,3 @@ export function usePortfolioValue(
     isFetching,
   }
 }
-

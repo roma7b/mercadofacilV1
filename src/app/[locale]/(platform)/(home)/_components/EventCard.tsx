@@ -34,11 +34,11 @@ function resolveBinaryOutcome(market: Market | undefined, outcomeIndex: typeof O
   }
 
   const found = market.outcomes.find(outcome => outcome.outcome_index === outcomeIndex)
-  if (found) return found
+  if (found) { return found }
 
   // Fallback para ordem do array se não encontrar pelo index exato
-  if (outcomeIndex === OUTCOME_INDEX.YES) return market.outcomes[0] ?? null
-  if (outcomeIndex === OUTCOME_INDEX.NO) return market.outcomes[1] ?? market.outcomes[0] ?? null
+  if (outcomeIndex === OUTCOME_INDEX.YES) { return market.outcomes[0] ?? null }
+  if (outcomeIndex === OUTCOME_INDEX.NO) { return market.outcomes[1] ?? market.outcomes[0] ?? null }
 
   return null
 }
@@ -130,7 +130,7 @@ export default function EventCard({
   return (
     <Card
       className={cn(`
-        group flex min-h-45 h-auto flex-col overflow-hidden rounded-xl shadow-md shadow-black/4 transition-all
+        group flex h-auto min-h-45 flex-col overflow-hidden rounded-xl shadow-md shadow-black/4 transition-all
         hover:-translate-y-0.5 hover:shadow-black/8
         dark:hover:bg-secondary
       `)}

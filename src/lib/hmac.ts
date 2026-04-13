@@ -19,4 +19,3 @@ export function buildClobHmacSignature(secret: string, timestamp: number, method
 
   return replaceAll(replaceAll(sig, '+', '-'), '/', '_')
 }
-

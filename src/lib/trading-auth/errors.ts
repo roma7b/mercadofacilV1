@@ -10,4 +10,3 @@ export function isTradingAuthRequiredError(message: string | null | undefined) {
     || message.toLowerCase().includes('enable trading')
   )
 }
-

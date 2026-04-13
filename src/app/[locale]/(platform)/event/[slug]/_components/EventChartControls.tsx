@@ -95,7 +95,7 @@ export default function EventChartControls({
           const isObject = typeof range === 'object' && range !== null
           const label = isObject ? range.label : range
           const value = isObject ? range.value : range
-          
+
           return (
             <button
               key={value}

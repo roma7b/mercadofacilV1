@@ -58,4 +58,3 @@ export function decryptSecret(value: string | undefined | null) {
     return ''
   }
 }
-

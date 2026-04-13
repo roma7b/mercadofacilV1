@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { resolveMercadoLive } from '@/lib/mercado-payout'
 
@@ -6,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     // 1. Verificar Autenticação de Admin
     const session = await auth.api.getSession({
-      headers: req.headers
+      headers: req.headers,
     })
 
     if (!session || !session.user) {
@@ -33,14 +34,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: `Mercado resolvido com sucesso! ${result.winners} vencedores pagos.`,
-      data: result
+      data: result,
     })
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('[ADMIN_RESOLVE_ERROR]', error)
-    return NextResponse.json({ 
-      error: error.message || 'Erro ao resolver mercado' 
+    return NextResponse.json({
+      error: error.message || 'Erro ao resolver mercado',
     }, { status: 500 })
   }
 }
-

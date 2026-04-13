@@ -1,9 +1,11 @@
 import type { EventSeriesEntry } from '@/types'
+import { useQuery } from '@tanstack/react-query'
 import { TriangleIcon } from 'lucide-react'
 import { AnimatedCounter } from 'react-animated-counter'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { cn, sanitizeSvg } from '@/lib/utils'
 import EventSeriesPills from './EventSeriesPills'
+
 import EventTweetMarketsPanel from './EventTweetMarketsPanel'
 
 interface EventChartHeaderProps {
@@ -23,8 +25,6 @@ interface EventChartHeaderProps {
   tweetCountdownTargetMs?: number | null
   tweetMarketsFinal?: boolean
 }
-
-import { useQuery } from '@tanstack/react-query'
 
 export default function EventChartHeader({
   isSingleMarket,
@@ -47,7 +47,7 @@ export default function EventChartHeader({
   const fallbackQuery = useQuery({
     queryKey: ['header-fallback', currentEventSlug],
     queryFn: async () => {
-      if (!currentEventSlug) return null
+      if (!currentEventSlug) { return null }
       const res = await fetch(`/api/mercado/${currentEventSlug}`)
       const json = await res.json()
       if (json.success && json.data) {
@@ -57,12 +57,12 @@ export default function EventChartHeader({
       }
       return null
     },
-    enabled: yesChanceValue === null && !!currentEventSlug && (currentEventSlug.startsWith('poly-') || currentEventSlug.startsWith('live_'))
+    enabled: yesChanceValue === null && !!currentEventSlug && (currentEventSlug.startsWith('poly-') || currentEventSlug.startsWith('live_')),
   })
 
-  const resolvedYesChance = yesChanceValue !== null 
-    ? yesChanceValue 
-    : (fallbackQuery.data ?? null);
+  const resolvedYesChance = yesChanceValue !== null
+    ? yesChanceValue
+    : (fallbackQuery.data ?? null)
 
   const seriesNavigation = showSeriesNavigation
     ? <EventSeriesPills currentEventSlug={currentEventSlug} seriesEvents={seriesEvents} />
@@ -143,28 +143,23 @@ export default function EventChartHeader({
                 {activeOutcomeLabel}
               </span>
             )}
-            <div className="inline-flex items-baseline gap-0 text-2xl leading-none font-semibold">
+            <div className="flex items-baseline gap-1 text-3xl font-black tracking-tight whitespace-nowrap">
               {typeof resolvedYesChance === 'number'
                 ? (
                     <AnimatedCounter
                       value={resolvedYesChance}
                       color="currentColor"
-                      fontSize="24px"
+                      fontSize="1em"
                       includeCommas={false}
                       includeDecimals={false}
                       incrementColor="currentColor"
                       decrementColor="currentColor"
                       digitStyles={{
-                        fontWeight: 600,
-                        letterSpacing: '-0.02em',
-                        lineHeight: '1',
                         display: 'inline-block',
                       }}
                       containerStyles={{
                         display: 'inline-flex',
-                        alignItems: 'center',
-                        flexDirection: 'row-reverse',
-                        gap: '0.05em',
+                        alignItems: 'baseline',
                         lineHeight: '1',
                       }}
                     />
@@ -172,7 +167,7 @@ export default function EventChartHeader({
                 : (
                     <span>--</span>
                   )}
-              <span>
+              <span className="text-xl">
                 % chance
               </span>
             </div>
@@ -182,19 +177,21 @@ export default function EventChartHeader({
         </div>
 
         {(watermark.iconSvg || watermark.label) && (
-          <div className="mr-2 flex items-center gap-1 self-start text-xl text-muted-foreground opacity-50 select-none">
+          <div className="flex flex-col items-end opacity-50 whitespace-nowrap select-none md:flex-row md:items-center">
             {watermark.iconSvg
               ? (
                   <div
-                    className="size-[1em] **:fill-current **:stroke-current"
+                    className="size-5 mb-1 md:mb-0 md:mr-1 **:fill-current **:stroke-current text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: sanitizeSvg(watermark.iconSvg) }}
                   />
                 )
               : null}
             {watermark.label
               ? (
-                  <span className="font-semibold">
-                    {watermark.label}
+                  <span className="font-bold text-lg leading-tight md:text-xl text-muted-foreground">
+                    {watermark.label.split(' ').map((word, i) => (
+                       <span key={i} className="block md:inline">{word}</span>
+                    ))}
                   </span>
                 )
               : null}

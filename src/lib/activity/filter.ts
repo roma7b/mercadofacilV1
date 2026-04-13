@@ -16,4 +16,3 @@ export function filterActivitiesByMinAmount(
     return Number(activity.total_value) >= minAmount
   })
 }
-

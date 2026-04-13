@@ -41,4 +41,3 @@ export async function GET() {
     proxy_wallet_tx_hash: user.proxy_wallet_tx_hash ?? null,
   })
 }
-

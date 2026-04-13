@@ -10,7 +10,7 @@ export function getMaxSeriesCount() {
 }
 
 export function areNumberMapsEqual(a: Record<string, number>, b: Record<string, number>) {
-  if (!a || !b) return a === b
+  if (!a || !b) { return a === b }
   const aKeys = Object.keys(a)
   const bKeys = Object.keys(b)
   if (aKeys.length !== bKeys.length) {
@@ -20,7 +20,7 @@ export function areNumberMapsEqual(a: Record<string, number>, b: Record<string, 
 }
 
 export function areQuoteMapsEqual(a: Record<string, MarketQuote>, b: Record<string, MarketQuote>) {
-  if (!a || !b) return a === b
+  if (!a || !b) { return a === b }
   const aKeys = Object.keys(a)
   const bKeys = Object.keys(b)
   if (aKeys.length !== bKeys.length) {

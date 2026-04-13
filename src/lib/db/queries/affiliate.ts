@@ -154,8 +154,6 @@ export const AffiliateRepository = {
   },
 
   async getAffiliateByCode(code: string): Promise<QueryResult<AffiliateUser | null>> {
-    
-
     return runQuery(async () => {
       const result = await db
         .select({
@@ -250,8 +248,6 @@ export const AffiliateRepository = {
   },
 
   async getUserAffiliateStats(userId: string): Promise<QueryResult<AffiliateStats>> {
-    
-
     return runQuery(async () => {
       const result = await db.execute(
         sql`SELECT * FROM get_affiliate_stats(${userId})`,
@@ -272,8 +268,6 @@ export const AffiliateRepository = {
   },
 
   async listAffiliateOverview(): Promise<QueryResult<AffiliateOverview[]>> {
-    
-
     return runQuery(async () => {
       const result = await db.execute(
         sql`SELECT * FROM get_affiliate_overview()`,
@@ -288,8 +282,6 @@ export const AffiliateRepository = {
   },
 
   async getAffiliateProfiles(userIds: string[]): Promise<QueryResult<AffiliateProfile[]>> {
-    
-
     return runQuery(async () => {
       if (!userIds.length) {
         return { data: [], error: null }
@@ -321,8 +313,6 @@ export const AffiliateRepository = {
   },
 
   async listReferralsByAffiliate(affiliateUserId: string, limit = 20): Promise<QueryResult<ReferralList[]>> {
-    
-
     return runQuery(async () => {
       const result = await db
         .select({
@@ -354,4 +344,3 @@ export const AffiliateRepository = {
     })
   },
 }
-

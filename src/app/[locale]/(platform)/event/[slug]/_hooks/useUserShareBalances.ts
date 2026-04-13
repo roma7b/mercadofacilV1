@@ -33,7 +33,7 @@ export function useUserShareBalances({ event, ownerAddress }: UseUserShareBalanc
 
   const client = useMemo(
     () => {
-      if (!hasValidRpc) return null
+      if (!hasValidRpc) { return null }
       return createPublicClient({
         chain: defaultNetwork,
         transport: http(rpcUrl),
@@ -70,7 +70,7 @@ export function useUserShareBalances({ event, ownerAddress }: UseUserShareBalanc
         return {}
       }
 
-      if (!client) return {}
+      if (!client) { return {} }
 
       const owners = outcomeDescriptors.map(() => ownerAddress)
       const tokenIds = outcomeDescriptors.map(descriptor => BigInt(descriptor.tokenId))

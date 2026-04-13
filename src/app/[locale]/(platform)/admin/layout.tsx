@@ -1,11 +1,11 @@
-import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { auth } from '@/lib/auth'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Chamada de API de sessao com Headers (exigencia do Better Auth no SSR)
   const session = await auth.api.getSession({
-    headers: await headers()
+    headers: await headers(),
   })
 
   // LOGS CRÍTICOS PARA A CLAUDE ANALISAR NO TERMINAL
@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       {children}
     </div>
   )

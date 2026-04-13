@@ -593,4 +593,3 @@ export const EventCreationRepository = {
     })
   },
 }
-

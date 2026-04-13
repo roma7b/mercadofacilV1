@@ -24,4 +24,3 @@ export const affiliate_referrals = pgTable(
       .defaultNow(),
   },
 )
-

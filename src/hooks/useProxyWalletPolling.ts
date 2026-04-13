@@ -117,4 +117,3 @@ export function useProxyWalletPolling({
     }
   }, [hasDeployedProxyWallet, hasProxyWalletAddress, proxyWalletAddress, proxyWalletStatus, userId])
 }
-

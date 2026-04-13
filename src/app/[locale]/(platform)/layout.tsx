@@ -44,16 +44,20 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
           <PlatformNavigationProvider tags={tags} childParentMap={childParentMap}>
             <Header />
             <NavigationTabs />
-            <div className="mx-auto flex w-full max-w-[1332px] gap-2 md:px-6"> 
-              <div className="flex-1 min-w-0">
+            <div className="mx-auto flex w-full max-w-[1332px] gap-2 px-4 md:px-6">
+              <div className="min-w-0 flex-1">
                 {children}
               </div>
-              <aside className="hidden w-[320px] shrink-0 xl:block py-4 relative">
-                <div className="flex flex-col gap-4 sticky top-28 max-h-[calc(100vh-120px)]">
+              <aside className="relative hidden w-[320px] shrink-0 py-4 xl:block">
+                <div className="sticky top-28 flex max-h-[calc(100vh-120px)] flex-col gap-4">
                   {/* Slot dinâmico para o Painel de Apostas em páginas de evento */}
                   <div id="dynamic-sidebar-top" className="empty:hidden" />
-                  
-                  <div className="flex-1 rounded-2xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-md min-h-0">
+
+                  <div className="
+                    min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/50 bg-card/30 shadow-2xl
+                    backdrop-blur-md
+                  "
+                  >
                     <LiveChat events={[]} />
                   </div>
                 </div>

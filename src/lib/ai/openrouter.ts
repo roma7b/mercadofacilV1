@@ -188,4 +188,3 @@ export async function fetchOpenRouterModels(apiKey: string): Promise<OpenRouterM
     })
     .sort((a, b) => a.name.localeCompare(b.name))
 }
-

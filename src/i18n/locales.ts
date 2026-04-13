@@ -52,4 +52,3 @@ export function parseEnabledLocales(value?: string | null): SupportedLocale[] {
     return [...SUPPORTED_LOCALES]
   }
 }
-

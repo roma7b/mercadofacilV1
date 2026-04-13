@@ -83,4 +83,3 @@ export async function fetchReferralLocked(
     return null
   }
 }
-

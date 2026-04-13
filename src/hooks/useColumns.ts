@@ -37,4 +37,3 @@ export function useColumns(maxColumns = Number.POSITIVE_INFINITY) {
 
   return columns
 }
-

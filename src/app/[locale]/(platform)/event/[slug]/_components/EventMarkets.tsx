@@ -629,7 +629,11 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
     <>
       <div className="-mr-2 -ml-4 bg-background lg:mx-0">
         {primaryMarketRows.length > 0 && (!primaryMarketRows[0].market.outcomes || primaryMarketRows[0].market.outcomes.length <= 2) && (
-          <div className="mx-4 mb-2 rounded-md border border-border/40 bg-card/20 px-3 py-2 text-xs text-muted-foreground lg:mx-0 lg:px-4">
+          <div className="
+            mx-4 mb-2 rounded-md border border-border/40 bg-card/20 px-3 py-2 text-xs text-muted-foreground
+            lg:mx-0 lg:px-4
+          "
+          >
             <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2">
               <span className="font-medium text-foreground/90">{t('Opções do mercado')}</span>
               <span className="w-14 text-right">{t('Chance')}</span>
@@ -660,61 +664,79 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
 
             return (
               <div key={market.condition_id} className="transition-colors">
-                {market.outcomes && market.outcomes.length > 2 && !isResolvedInlineRow ? (
-                  <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
-                     {market.outcomes.map((outcome) => {
-                         const isSelected = activeOutcomeIndex === outcome.outcome_index
-                         return (
-                            <div 
-                               key={outcome.outcome_index} 
-                               onClick={() => {
-                                 handleBuy(market, outcome.outcome_index, isMobile ? 'mobile' : 'desktop')
-                                 if (isMobile) {
-                                   setIsMobileOrderPanelOpen(true)
-                                 }
-                               }}
-                               className={cn(
-                                 "flex items-center justify-between p-3 rounded-2xl border border-white/5 cursor-pointer transition-all hover:bg-white/10 active:scale-[0.98]",
-                                 isSelected ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20 shadow-inner" : "bg-card/30"
-                               )}
-                            >
-                               <span className={cn("text-sm md:text-base font-semibold", isSelected ? "text-primary" : "text-foreground")}>
-                                 {outcome.outcome_text}
-                               </span>
-                               <Button size="sm" variant={isSelected ? "default" : "secondary"} className={cn("text-xs h-7 rounded-full px-4", isSelected ? "shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" : "")}>
-                                 {isSelected ? t('Selecionado') : t('Apostar')}
-                               </Button>
-                            </div>
-                         )
-                     })}
-                  </div>
-                ) : isResolvedInlineRow
+                {market.outcomes && market.outcomes.length > 2 && !isResolvedInlineRow
                   ? (
-                      <ResolvedMarketRow
-                        row={row}
-                        showMarketIcon={Boolean(event.show_market_icons)}
-                        isExpanded={isExpanded}
-                        resolvedOutcomeIndexOverride={resolvedOutcomeIndexOverride}
-                        onToggle={() => handleToggle(market)}
-                      />
+                      <div className="flex max-h-[400px] flex-col gap-2 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                        {market.outcomes.map((outcome) => {
+                          const isSelected = activeOutcomeIndex === outcome.outcome_index
+                          return (
+                            <div
+                              key={outcome.outcome_index}
+                              onClick={() => {
+                                handleBuy(market, outcome.outcome_index, isMobile ? 'mobile' : 'desktop')
+                                if (isMobile) {
+                                  setIsMobileOrderPanelOpen(true)
+                                }
+                              }}
+                              className={cn(
+                                `
+                                  flex cursor-pointer items-center justify-between rounded-2xl border border-white/5 p-3
+                                  transition-all
+                                  hover:bg-white/10
+                                  active:scale-[0.98]
+                                `,
+                                isSelected
+                                  ? 'border-primary/30 bg-primary/10 shadow-inner ring-1 ring-primary/20'
+                                  : `bg-card/30`,
+                              )}
+                            >
+                              <span className={cn('text-sm font-semibold md:text-base', isSelected
+                                ? 'text-primary'
+                                : `text-foreground`)}
+                              >
+                                {outcome.outcome_text}
+                              </span>
+                              <Button
+                                size="sm"
+                                variant={isSelected ? 'default' : 'secondary'}
+                                className={cn(`h-7 rounded-full px-4 text-xs`, isSelected
+                                  ? `shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]`
+                                  : '')}
+                              >
+                                {isSelected ? t('Selecionado') : t('Apostar')}
+                              </Button>
+                            </div>
+                          )
+                        })}
+                      </div>
                     )
-                  : (
-                      <EventMarketCard
-                        row={row}
-                        showMarketIcon={Boolean(event.show_market_icons)}
-                        isExpanded={isExpanded}
-                        isActiveMarket={selectedMarketId === market.condition_id}
-                        showInReviewTag={showInReviewTag}
-                        activeOutcomeIndex={activeOutcomeIndex}
-                        onToggle={() => handleToggle(market)}
-                        onBuy={(cardMarket, outcomeIndex, source) => handleBuy(cardMarket, outcomeIndex, source)}
-                        chanceHighlightKey={chanceHighlightKey}
-                        positionTags={positionTags}
-                        openOrdersCount={openOrdersCountByCondition[market.condition_id] ?? 0}
-                        onCashOut={handleCashOut}
-                        isMobile={isMobile}
-                      />
-                    )}
+                  : isResolvedInlineRow
+                    ? (
+                        <ResolvedMarketRow
+                          row={row}
+                          showMarketIcon={Boolean(event.show_market_icons)}
+                          isExpanded={isExpanded}
+                          resolvedOutcomeIndexOverride={resolvedOutcomeIndexOverride}
+                          onToggle={() => handleToggle(market)}
+                        />
+                      )
+                    : (
+                        <EventMarketCard
+                          row={row}
+                          showMarketIcon={Boolean(event.show_market_icons)}
+                          isExpanded={isExpanded}
+                          isActiveMarket={selectedMarketId === market.condition_id}
+                          showInReviewTag={showInReviewTag}
+                          activeOutcomeIndex={activeOutcomeIndex}
+                          onToggle={() => handleToggle(market)}
+                          onBuy={(cardMarket, outcomeIndex, source) => handleBuy(cardMarket, outcomeIndex, source)}
+                          chanceHighlightKey={chanceHighlightKey}
+                          positionTags={positionTags}
+                          openOrdersCount={openOrdersCountByCondition[market.condition_id] ?? 0}
+                          onCashOut={handleCashOut}
+                          isMobile={isMobile}
+                        />
+                      )}
 
                 <div
                   className={cn(

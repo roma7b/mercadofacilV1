@@ -41,4 +41,3 @@ export function useAffiliateOrderMetadata(): AffiliateInfoResponse {
 
   return data ?? DEFAULT_RESPONSE
 }
-

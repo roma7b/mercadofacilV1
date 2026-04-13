@@ -22,4 +22,3 @@ export interface NormalizedBookLevel {
   priceDollars: number
   size: number
 }
-

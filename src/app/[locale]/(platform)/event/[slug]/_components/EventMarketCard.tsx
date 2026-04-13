@@ -116,18 +116,19 @@ function EventMarketCardComponent({
     <div
       className={cn(
         `
-          group relative mb-1 flex w-full cursor-pointer flex-row items-center justify-between rounded-lg border border-border/30
-          bg-card/15 px-3 py-3 transition-all duration-200 hover:border-border/60 hover:bg-card/35
+          group relative mb-1 flex w-full cursor-pointer flex-row items-center justify-between rounded-lg border
+          border-border/30 bg-card/15 p-3 transition-all duration-200
+          hover:border-border/60 hover:bg-card/35
           lg:px-4
         `,
-        isExpanded && 'bg-primary/5 border-primary/20'
+        isExpanded && 'border-primary/20 bg-primary/5',
       )}
       role="button"
       tabIndex={0}
       aria-expanded={isExpanded}
       onClick={onToggle}
     >
-      <div className="flex flex-row flex-1 items-center justify-between gap-3 overflow-hidden">
+      <div className="flex flex-1 flex-row items-center justify-between gap-3 overflow-hidden">
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
           {shouldShowIcon && (
             <EventIconImage
@@ -138,11 +139,18 @@ function EventMarketCardComponent({
             />
           )}
           <div className="flex min-w-0 flex-col pr-1">
-            <h3 className="truncate text-[13px] leading-tight font-semibold text-foreground transition-colors group-hover:text-primary sm:text-sm">
+            <h3 className="
+              truncate text-[13px] leading-tight font-semibold text-foreground transition-colors
+              group-hover:text-primary
+              sm:text-sm
+            "
+            >
               {market.short_title || market.title}
             </h3>
-            <span className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground">
-              Vol. R$ {Number(resolvedVolume || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+            <span className="mt-0.5 truncate text-2xs font-medium text-muted-foreground">
+              Vol. R$
+              {' '}
+              {Number(resolvedVolume || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
             </span>
           </div>
         </div>
@@ -150,7 +158,11 @@ function EventMarketCardComponent({
         <div className="flex shrink-0 items-center justify-end gap-2 lg:gap-3">
           <div className="w-14 text-right md:w-16">
             <span
-              className="cursor-pointer text-[13px] font-bold text-foreground transition-colors hover:text-primary md:text-sm"
+              className="
+                cursor-pointer text-[13px] font-bold text-foreground transition-colors
+                hover:text-primary
+                md:text-sm
+              "
               onClick={(event) => {
                 event.stopPropagation()
                 onBuy(market, OUTCOME_INDEX.YES, isMobile ? 'mobile' : 'desktop')
@@ -165,40 +177,64 @@ function EventMarketCardComponent({
             <Button
               size="sm"
               className={cn(
-                "flex h-9 w-[70px] items-center justify-between rounded-md px-2 text-left font-bold transition-all sm:w-[78px] md:w-[92px] md:px-3",
-                "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500",
-                isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES && "ring-1 ring-emerald-500 bg-emerald-500/30"
+                `
+                  flex h-9 w-[70px] items-center justify-between rounded-md px-2 text-left font-bold transition-all
+                  sm:w-[78px]
+                  md:w-[92px] md:px-3
+                `,
+                'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20',
+                isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES && `
+                  bg-emerald-500/30 ring-1 ring-emerald-500
+                `,
               )}
               onClick={(event) => {
                 event.stopPropagation()
                 onBuy(market, OUTCOME_INDEX.YES, isMobile ? 'mobile' : 'desktop')
               }}
             >
-              <span className="hidden text-[9px] font-bold tracking-tight uppercase opacity-90 sm:inline-block md:text-[10px]">Sim</span>
-              <span className="text-[11px] md:text-sm mx-auto sm:mx-0">{formatCentsLabel(yesPriceValue)}</span>
+              <span className="
+                hidden text-[9px] font-bold tracking-tight uppercase opacity-90
+                sm:inline-block
+                md:text-2xs
+              "
+              >
+                Sim
+              </span>
+              <span className="mx-auto text-[11px] sm:mx-0 md:text-sm">{formatCentsLabel(yesPriceValue)}</span>
             </Button>
 
             <Button
               size="sm"
               className={cn(
-                "flex h-9 w-[70px] items-center justify-between rounded-md px-2 text-left font-bold transition-all sm:w-[78px] md:w-[92px] md:px-3",
-                "bg-red-500/10 hover:bg-red-500/20 text-red-500",
-                isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO && "ring-1 ring-red-500 bg-red-500/30"
+                `
+                  flex h-9 w-[70px] items-center justify-between rounded-md px-2 text-left font-bold transition-all
+                  sm:w-[78px]
+                  md:w-[92px] md:px-3
+                `,
+                'bg-red-500/10 text-red-500 hover:bg-red-500/20',
+                isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO && 'bg-red-500/30 ring-1 ring-red-500',
               )}
               onClick={(event) => {
                 event.stopPropagation()
                 onBuy(market, OUTCOME_INDEX.NO, isMobile ? 'mobile' : 'desktop')
               }}
             >
-              <span className="hidden text-[9px] font-bold tracking-tight uppercase opacity-90 sm:inline-block md:text-[10px]">Não</span>
+              <span className="
+                hidden text-[9px] font-bold tracking-tight uppercase opacity-90
+                sm:inline-block
+                md:text-2xs
+              "
+              >
+                Não
+              </span>
               <span className="mx-auto text-[11px] sm:mx-0 md:text-sm">{formatCentsLabel(noPriceValue)}</span>
             </Button>
           </div>
         </div>
       </div>
-      
+
       {shouldShowTags && (
-        <div className="absolute -bottom-2 right-4 translate-y-1/2">
+        <div className="absolute right-4 -bottom-2 translate-y-1/2">
           <PositionTags
             tags={resolvedPositionTags}
             openOrdersCount={openOrdersCount}

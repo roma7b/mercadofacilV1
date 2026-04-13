@@ -42,4 +42,3 @@ function buildSitemapIndexXml(siteUrl: string, entries: SitemapIndexEntry[]): st
     '</sitemapindex>',
   ].join('\n')
 }
-

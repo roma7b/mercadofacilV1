@@ -24,4 +24,3 @@ export const usePwaInstallStore = create<PwaInstallState>(set => ({
   setStandalone: isStandalone => set({ isStandalone }),
   setPrompting: isPrompting => set({ isPrompting }),
 }))
-

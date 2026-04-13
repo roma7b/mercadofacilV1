@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { RefreshCw, AlertCircle, Wifi, Cpu, Car, Pencil, X, CheckCircle2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'motion/react'
 import Hls from 'hls.js'
+import { AlertCircle, Car, CheckCircle2, Cpu, Pencil, RefreshCw, Wifi, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const BASE_URL = (process.env.NEXT_PUBLIC_YOLO_SERVICE_URL || 'http://localhost:8000').replace(/\/$/, '')
@@ -57,18 +57,20 @@ export default function LiveCameraFeed({
   onViewModeChange,
   isAdmin = false,
   showMetrics = false,
-  metadata
+  metadata,
 }: LiveCameraFeedProps) {
-
   // Se for o mercado de Bitcoin, renderiza o gráfico do TradingView
   if (liveId === 'live-btc-price-v2' || metadata?.title?.toLowerCase().includes('bitcoin')) {
     return (
-      <div className={cn("w-full h-[450px] bg-[#131722] rounded-2xl overflow-hidden border border-white/5 shadow-2xl relative", className)}>
+      <div className={cn(`
+        relative h-[450px] w-full overflow-hidden rounded-2xl border border-white/5 bg-[#131722] shadow-2xl
+      `, className)}
+      >
         <iframe
-          src={`https://s.tradingview.com/widgetembed/?frameElementId=tradingview_btc&symbol=BINANCE:BTCUSDT&interval=1&hidesidetoolbar=1&hidesizeadjust=1&hidetoptoolbar=1&hidelegend=1&symboledit=0&saveimage=0&toolbarbg=131722&studies=[]&theme=dark&style=3&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=br&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=BINANCE:BTCUSDT#%7B%22interval%22%3A%221%22%2C%22range%22%3A%2215m%22%7D`}
+          src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_btc&symbol=BINANCE:BTCUSDT&interval=1&hidesidetoolbar=1&hidesizeadjust=1&hidetoptoolbar=1&hidelegend=1&symboledit=0&saveimage=0&toolbarbg=131722&studies=[]&theme=dark&style=3&timezone=Etc%2FUTC&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=br&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=BINANCE:BTCUSDT#%7B%22interval%22%3A%221%22%2C%22range%22%3A%2215m%22%7D"
           style={{ width: '100%', height: '100%', border: 'none' }}
         />
-        <div className="absolute inset-0 z-10 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 z-10" />
       </div>
     )
   }
@@ -83,7 +85,7 @@ export default function LiveCameraFeed({
   const iaRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [calibState, setCalibState] = useState<CalibrateState>('idle')
   const [toast, setToast] = useState<string | null>(null)
-  
+
   const IS_PROD = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
   const [viewMode, setViewMode] = useState<'live' | 'ia'>(showMetrics && !IS_PROD ? 'ia' : 'live')
 
@@ -100,7 +102,7 @@ export default function LiveCameraFeed({
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(setToast, 3000, null)
   }, [])
 
   useEffect(() => {
@@ -111,7 +113,7 @@ export default function LiveCameraFeed({
 
   // WebSocket para IA (apenas se showMetrics for true)
   useEffect(() => {
-    if (!showMetrics) return
+    if (!showMetrics) { return }
 
     fetch(`${API_URL}/status/${liveId}`).catch(() => {})
 
@@ -136,9 +138,9 @@ export default function LiveCameraFeed({
       }
 
       ws.onmessage = (evt) => {
-        if (evt.data === 'pong') return
+        if (evt.data === 'pong') { return }
         try {
-          if (status === 'loading') setStatus('live') 
+          if (status === 'loading') { setStatus('live') }
           const ev = JSON.parse(evt.data)
           if (ev.line_x1_pct !== undefined) {
             lineRef.current = {
@@ -149,12 +151,12 @@ export default function LiveCameraFeed({
             }
           }
           const countValue = ev.total_count
-          if (onCountUpdate) onCountUpdate(countValue)
+          if (onCountUpdate) { onCountUpdate(countValue) }
           setTotalCount(countValue)
 
           if (lastCountRef.current !== null && countValue > lastCountRef.current) {
             setShowPulse(true)
-            setTimeout(() => setShowPulse(false), 2200)
+            setTimeout(setShowPulse, 2200, false)
           }
           lastCountRef.current = countValue
 
@@ -170,7 +172,8 @@ export default function LiveCameraFeed({
             }
             flashesRef.current = [...flashesRef.current, flash]
           }
-        } catch { /* ignore */ }
+        }
+        catch { /* ignore */ }
       }
 
       ws.onclose = () => {
@@ -192,7 +195,7 @@ export default function LiveCameraFeed({
 
   // HLS Video Stream
   useEffect(() => {
-    if (!videoRef.current) return
+    if (!videoRef.current) { return }
     const video = videoRef.current
     const streamToLoad = originalStreamUrl || FALLBACK_STREAM_URL
 
@@ -209,8 +212,12 @@ export default function LiveCameraFeed({
       })
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad()
-          else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError()
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+            hls.startLoad()
+          }
+          else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+            hls.recoverMediaError()
+          }
           else {
             hls.destroy()
             setStatus('error')
@@ -218,7 +225,8 @@ export default function LiveCameraFeed({
           }
         }
       })
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    }
+    else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = streamToLoad
       video.addEventListener('loadedmetadata', () => {
         video.play()
@@ -234,41 +242,52 @@ export default function LiveCameraFeed({
   }, [originalStreamUrl])
 
   return (
-    <div className={`flex flex-col bg-zinc-950 border border-zinc-800/50 rounded-2xl overflow-hidden ${className}`}>
-      <div className="relative flex-grow overflow-hidden group">
-        {imgError ? (
-          <div className="w-full aspect-video flex flex-col items-center justify-center bg-zinc-900 gap-3">
-            <AlertCircle size={32} className="text-rose-500" />
-            <p className="text-xs font-bold text-white">Fluxo Indisponível no Momento</p>
-            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-white text-black text-[10px] font-black rounded-lg">
-              Tentar Novamente
-            </button>
-          </div>
-        ) : (
-          <div className="w-full h-full relative">
-            <video
-              ref={videoRef}
-              className="w-full aspect-video object-contain bg-black"
-              playsInline
-              muted
-              autoPlay
-              poster="https://images.unsplash.com/photo-1545147986-a9d6f210df77?q=80&w=640&auto=format&fit=crop"
-            />
-          </div>
-        )}
+    <div className={`flex flex-col overflow-hidden rounded-2xl border border-zinc-800/50 bg-zinc-950 ${className}`}>
+      <div className="group relative grow overflow-hidden">
+        {imgError
+          ? (
+              <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 bg-zinc-900">
+                <AlertCircle size={32} className="text-rose-500" />
+                <p className="text-xs font-bold text-white">Fluxo Indisponível no Momento</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="rounded-lg bg-white px-4 py-2 text-2xs font-black text-black"
+                >
+                  Tentar Novamente
+                </button>
+              </div>
+            )
+          : (
+              <div className="relative size-full">
+                <video
+                  ref={videoRef}
+                  className="aspect-video w-full bg-black object-contain"
+                  playsInline
+                  muted
+                  autoPlay
+                  poster="https://images.unsplash.com/photo-1545147986-a9d6f210df77?q=80&w=640&auto=format&fit=crop"
+                />
+              </div>
+            )}
 
         {/* Badges de Status */}
-        <div className="absolute top-2 left-2 flex items-center gap-2 z-10 pointer-events-none">
-          <div className="flex items-center gap-1 bg-black/60 backdrop-blur px-2 py-1 rounded-full border border-white/10">
-            <Wifi size={9} className="text-emerald-400 animate-pulse" />
-            <span className="text-[8px] font-black text-white uppercase tracking-widest">
+        <div className="pointer-events-none absolute top-2 left-2 z-10 flex items-center gap-2">
+          <div className="
+            flex items-center gap-1 rounded-full border border-white/10 bg-black/60 px-2 py-1 backdrop-blur-sm
+          "
+          >
+            <Wifi size={9} className="animate-pulse text-emerald-400" />
+            <span className="text-[8px] font-black tracking-widest text-white uppercase">
               AO VIVO
             </span>
           </div>
           {showMetrics && (
-            <div className="flex items-center gap-1 bg-black/60 backdrop-blur px-2 py-1 rounded-full border border-white/10">
-              <Cpu size={9} className={iaConnected ? 'text-amber-400 animate-pulse' : 'text-zinc-500'} />
-              <span className="text-[8px] font-black text-zinc-300 uppercase tracking-widest">
+            <div className="
+              flex items-center gap-1 rounded-full border border-white/10 bg-black/60 px-2 py-1 backdrop-blur-sm
+            "
+            >
+              <Cpu size={9} className={iaConnected ? 'animate-pulse text-amber-400' : 'text-zinc-500'} />
+              <span className="text-[8px] font-black tracking-widest text-zinc-300 uppercase">
                 {iaConnected ? 'IA Online' : 'IA Offline'}
               </span>
             </div>
@@ -276,27 +295,27 @@ export default function LiveCameraFeed({
         </div>
 
         {status === 'loading' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-50">
-            <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-zinc-950">
+            <div className="size-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
           </div>
         )}
       </div>
 
       {/* Roda-pé de Contagem (Opcional) */}
       {showMetrics && (
-        <div className="flex items-center justify-between px-5 py-3 bg-zinc-900/50 border-t border-zinc-800/80">
+        <div className="flex items-center justify-between border-t border-zinc-800/80 bg-zinc-900/50 px-5 py-3">
           <div className="flex flex-col">
-             <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-               Análise de Tráfego
-             </span>
-             <span className="text-xs text-white/80 font-medium">Contagem por IA (YOLOv8)</span>
+            <span className="text-2xs font-bold tracking-widest text-zinc-500 uppercase">
+              Análise de Tráfego
+            </span>
+            <span className="text-xs font-medium text-white/80">Contagem por IA (YOLOv8)</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-zinc-500 text-xs font-bold tracking-widest uppercase">TOTAL</span>
-            <div className="bg-emerald-500/10 border border-emerald-500/30 px-4 py-1 rounded-lg">
-               <span className="text-2xl font-mono text-emerald-400 tracking-tighter">
-                  {totalCount}
-               </span>
+            <span className="text-xs font-bold tracking-widest text-zinc-500 uppercase">TOTAL</span>
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-1">
+              <span className="font-mono text-2xl tracking-tighter text-emerald-400">
+                {totalCount}
+              </span>
             </div>
           </div>
         </div>

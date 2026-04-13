@@ -1,10 +1,10 @@
-const postgres = require('postgres');
-require('dotenv').config({ path: '.env' });
+const postgres = require('postgres')
+require('dotenv').config({ path: '.env' })
 
 async function run() {
-  const sql = postgres(process.env.POSTGRES_URL, { max: 1 });
+  const sql = postgres(process.env.POSTGRES_URL, { max: 1 })
   try {
-    console.log('Adicionando colunas...');
+    console.log('Adicionando colunas...')
     await sql.unsafe(`
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS id CHAR(26);
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
@@ -21,12 +21,14 @@ async function run() {
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS proxy_wallet_tx_hash TEXT;
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS affiliate_code TEXT;
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS referred_by_user_id CHAR(26);
-    `);
-    console.log('Tabela users atualizada com sucesso!');
-  } catch (err) {
-    console.error('Erro:', err.message);
-  } finally {
-    process.exit(0);
+    `)
+    console.log('Tabela users atualizada com sucesso!')
+  }
+  catch (err) {
+    console.error('Erro:', err.message)
+  }
+  finally {
+    process.exit(0)
   }
 }
-run();
+run()

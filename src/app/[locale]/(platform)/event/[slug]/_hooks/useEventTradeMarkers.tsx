@@ -1,12 +1,12 @@
 'use client'
 
-import type { PredictionChartAnnotationMarker } from '@/types/PredictionChartTypes'
 import type { Event, Market } from '@/types'
+import type { PredictionChartAnnotationMarker } from '@/types/PredictionChartTypes'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { OUTCOME_INDEX } from '@/lib/constants'
 import { fetchEventTrades } from '@/lib/data-api/trades'
 import { fromMicro } from '@/lib/formatters'
-import { OUTCOME_INDEX } from '@/lib/constants'
 
 interface UseEventTradeMarkersProps {
   event: Event
@@ -34,16 +34,16 @@ export function useEventTradeMarkers({
   })
 
   const markers = useMemo<PredictionChartAnnotationMarker[]>(() => {
-    if (!trades.length) return []
+    if (!trades.length) { return [] }
 
     return trades.map((trade, index) => {
       const conditionId = trade.market.condition_id
       const createdAtTimestamp = new Date(trade.created_at).getTime()
       const rawPrice = Number(trade.price)
       const outcomeIndex = Number(trade.outcome.index)
-      
+
       const isYesOutcome = outcomeIndex === OUTCOME_INDEX.YES
-      
+
       // Normalização de preço para o gráfico (0-100)
       const normalizedLineValue = showBothOutcomes
         ? rawPrice * 100
@@ -59,11 +59,18 @@ export function useEventTradeMarkers({
         color: markerColor,
         radius: 2.5, // Dot menor para não poluir muito
         tooltipContent: (
-          <div className="flex items-center gap-1.5 text-[10px] whitespace-nowrap">
+          <div className="flex items-center gap-1.5 text-2xs whitespace-nowrap">
             <span className="font-bold">{trade.side === 'buy' ? 'BUY' : 'SELL'}</span>
-            <span>{sharesValue.toFixed(0)} shares</span>
+            <span>
+              {sharesValue.toFixed(0)}
+              {' '}
+              shares
+            </span>
             <span className="text-muted-foreground">@</span>
-            <span className="font-mono">{(rawPrice * 100).toFixed(0)}¢</span>
+            <span className="font-mono">
+              {(rawPrice * 100).toFixed(0)}
+              ¢
+            </span>
           </div>
         ),
       }

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import type { ProxyWalletStatus } from '@/types'
+import { CheckCircle2, Copy, ExternalLink, Loader2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
-import { CheckCircle2, Loader2, Copy, ExternalLink, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,7 +32,7 @@ export function WalletFlow({
   const [step, setStep] = useState<'IDLE' | 'LOADING' | 'PIX' | 'CONFIRMED'>('IDLE')
   const [amount, setAmount] = useState('10')
   const [pixData, setPixData] = useState<{ qr_code: string, copy_past: string, order_id: string } | null>(null)
-  
+
   // Reset state when opening/closing
   useEffect(() => {
     if (!depositOpen) {
@@ -56,7 +56,8 @@ export function WalletFlow({
               toast.success('Depósito confirmado!')
             }
           }
-        } catch (err) {
+        }
+        catch (err) {
           console.error('Erro no polling:', err)
         }
       }, 5000)
@@ -75,15 +76,16 @@ export function WalletFlow({
       const res = await fetch('/api/mercado/deposit/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: Number(amount) })
+        body: JSON.stringify({ amount: Number(amount) }),
       })
 
-      if (!res.ok) throw new Error('Falha ao gerar PIX')
+      if (!res.ok) { throw new Error('Falha ao gerar PIX') }
 
       const data = await res.json()
       setPixData(data)
       setStep('PIX')
-    } catch (err) {
+    }
+    catch (err) {
       console.error(err)
       toast.error('Erro ao gerar código PIX. Tente novamente.')
       setStep('IDLE')
@@ -98,14 +100,14 @@ export function WalletFlow({
   if (depositOpen) {
     return (
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+        className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
         onClick={() => onDepositOpenChange(false)}
       >
         <div
-          className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative"
+          className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl"
           onClick={e => e.stopPropagation()}
         >
-          <button 
+          <button
             onClick={() => onDepositOpenChange(false)}
             className="absolute top-4 right-4 text-zinc-500 hover:text-white"
           >
@@ -115,37 +117,45 @@ export function WalletFlow({
           {step === 'IDLE' && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Depositar Saldo</h2>
+                <h2 className="mb-2 text-2xl font-bold text-white">Depositar Saldo</h2>
                 <p className="text-sm text-zinc-400">Escolha o valor para recarregar sua carteira via PIX.</p>
               </div>
 
               <div className="space-y-4">
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white font-medium">R$</span>
+                  <span className="absolute top-1/2 left-4 -translate-y-1/2 font-medium text-white">R$</span>
                   <Input
                     type="number"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pl-12 h-14 text-xl font-bold bg-zinc-900 border-zinc-800 text-white focus:border-primary focus:ring-primary"
+                    onChange={e => setAmount(e.target.value)}
+                    className="
+                      h-14 border-zinc-800 bg-zinc-900 pl-12 text-xl font-bold text-white
+                      focus:border-primary focus:ring-primary
+                    "
                     placeholder="0,00"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  {['10', '50', '100'].map((val) => (
+                  {['10', '50', '100'].map(val => (
                     <button
                       key={val}
                       onClick={() => setAmount(val)}
-                      className="py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors"
+                      className="
+                        rounded-lg border border-zinc-800 bg-zinc-900 py-2 text-sm font-semibold text-white
+                        transition-colors
+                        hover:bg-zinc-800
+                      "
                     >
-                      R$ {val}
+                      R$
+                      {' '}
+                      {val}
                     </button>
                   ))}
                 </div>
 
-
-                <Button 
-                  className="w-full h-12 text-lg font-bold" 
+                <Button
+                  className="h-12 w-full text-lg font-bold"
                   onClick={handleCreatePix}
                 >
                   Gerar PIX
@@ -155,56 +165,63 @@ export function WalletFlow({
           )}
 
           {step === 'LOADING' && (
-            <div className="py-12 flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="size-12 text-primary animate-spin" />
-              <p className="text-zinc-400 animate-pulse">Gerando código PIX...</p>
+            <div className="flex flex-col items-center justify-center space-y-4 py-12">
+              <Loader2 className="size-12 animate-spin text-primary" />
+              <p className="animate-pulse text-zinc-400">Gerando código PIX...</p>
             </div>
           )}
 
           {step === 'PIX' && pixData && (
             <div className="space-y-6">
               <div className="text-center">
-                <h2 className="text-xl font-bold text-white mb-1">Aguardando Pagamento</h2>
+                <h2 className="mb-1 text-xl font-bold text-white">Aguardando Pagamento</h2>
                 <p className="text-sm text-zinc-400">Escaneie o QR Code ou use o Copia e Cola.</p>
               </div>
 
-              <div className="flex justify-center p-4 bg-white rounded-xl mx-auto w-fit">
+              <div className="mx-auto flex w-fit justify-center rounded-xl bg-white p-4">
                 <QRCode value={pixData.copy_past} size={180} />
               </div>
 
               <div className="space-y-3">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-12 border-zinc-800 hover:bg-zinc-900 justify-between px-4"
+                <Button
+                  variant="outline"
+                  className="h-12 w-full justify-between border-zinc-800 px-4 hover:bg-zinc-900"
                   onClick={() => copyToClipboard(pixData.copy_past)}
                 >
-                  <span className="truncate mr-2 text-xs font-mono text-zinc-400">{pixData.copy_past}</span>
+                  <span className="mr-2 truncate font-mono text-xs text-zinc-400">{pixData.copy_past}</span>
                   <Copy className="size-4 shrink-0" />
                 </Button>
 
                 <div className="flex items-center justify-center space-x-2 py-2">
-                  <Loader2 className="size-4 text-primary animate-spin" />
-                  <span className="text-xs text-primary font-medium uppercase tracking-widest">Sincronizando banco...</span>
+                  <Loader2 className="size-4 animate-spin text-primary" />
+                  <span className="text-xs font-medium tracking-widest text-primary uppercase">Sincronizando banco...</span>
                 </div>
               </div>
-              
-              <p className="text-[10px] text-center text-zinc-500 uppercase tracking-tighter">
+
+              <p className="text-center text-2xs tracking-tighter text-zinc-500 uppercase">
                 O saldo serÃ¡ creditado instantaneamente apÃ³s a confirmaÃ§Ã£o.
               </p>
             </div>
           )}
 
           {step === 'CONFIRMED' && (
-            <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="size-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-4">
+            <div className="flex flex-col items-center justify-center space-y-4 py-8 text-center">
+              <div className="mb-4 flex size-20 items-center justify-center rounded-full bg-emerald-500/10">
                 <CheckCircle2 className="size-12 text-emerald-500" />
               </div>
               <h2 className="text-2xl font-bold text-white">Sucesso!</h2>
               <p className="text-zinc-400">
-                Seu depÃ³sito de <span className="text-white font-bold">R$ {amount}</span> foi confirmado e jÃ¡ estÃ¡ disponÃvel.
+                Seu depÃ³sito de
+                {' '}
+                <span className="font-bold text-white">
+                  R$
+                  {amount}
+                </span>
+                {' '}
+                foi confirmado e jÃ¡ estÃ¡ disponÃvel.
               </p>
-              <Button 
-                className="w-full mt-6" 
+              <Button
+                className="mt-6 w-full"
                 onClick={() => onDepositOpenChange(false)}
               >
                 ConcluÃ­do
@@ -240,34 +257,37 @@ export function WalletFlow({
           body: JSON.stringify({
             amount: Number(withdrawAmount),
             pix_key: pixKey,
-            pix_type: pixType
-          })
+            pix_type: pixType,
+          }),
         })
 
         const data = await res.json()
         if (res.ok) {
           toast.success('Saque solicitado com sucesso!')
           onWithdrawOpenChange(false)
-        } else {
+        }
+        else {
           toast.error(data.error || 'Erro ao processar saque')
         }
-      } catch (err) {
+      }
+      catch (err) {
         toast.error('Erro de conexão. Tente novamente.')
-      } finally {
+      }
+      finally {
         setWithdrawing(false)
       }
     }
 
     return (
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+        className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
         onClick={() => onWithdrawOpenChange(false)}
       >
         <div
-          className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative"
+          className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-2xl"
           onClick={e => e.stopPropagation()}
         >
-          <button 
+          <button
             onClick={() => onWithdrawOpenChange(false)}
             className="absolute top-4 right-4 text-zinc-500 hover:text-white"
           >
@@ -276,31 +296,34 @@ export function WalletFlow({
 
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-2">Solicitar Saque</h2>
+              <h2 className="mb-2 text-2xl font-bold text-white">Solicitar Saque</h2>
               <p className="text-sm text-zinc-400">Receba seus ganhos via PIX com seguranÃ§a.</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-500 uppercase mb-1.5 block">Valor do Saque</label>
+                <label className="mb-1.5 block text-xs font-semibold text-zinc-500 uppercase">Valor do Saque</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white font-medium">R$</span>
+                  <span className="absolute top-1/2 left-4 -translate-y-1/2 font-medium text-white">R$</span>
                   <Input
                     type="number"
                     value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                    className="pl-12 h-12 bg-zinc-900 border-zinc-800 text-white"
+                    onChange={e => setWithdrawAmount(e.target.value)}
+                    className="h-12 border-zinc-800 bg-zinc-900 pl-12 text-white"
                     placeholder="0,00"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-500 uppercase mb-1.5 block">Tipo de Chave PIX</label>
-                <select 
+                <label className="mb-1.5 block text-xs font-semibold text-zinc-500 uppercase">Tipo de Chave PIX</label>
+                <select
                   value={pixType}
-                  onChange={(e) => setPixType(e.target.value)}
-                  className="w-full h-12 rounded-md bg-zinc-900 border border-zinc-800 text-white px-3 focus:outline-none focus:ring-1 focus:ring-primary"
+                  onChange={e => setPixType(e.target.value)}
+                  className="
+                    h-12 w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 text-white
+                    focus:ring-1 focus:ring-primary focus:outline-none
+                  "
                 >
                   <option value="CPF">CPF</option>
                   <option value="EMAIL">E-mail</option>
@@ -310,32 +333,36 @@ export function WalletFlow({
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-500 uppercase mb-1.5 block">Sua Chave PIX</label>
+                <label className="mb-1.5 block text-xs font-semibold text-zinc-500 uppercase">Sua Chave PIX</label>
                 <Input
                   type="text"
                   value={pixKey}
-                  onInput={(e) => setPixKey(e.currentTarget.value)}
-                  className="h-12 bg-zinc-900 border-zinc-800 text-white"
+                  onInput={e => setPixKey(e.currentTarget.value)}
+                  className="h-12 border-zinc-800 bg-zinc-900 text-white"
                   placeholder="Digite sua chave aqui"
                 />
               </div>
 
-              <div className="p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                <p className="text-[11px] text-zinc-500 leading-relaxed">
+              <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
+                <p className="text-[11px] leading-relaxed text-zinc-500">
                   * Saques via PIX costumam ser processados em atÃ© 24 horas. Certifique-se de que a chave estÃ¡ correta para evitar atrasos.
                 </p>
               </div>
 
-              <Button 
-                className="w-full h-12 text-lg font-bold" 
+              <Button
+                className="h-12 w-full text-lg font-bold"
                 onClick={handleWithdraw}
                 disabled={withdrawing}
               >
-                {withdrawing ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" /> Processando...
-                  </span>
-                ) : 'Confirmar Saque PIX'}
+                {withdrawing
+                  ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="size-4 animate-spin" />
+                        {' '}
+                        Processando...
+                      </span>
+                    )
+                  : 'Confirmar Saque PIX'}
               </Button>
             </div>
           </div>
@@ -346,4 +373,3 @@ export function WalletFlow({
 
   return null
 }
-

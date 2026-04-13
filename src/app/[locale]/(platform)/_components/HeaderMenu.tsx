@@ -1,20 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { useAppKitAccount } from '@/hooks/useAppKitMock'
 import { useExtracted } from 'next-intl'
 import dynamic from 'next/dynamic'
+import { useState } from 'react'
 import HeaderDropdownUserMenuGuest from '@/app/[locale]/(platform)/_components/HeaderDropdownUserMenuGuest'
 import HeaderNotifications from '@/app/[locale]/(platform)/_components/HeaderNotifications'
 import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
+import { GenericAuthModal } from '@/components/GenericAuthModal'
 import HeaderDropdownUserMenuAuth from '@/components/HeaderDropdownUserMenuAuth'
 import HeaderPortfolio from '@/components/HeaderPortfolio'
 import { Button } from '@/components/ui/button'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useAppKitAccount } from '@/hooks/useAppKitMock'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { authClient } from '@/lib/auth-client'
 import { useUser } from '@/stores/useUser'
-import { GenericAuthModal } from '@/components/GenericAuthModal'
 
 const { useSession } = authClient
 
@@ -55,9 +54,9 @@ function HeaderMenuClient() {
 
   return (
     <>
-      <GenericAuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)} 
+      <GenericAuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
         defaultIsSignUp={authModalSignUp}
       />
       {isAuthenticated && (
@@ -65,10 +64,14 @@ function HeaderMenuClient() {
           <HeaderPortfolio className="hidden md:flex" />
           {startDepositFlow
             ? (
-                <Button 
-                  size="headerCompact" 
+                <Button
+                  size="headerCompact"
                   onClick={startDepositFlow}
-                  className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20"
+                  className="
+                    hidden bg-primary text-primary-foreground shadow-sm shadow-primary/20
+                    hover:bg-primary/90
+                    md:inline-flex
+                  "
                 >
                   {t('Deposit')}
                 </Button>
@@ -77,8 +80,7 @@ function HeaderMenuClient() {
                 <div className="hidden md:block">
                   <HeaderDepositButton />
                 </div>
-              )
-          }
+              )}
           <HeaderNotifications />
           <div className="-ml-1 hidden h-5 w-px bg-border md:block" aria-hidden="true" />
           <HeaderDropdownUserMenuAuth />

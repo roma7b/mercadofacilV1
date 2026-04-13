@@ -51,4 +51,3 @@ export function mergeSessionUserState(previous: User | null, nextUser: User): Us
 }
 
 export const useUser = create<User | null>()(() => null)
-

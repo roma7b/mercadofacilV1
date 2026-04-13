@@ -29,4 +29,3 @@ export function useCurrentTimestamp({
 
   return currentTimestamp
 }
-

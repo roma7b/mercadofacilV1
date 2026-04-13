@@ -1,8 +1,7 @@
+'use client'
+
 import type { OddsFormat } from '@/lib/odds-format'
 import { CheckIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { formatCentsLabel } from '@/lib/formatters'
-import { formatOddsFromPrice } from '@/lib/odds-format'
 import { cn } from '@/lib/utils'
 
 interface EventOrderPanelOutcomeButtonProps {
@@ -10,9 +9,9 @@ interface EventOrderPanelOutcomeButtonProps {
   price: number | null
   label: string
   isSelected: boolean
+  onSelect: () => void
   oddsFormat?: OddsFormat
   styleVariant?: 'default' | 'sports3d'
-  onSelect: () => void
 }
 
 export default function EventOrderPanelOutcomeButton({
@@ -20,47 +19,41 @@ export default function EventOrderPanelOutcomeButton({
   price,
   label,
   isSelected,
-  oddsFormat = 'price',
-  styleVariant = 'default',
   onSelect,
+  oddsFormat,
+  styleVariant,
 }: EventOrderPanelOutcomeButtonProps) {
-  const useSportsDepth = styleVariant === 'sports3d'
-  const priceLabel = oddsFormat === 'price'
-    ? formatCentsLabel(price)
-    : formatOddsFromPrice(price, oddsFormat)
+  // Multiplicador: preço 0.20 → 5.00x
+  const rawMultiplier = price && price > 0 ? 1 / price : 1
+  const multiplier = rawMultiplier.toFixed(2)
 
-  if (useSportsDepth) {
-    // Keep internal sports3d logic if needed, but for poly- events we use default
-  }
+  const isYes = variant === 'yes'
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      size="outcomeLg"
-      className={cn(
-        "flex flex-col items-center justify-center h-14 rounded-xl border-2 transition-all duration-200",
-        variant === 'yes' 
-          ? isSelected 
-            ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20" 
-            : "bg-emerald-500/5 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/10"
-          : isSelected 
-            ? "bg-red-500 border-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20" 
-            : "bg-red-500/5 border-red-500/20 text-red-600 hover:bg-red-500/10"
-      )}
       onClick={onSelect}
-    >
-      {isSelected && (
-        <span className="absolute top-1.5 right-1.5 inline-flex size-4 items-center justify-center rounded-full bg-black/20 text-white">
-          <CheckIcon className="size-3" />
-        </span>
+      style={{
+        backgroundColor: isSelected ? (isYes ? '#10b981' : '#f43f5e') : undefined,
+        boxShadow: isSelected ? `0 0 20px ${isYes ? 'rgba(16,185,129,0.35)' : 'rgba(244,63,94,0.35)'}` : undefined,
+      }}
+      className={cn(
+        // Base: pílula horizontal, h-12
+        'relative flex h-12 w-full flex-1 items-center justify-center overflow-hidden rounded-[14px] px-2 transition-all duration-200 active:scale-[0.98]',
+        // Estado SIM
+        isYes && !isSelected && 'bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/20 hover:border-emerald-500/40',
+        // Estado NÃO
+        !isYes && !isSelected && 'bg-rose-500/10 border border-transparent hover:bg-rose-500/20 hover:border-rose-500/40',
       )}
-      <span className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-0.5">
-        {label}
+    >
+      <span
+        className={cn(
+          'text-[15px] font-bold tracking-tight',
+          isSelected ? 'text-white' : (isYes ? 'text-emerald-400' : 'text-rose-500/80'),
+        )}
+      >
+        {label} <span className="font-medium opacity-90">({multiplier}x)</span>
       </span>
-      <span className="text-lg font-black font-mono">
-        {priceLabel}
-      </span>
-    </Button>
+    </button>
   )
 }

@@ -33,4 +33,3 @@ export async function loadAutoDeployNewEventsEnabled(): Promise<boolean> {
   const { data } = await SettingsRepository.getSettings()
   return getAutoDeployNewEventsEnabledFromSettings(data ?? undefined)
 }
-

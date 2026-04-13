@@ -12,4 +12,3 @@ export async function runQuery<T>(queryFn: () => Promise<QueryResult<T>>): Promi
     }
   }
 }
-

@@ -1,12 +1,12 @@
 'use server'
 
-import { translateTexts } from '@/lib/ai/translate'
-import { deleteEventAction } from '../../events/_actions/delete-event'
-import { db } from '@/lib/drizzle'
-import { mercadosLive } from '@/lib/db/schema/mercado_facil_tables'
+import fs from 'node:fs'
+import path from 'node:path'
 import { desc } from 'drizzle-orm'
-import fs from 'fs'
-import path from 'path'
+import { translateTexts } from '@/lib/ai/translate'
+import { mercadosLive } from '@/lib/db/schema/mercado_facil_tables'
+import { db } from '@/lib/drizzle'
+import { deleteEventAction } from '../../events/_actions/delete-event'
 
 const POLYMARKET_GAMMA_API = 'https://gamma-api.polymarket.com'
 
@@ -29,19 +29,21 @@ function ensureCacheDir() {
 
 function readDiskCache(filePath: string): DiskCache | null {
   try {
-    if (!fs.existsSync(filePath)) return null
+    if (!fs.existsSync(filePath)) { return null }
     const raw = fs.readFileSync(filePath, 'utf-8')
     const parsed: DiskCache = JSON.parse(raw)
-    if (Date.now() - parsed.timestamp < CACHE_TTL_MS) return parsed
+    if (Date.now() - parsed.timestamp < CACHE_TTL_MS) { return parsed }
     return null
-  } catch { return null }
+  }
+  catch { return null }
 }
 
 function writeDiskCache(filePath: string, data: PolyHypeItem[]) {
   try {
     ensureCacheDir()
     fs.writeFileSync(filePath, JSON.stringify({ timestamp: Date.now(), data }, null, 2), 'utf-8')
-  } catch (err) {
+  }
+  catch (err) {
     console.error('[CACHE_WRITE_ERROR]', err)
   }
 }
@@ -55,7 +57,7 @@ export interface PolyHypeItem {
   volume_24h?: string
   outcomePrices: string[]
   outcomes: string[]
-  outcomesTokens: string[]  // clobTokenIds reais da Polymarket
+  outcomesTokens: string[] // clobTokenIds reais da Polymarket
   active: boolean
   endDate: string | null
   rules?: string
@@ -69,10 +71,11 @@ export interface PolyHypeItem {
 function extractClobTokenIds(market: any): string[] {
   try {
     const raw = market.clobTokenIds
-    if (!raw) return []
+    if (!raw) { return [] }
     const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
-    if (Array.isArray(parsed)) return parsed.map(String)
-  } catch { /* silencioso */ }
+    if (Array.isArray(parsed)) { return parsed.map(String) }
+  }
+  catch { /* silencioso */ }
   return []
 }
 
@@ -89,17 +92,19 @@ function mapEvent(item: any): PolyHypeItem {
       try {
         const ps = typeof m.outcomePrices === 'string' ? JSON.parse(m.outcomePrices) : m.outcomePrices
         return String(Array.isArray(ps) ? ps[0] : '0.5')
-      } catch { return '0.5' }
+      }
+      catch { return '0.5' }
     })
     // Para multi-market, o token YES de cada sub-mercado é o primeiro clobTokenId
     outcomesTokens = ms.map((m: any) => {
       const tokens = extractClobTokenIds(m)
       return tokens[0] || ''
     })
-  } else {
+  }
+  else {
     // Mercado único (binary ou categorical)
     const activeMarket = ms[0] || {}
-    
+
     // Extrair preços
     try {
       const p = activeMarket.outcomePrices
@@ -107,8 +112,9 @@ function mapEvent(item: any): PolyHypeItem {
         const parsed = typeof p === 'string' ? JSON.parse(p) : p
         prices = Array.isArray(parsed) ? parsed.map(String) : ['0.5', '0.5']
       }
-    } catch { prices = ['0.5', '0.5'] }
-    
+    }
+    catch { prices = ['0.5', '0.5'] }
+
     // Extrair nomes dos outcomes
     try {
       const o = activeMarket.outcomes
@@ -116,16 +122,17 @@ function mapEvent(item: any): PolyHypeItem {
         const parsed = typeof o === 'string' ? JSON.parse(o) : o
         outcomesArr = Array.isArray(parsed) ? parsed.map(String) : ['Sim', 'Não']
       }
-    } catch { outcomesArr = ['Sim', 'Não'] }
-    
+    }
+    catch { outcomesArr = ['Sim', 'Não'] }
+
     // Extrair clobTokenIds reais (campo mais importante para o gráfico!)
     outcomesTokens = extractClobTokenIds(activeMarket)
   }
 
   // Fallbacks seguros
-  if (outcomesArr.length === 0) outcomesArr = ['Sim', 'Não']
-  if (prices.length === 0) prices = outcomesArr.map(() => '0.5')
-  if (outcomesTokens.length === 0) outcomesTokens = outcomesArr.map(() => '')
+  if (outcomesArr.length === 0) { outcomesArr = ['Sim', 'Não'] }
+  if (prices.length === 0) { prices = outcomesArr.map(() => '0.5') }
+  if (outcomesTokens.length === 0) { outcomesTokens = outcomesArr.map(() => '') }
 
   return {
     id: item.id || String(Math.random()),
@@ -163,38 +170,40 @@ async function translateHypeItems(items: PolyHypeItem[]): Promise<PolyHypeItem[]
         }
       }
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('[TRANSLATE_HYPE_ERROR]', err)
   }
   return items
 }
 
-export async function getPolymarketHypeAction(limit = 40): Promise<{ success: boolean; data?: PolyHypeItem[]; error?: string }> {
+export async function getPolymarketHypeAction(limit = 40): Promise<{ success: boolean, data?: PolyHypeItem[], error?: string }> {
   try {
     const cached = readDiskCache(GLOBAL_CACHE_FILE)
-    if (cached) return { success: true, data: cached.data }
+    if (cached) { return { success: true, data: cached.data } }
 
     const url = `${POLYMARKET_GAMMA_API}/events?active=true&closed=false&limit=${limit}`
     const res = await fetch(url, { cache: 'no-store', headers: { 'Accept': 'application/json', 'User-Agent': 'KuestBot/1.0' } })
-    if (!res.ok) throw new Error(`Polymarket API ${res.status}`)
-    
+    if (!res.ok) { throw new Error(`Polymarket API ${res.status}`) }
+
     const data = await res.json()
-    if (!Array.isArray(data)) return { success: true, data: [] }
+    if (!Array.isArray(data)) { return { success: true, data: [] } }
 
     let mappedData = data.map(mapEvent)
     mappedData = await translateHypeItems(mappedData)
     writeDiskCache(GLOBAL_CACHE_FILE, mappedData)
     return { success: true, data: mappedData }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('[FETCH_HYPE_ERROR]', error.message)
     return { success: false, error: error.message }
   }
 }
 
-export async function getBrazillianHypeAction(limit = 30): Promise<{ success: boolean; data?: PolyHypeItem[]; error?: string }> {
+export async function getBrazillianHypeAction(limit = 30): Promise<{ success: boolean, data?: PolyHypeItem[], error?: string }> {
   try {
     const cached = readDiskCache(BRAZIL_CACHE_FILE)
-    if (cached) return { success: true, data: cached.data }
+    if (cached) { return { success: true, data: cached.data } }
 
     const keywords = ['Brazil', 'Lula', 'Bolsonaro', 'Neymar', 'Petrobras', 'Selic', 'STF']
     const allResults: any[] = []
@@ -202,12 +211,13 @@ export async function getBrazillianHypeAction(limit = 30): Promise<{ success: bo
     for (const keyword of keywords) {
       try {
         const url = `${POLYMARKET_GAMMA_API}/events?active=true&closed=false&search=${encodeURIComponent(keyword)}&limit=20`
-        const res = await fetch(url, { cache: 'no-store', headers: { 'Accept': 'application/json' } })
+        const res = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } })
         if (res.ok) {
           const data = await res.json()
-          if (Array.isArray(data)) allResults.push(...data)
+          if (Array.isArray(data)) { allResults.push(...data) }
         }
-      } catch { /* ignora */ }
+      }
+      catch { /* ignora */ }
     }
 
     const unique = Array.from(new Map(allResults.map(m => [m.id, m])).values())
@@ -215,7 +225,8 @@ export async function getBrazillianHypeAction(limit = 30): Promise<{ success: bo
     mappedData = await translateHypeItems(mappedData)
     writeDiskCache(BRAZIL_CACHE_FILE, mappedData)
     return { success: true, data: mappedData }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     return { success: false, error: error.message }
   }
 }
@@ -224,7 +235,8 @@ export async function getPublishedMercadosAction() {
   try {
     const data = await db.select().from(mercadosLive).orderBy(desc(mercadosLive.id))
     return { success: true, data }
-  } catch (error: any) {
+  }
+  catch (error: any) {
     return { success: false, error: error.message }
   }
 }

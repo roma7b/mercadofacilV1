@@ -72,4 +72,3 @@ export const openapi = createOpenAPI({
   },
   proxyUrl: '/docs/api/proxy',
 })
-

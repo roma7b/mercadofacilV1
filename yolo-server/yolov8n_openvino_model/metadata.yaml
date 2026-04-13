@@ -8,8 +8,8 @@ stride: 32
 task: detect
 batch: 1
 imgsz:
-- 320
-- 320
+  - 320
+  - 320
 names:
   0: person
   1: bicycle

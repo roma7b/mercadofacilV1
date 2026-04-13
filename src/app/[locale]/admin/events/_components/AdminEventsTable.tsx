@@ -7,11 +7,11 @@ import { useExtracted } from 'next-intl'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { DataTable } from '@/app/[locale]/admin/_components/DataTable'
+import { deleteEventAction } from '@/app/[locale]/admin/events/_actions/delete-event'
 import { updateEventLivestreamUrlAction } from '@/app/[locale]/admin/events/_actions/update-event-livestream-url'
 import { updateEventSportsFinalStateAction } from '@/app/[locale]/admin/events/_actions/update-event-sports-final-state'
 import { updateEventSyncSettingsAction } from '@/app/[locale]/admin/events/_actions/update-event-sync-settings'
 import { updateEventVisibilityAction } from '@/app/[locale]/admin/events/_actions/update-event-visibility'
-import { deleteEventAction } from '@/app/[locale]/admin/events/_actions/delete-event'
 import { useAdminEventsColumns } from '@/app/[locale]/admin/events/_components/columns'
 import { useAdminEventsTable } from '@/app/[locale]/admin/events/_hooks/useAdminEvents'
 import { Button } from '@/components/ui/button'
@@ -186,7 +186,7 @@ export default function AdminEventsTable({
       setPendingHiddenId(null)
     }
   }, [queryClient, t])
-  
+
   const handleDeleteEvent = useCallback(async (event: AdminEventRow) => {
     if (!confirm(t('Are you sure you want to delete {name}?', { name: event.title }))) {
       return
@@ -198,14 +198,17 @@ export default function AdminEventsTable({
       if (result.success) {
         toast.success(t('{name} deleted successfully.', { name: event.title }))
         void queryClient.invalidateQueries({ queryKey: ['admin-events'] })
-      } else {
+      }
+      else {
         toast.error(result.error || t('Failed to delete event'))
       }
-    } catch (error) {
-       console.error('Failed to delete event', error)
-       toast.error(t('Failed to delete event'))
-    } finally {
-      setPendingDeleteIds(prev => {
+    }
+    catch (error) {
+      console.error('Failed to delete event', error)
+      toast.error(t('Failed to delete event'))
+    }
+    finally {
+      setPendingDeleteIds((prev) => {
         const next = new Set(prev)
         next.delete(event.id)
         return next

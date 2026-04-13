@@ -11,4 +11,3 @@ export const useWalletClient = () => ({ data: {} as any })
 
 // Fake Networks
 export const polygonAmoy = { id: 80002, name: 'Polygon Amoy' }
-

@@ -22,4 +22,3 @@ export const subgraph_syncs = pgTable(
     updated_at: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
 )
-

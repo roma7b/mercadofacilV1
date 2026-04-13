@@ -3,7 +3,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { FilterState } from '@/app/[locale]/(platform)/_providers/FilterProvider'
-import { useAppKitAccount } from '@/hooks/useAppKitMock'
 import { BookmarkIcon, ClockIcon, DropletIcon, FlameIcon, HandFistIcon, Settings2Icon, SparkleIcon, TrendingUpIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -18,7 +17,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useAppKitAccount } from '@/hooks/useAppKitMock'
 import { cn } from '@/lib/utils'
 
 interface FilterToolbarProps {

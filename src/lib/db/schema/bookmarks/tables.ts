@@ -13,4 +13,3 @@ export const bookmarks = pgTable(
       .references(() => events.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   },
 )
-

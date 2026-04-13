@@ -18,8 +18,8 @@ import {
 import { db } from '@/lib/drizzle'
 import { loadAutoDeployNewEventsEnabled } from '@/lib/event-sync-settings'
 import { setEventHiddenFromNew } from '@/lib/event-visibility'
-import { uploadPublicAsset } from '@/lib/storage'
 import { resolveMarketTypeFromSlug } from '@/lib/market-type'
+import { uploadPublicAsset } from '@/lib/storage'
 
 export const maxDuration = 300
 
@@ -2086,4 +2086,3 @@ async function updateSyncStatus(
     console.error(`Failed to update sync status to ${status}:`, error)
   }
 }
-

@@ -365,4 +365,3 @@ export function truncateEventCreationError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   return message.trim().slice(0, 1000)
 }
-

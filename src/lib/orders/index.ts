@@ -171,4 +171,3 @@ export async function submitOrder({
     slug,
   })
 }
-

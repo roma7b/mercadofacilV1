@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
@@ -18,10 +18,10 @@ export async function GET() {
     if (url && serviceKey) {
       const admin = createClient(url, serviceKey)
       const { data, error } = await admin.from('markets').select('*').limit(3)
-      diagnostics.serviceRole = { 
+      diagnostics.serviceRole = {
         data: data ? data.map(r => Object.keys(r)) : null, // só mostra as colunas, não os dados
         sample: data?.[0],
-        error: error?.message 
+        error: error?.message,
       }
     }
 
@@ -33,7 +33,8 @@ export async function GET() {
     }
 
     return NextResponse.json(diagnostics)
-  } catch (e: any) {
+  }
+  catch (e: any) {
     return NextResponse.json({ error: e.message })
   }
 }

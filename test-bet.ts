@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
+
 dotenv.config()
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
@@ -13,7 +14,7 @@ async function run() {
   const valor = 10
 
   console.log('--- Testando Aposta via Script ---')
-  
+
   // 1. Get Market
   const { data: market } = await db.from('mercados_live').select('*').eq('id', market_id).single()
   console.log('Mercado:', market.titulo, 'Status:', market.status)
@@ -23,12 +24,12 @@ async function run() {
   console.log('Saldo Anterior:', wallet.saldo)
 
   const custoTotal = valor + (valor * 0.03)
-  
+
   // 3. Update Wallet
   await db.from('wallets').update({ saldo: Number(wallet.saldo) - custoTotal }).eq('user_id', user_id)
-  
+
   // 4. Update Pool
-  const poolUpdate = opcao === 'SIM' 
+  const poolUpdate = opcao === 'SIM'
     ? { total_sim: Number(market.total_sim || 0) + valor }
     : { total_nao: Number(market.total_nao || 0) + valor }
   await db.from('mercados_live').update(poolUpdate).eq('id', market_id)
@@ -41,12 +42,13 @@ async function run() {
     valor,
     cotas: valor / 0.5, // dummy for test
     multiplicador_no_momento: 2,
-    status: 'PENDENTE'
+    status: 'PENDENTE',
   }).select().single()
 
   if (bError) {
     console.error('Erro ao inserir aposta:', bError)
-  } else {
+  }
+  else {
     console.log('Aposta inserida com ID:', bet.id)
   }
 

@@ -98,4 +98,3 @@ export function createFeeCalculationExample(
     platformSharePercent: affiliateSettings.platformSharePercent,
   }
 }
-

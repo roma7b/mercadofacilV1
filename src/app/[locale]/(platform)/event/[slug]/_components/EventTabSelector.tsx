@@ -30,15 +30,15 @@ export default function EventTabSelector({
     {
       key: 'comments',
       label: formattedCommentsCount == null
-        ? t('Comments')
-        : t('Comments ({count})', { count: formattedCommentsCount }),
+        ? t('Comentários')
+        : t('Comentários ({count})', { count: formattedCommentsCount }),
     },
-    { key: 'holders', label: t('Top Holders') },
-    { key: 'activity', label: t('Activity') },
+    { key: 'holders', label: t('Ranking') },
+    { key: 'activity', label: t('Atividade') },
   ]), [formattedCommentsCount, t])
 
   return (
-    <div className="mt-3 flex items-center justify-between overflow-x-auto border-b border-border scrollbar-hide">
+    <div className="scrollbar-hide mt-3 flex items-center justify-between overflow-x-auto border-b border-border">
       <ul className="flex h-8 gap-4 text-sm font-medium md:gap-8">
         {eventTabs.map((tab, index) => (
           <li

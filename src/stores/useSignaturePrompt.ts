@@ -59,4 +59,3 @@ export const useSignaturePrompt = create<SignaturePromptState>(set => ({
     })
   },
 }))
-

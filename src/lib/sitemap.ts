@@ -528,4 +528,3 @@ function sortEntriesByLastModifiedDesc(a: SitemapRouteEntry, b: SitemapRouteEntr
   }
   return a.lastModified > b.lastModified ? -1 : 1
 }
-

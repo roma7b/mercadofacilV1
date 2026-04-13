@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server'
-import { db } from '@/lib/drizzle'
-import { events, markets, conditions, outcomes, event_tags, tags } from '@/lib/db/schema'
-import { UserRepository } from '@/lib/db/queries/user'
 import { eq } from 'drizzle-orm'
+import { NextResponse } from 'next/server'
+import { UserRepository } from '@/lib/db/queries/user'
+import { conditions, event_tags, events, markets, outcomes, tags } from '@/lib/db/schema'
+import { db } from '@/lib/drizzle'
 
 export async function POST(request: Request) {
   try {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     // 2. Inserir Evento
     // Sanitizar o slug do evento para suportar apenas caracteres alfanuméricos e evitar IDs gigantes
     const safeEventSlug = (eventData.slug || eventData.title || 'event')
-      .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs se coladas
+      .replace(/https?:\/\/\S+/g, '') // Remove URLs se coladas
       .replace(/[^a-z0-9]/gi, '-')
       .toLowerCase()
       .slice(0, 100)
@@ -46,12 +46,12 @@ export async function POST(request: Request) {
     // 3. Vincular Categoria (Tag)
     if (eventData.mainCategory) {
       const tag = await db.query.tags.findFirst({
-        where: eq(tags.slug, eventData.mainCategory)
+        where: eq(tags.slug, eventData.mainCategory),
       })
       if (tag) {
         await db.insert(event_tags).values({
           event_id: insertedEvent.id,
-          tag_id: tag.id
+          tag_id: tag.id,
         })
       }
     }
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     for (const m of marketsData) {
       // Sanitizar slug para evitar IDs gigantes ou com caracteres inválidos (como URLs)
       const safeSlug = (m.slug || insertedEvent.slug || 'market')
-        .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs se coladas por engano
+        .replace(/https?:\/\/\S+/g, '') // Remove URLs se coladas por engano
         .replace(/[^a-z0-9]/gi, '-')
         .toLowerCase()
         .slice(0, 50)
@@ -95,8 +95,8 @@ export async function POST(request: Request) {
         data_resolucao: resolutionDate,
         label_sim: m.outcomes[0] || 'Sim',
         label_nao: m.outcomes[1] || 'Não',
-        total_sim: "0",
-        total_nao: "0"
+        total_sim: '0',
+        total_nao: '0',
       } as any)
 
       // Criar Outcomes
@@ -113,8 +113,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, eventId: insertedEvent.id })
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('Publish Error:', error)
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
   }

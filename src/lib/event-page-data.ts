@@ -62,7 +62,6 @@ export async function getEventTitleBySlug(eventSlug: string, locale: SupportedLo
 }
 
 export async function getEventRouteBySlug(eventSlug: string) {
-
   const isMercadoFacilLive = isLivePoolMarketType(resolveMarketTypeFromSlug(eventSlug))
   const isPolymarketImport = eventSlug.includes('poly-')
 
@@ -92,7 +91,6 @@ export async function loadEventPagePublicContentData(
   eventSlug: string,
   locale: SupportedLocale,
 ): Promise<EventPageContentData | null> {
-
   const marketContextSettings = await loadMarketContextSettings()
 
   const marketContextEnabled = marketContextSettings.enabled && Boolean(marketContextSettings.apiKey)
@@ -103,19 +101,19 @@ export async function loadEventPagePublicContentData(
   // 1. Tentar buscar no repositório unificado (Drizzle/Postgres) primeiro
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventSlug)
   const cleanSlug = eventSlug.replace(/^live_/, '').trim()
-  
+
   // Tenta buscar no Drizzle com o slug original, com o slug limpo e diretamente pelo ID
   let fetchedEvent = await EventRepository.getEventBySlug(eventSlug)
   if (!fetchedEvent.data) {
     fetchedEvent = await EventRepository.getEventBySlug(cleanSlug)
   }
-  
+
   // Fallback final no Drizzle: busca explícita se ainda não encontrou
   if (!fetchedEvent.data && (eventSlug.includes('_') || isUUID)) {
-     const { data: secondTry } = await EventRepository.getEventBySlug(cleanSlug)
-     if (secondTry) {
-       fetchedEvent = { data: secondTry, error: null }
-     }
+    const { data: secondTry } = await EventRepository.getEventBySlug(cleanSlug)
+    if (secondTry) {
+      fetchedEvent = { data: secondTry, error: null }
+    }
   }
 
   if (fetchedEvent.data) {
@@ -124,7 +122,8 @@ export async function loadEventPagePublicContentData(
     if (!isUUID) {
       changeLogResult = await EventRepository.getEventConditionChangeLogBySlug(eventResult.data!.slug)
     }
-  } else {
+  }
+  else {
     // 2. Fallback: Se não encontrar no banco principal, verifica se é um mercado legado do Mercado Fácil (Supabase)
     const marketType = resolveMarketTypeFromSlug(eventSlug)
     const isMercadoFacilLive = isLivePoolMarketType(marketType)
@@ -135,7 +134,8 @@ export async function loadEventPagePublicContentData(
       console.log('[loadEventPagePublicContentData] Fallback: Buscando event id:', cleanSlug)
       const liveEvent = await MercadoFacilRepository.getEventById(cleanSlug)
       eventResult = { data: liveEvent, error: liveEvent ? null : 'Not found' }
-    } else {
+    }
+    else {
       eventResult = { data: null, error: 'Event not found' }
     }
   }
@@ -204,7 +204,6 @@ export async function loadEventPageShellData(
   eventSlug: string,
   locale: SupportedLocale,
 ): Promise<EventPageShellData> {
-
   const [route, title, runtimeTheme] = await Promise.all([
     getEventRouteBySlug(eventSlug),
     getEventTitleBySlug(eventSlug, locale),
@@ -217,4 +216,3 @@ export async function loadEventPageShellData(
     site: runtimeTheme.site,
   }
 }
-

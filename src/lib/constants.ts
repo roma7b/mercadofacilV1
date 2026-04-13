@@ -66,4 +66,3 @@ export function getExchangeEip712Domain(isNegRisk?: boolean) {
 }
 
 export const tableHeaderClass = 'px-2 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3'
-

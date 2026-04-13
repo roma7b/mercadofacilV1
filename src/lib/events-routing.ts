@@ -99,4 +99,3 @@ export function resolveEventOutcomePath(event: EventRouteInput, options: EventOu
 
   return query ? `${basePath}?${query}` : basePath
 }
-

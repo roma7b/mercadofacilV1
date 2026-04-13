@@ -76,4 +76,3 @@ export function buildPublicEventListVisibilityCondition(eventIdColumn: SQLWrappe
       AND t.slug <> ${HIDE_FROM_NEW_TAG_SLUG}
   )`
 }
-

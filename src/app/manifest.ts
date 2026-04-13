@@ -37,4 +37,3 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     ],
   }
 }
-

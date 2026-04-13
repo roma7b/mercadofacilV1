@@ -107,4 +107,3 @@ export default async function NotFound() {
     </html>
   )
 }
-

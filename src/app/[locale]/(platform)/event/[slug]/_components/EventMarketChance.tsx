@@ -31,7 +31,7 @@ export default function EventMarketChance({
   const [poolChance, setPoolChance] = useState<number | null>(null)
 
   useEffect(() => {
-    if (!market.slug?.startsWith('live_') && !market.slug?.startsWith('poly-')) return
+    if (!market.slug?.startsWith('live_') && !market.slug?.startsWith('poly-')) { return }
 
     const fetchPool = async () => {
       try {
@@ -43,9 +43,10 @@ export default function EventMarketChance({
           const total = totalSim + totalNao
           if (total > 0) {
             setPoolChance(Math.round((totalSim / total) * 100))
-          } 
+          }
         }
-      } catch (err) {
+      }
+      catch (err) {
         console.error('Erro ao buscar pool no EventMarketChance:', err)
       }
     }
@@ -55,8 +56,8 @@ export default function EventMarketChance({
     return () => clearInterval(interval)
   }, [market.slug])
 
-  const chanceDisplayValue = poolChance !== null 
-    ? `${poolChance}%` 
+  const chanceDisplayValue = poolChance !== null
+    ? `${poolChance}%`
     : (chanceMeta.chanceDisplay === '—' ? (market.price ? `${Math.round(market.price * 100)}%` : '—') : chanceMeta.chanceDisplay)
   const isSubOnePercent = poolChance !== null ? false : chanceMeta.isSubOnePercent
 
@@ -82,12 +83,16 @@ export default function EventMarketChance({
       <div className="flex items-center justify-center gap-1.5">
         <span
           key={`${layout}-chance-${highlightKey}`}
-            className={cn(
+          className={cn(
             baseClass,
             isSubOnePercent ? 'text-muted-foreground' : 'text-foreground',
             'motion-safe:animate-[pulse_0.8s_ease-out] motion-reduce:animate-none',
             'tabular-nums transition-colors duration-500',
-            poolChance !== null && poolChance > 50 ? 'text-emerald-500' : poolChance !== null && poolChance < 50 ? 'text-red-500' : ''
+            poolChance !== null && poolChance > 50
+              ? 'text-emerald-500'
+              : poolChance !== null && poolChance < 50
+                ? `text-red-500`
+                : '',
           )}
         >
           {chanceDisplayValue}

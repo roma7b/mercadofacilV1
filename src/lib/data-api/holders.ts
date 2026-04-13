@@ -183,4 +183,3 @@ export async function fetchTopHolders(
 
   return await response.json()
 }
-

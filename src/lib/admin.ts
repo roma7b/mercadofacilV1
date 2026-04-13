@@ -45,8 +45,7 @@ export function isAdminWallet(address?: string | null): boolean {
 
   const normalized = address.toLowerCase()
   return (
-    normalized === 'business.roma7b@gmail.com' ||
-    getAdminWallets().includes(normalized)
+    normalized === 'business.roma7b@gmail.com'
+    || getAdminWallets().includes(normalized)
   )
 }
-

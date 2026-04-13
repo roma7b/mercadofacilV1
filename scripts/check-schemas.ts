@@ -1,5 +1,6 @@
-import postgres from 'postgres'
 import * as dotenv from 'dotenv'
+import postgres from 'postgres'
+
 dotenv.config()
 
 async function checkSchemas() {
@@ -10,9 +11,11 @@ async function checkSchemas() {
       FROM information_schema.schemata
     `
     console.log('Schemas no banco:', schemas.map(s => s.schema_name).join(', '))
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Erro:', err)
-  } finally {
+  }
+  finally {
     await sql.end()
   }
 }

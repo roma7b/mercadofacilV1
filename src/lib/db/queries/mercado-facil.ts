@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase-client'
 import type { Event, Market } from '@/types'
 import { resolveMarketTypeFromSlug } from '@/lib/market-type'
+import { supabase } from '@/lib/supabase-client'
 
 export const MercadoFacilRepository = {
   async listLiveEvents(): Promise<Event[]> {
@@ -11,9 +11,10 @@ export const MercadoFacilRepository = {
         .eq('status', 'AO_VIVO')
         .order('created_at', { ascending: false })
 
-      if (error) return []
+      if (error) { return [] }
       return rows.map((row: any) => this.mapToEvent(row))
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to fetch Mercado Fácil live events:', error)
       return []
     }
@@ -48,7 +49,8 @@ export const MercadoFacilRepository = {
       }
 
       return this.mapToEvent(row)
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to fetch Mercado Fácil live event:', error)
       return null
     }
@@ -62,13 +64,13 @@ export const MercadoFacilRepository = {
     // Extrair outcomes do campo opcoes (JSONB)
     // Formato salvo pelo import-market: { op_0: { text: "...", tokenId: "..." }, op_1: ... }
     const opcoesRaw = row.opcoes
-    const opcoes = (opcoesRaw && typeof opcoesRaw === 'object' && opcoesRaw !== null) 
-      ? opcoesRaw 
+    const opcoes = (opcoesRaw && typeof opcoesRaw === 'object' && opcoesRaw !== null)
+      ? opcoesRaw
       : { op_0: { text: 'Sim', tokenId: null }, op_1: { text: 'Não', tokenId: null } }
 
     const outcomes: any[] = Object.entries(opcoes).map(([key, value], index) => {
-      const extractedIdx = key.startsWith('op_') 
-        ? parseInt(key.replace('op_', ''), 10)
+      const extractedIdx = key.startsWith('op_')
+        ? Number.parseInt(key.replace('op_', ''), 10)
         : (key === 'nao' ? 1 : 0)
 
       const isObj = value && typeof value === 'object'

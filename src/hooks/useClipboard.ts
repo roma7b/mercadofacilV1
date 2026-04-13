@@ -23,4 +23,3 @@ export function useClipboard(): UseClipboardReturn {
 
   return { copied, copy }
 }
-

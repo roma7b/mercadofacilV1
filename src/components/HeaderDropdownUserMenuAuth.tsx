@@ -1,12 +1,11 @@
 'use client'
 
-import { useDisconnect } from '@/hooks/useAppKitMock'
 import { BadgePercentIcon, ChevronDownIcon, DownloadIcon, PlusCircleIcon, SettingsIcon, ShieldIcon, TrophyIcon, UnplugIcon } from 'lucide-react'
-import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import { useExtracted } from 'next-intl'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import HeaderPortfolio from '@/components/HeaderPortfolio'
 import IntentPrefetchLink from '@/components/IntentPrefetchLink'
 import LocaleSwitcherMenuItem from '@/components/LocaleSwitcherMenuItem'
@@ -21,7 +20,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import UserInfoSection from '@/components/UserInfoSection'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useDisconnect } from '@/hooks/useAppKitMock'
+
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { usePathname } from '@/i18n/navigation'
@@ -228,7 +228,7 @@ export default function HeaderDropdownUserMenuAuth() {
           </DropdownMenuItem>
 
           {startDepositFlow && (
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="py-2 text-sm font-semibold text-primary focus:text-primary"
               onSelect={() => {
                 handleMenuClose()
@@ -336,4 +336,3 @@ export default function HeaderDropdownUserMenuAuth() {
     </div>
   )
 }
-

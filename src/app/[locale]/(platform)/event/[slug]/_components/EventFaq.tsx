@@ -42,8 +42,8 @@ export default function EventFaq({ event, commentsCount }: EventFaqProps) {
   }
 
   return (
-    <section className="w-full pt-14 sm:pt-16">
-      <h2 className="mb-2 text-[16px] font-semibold text-foreground">
+    <section className="w-full pt-4 sm:pt-6">
+      <h2 className="mb-2 text-sm font-bold text-muted-foreground uppercase tracking-widest">
         {t('Frequently Asked Questions')}
       </h2>
 
@@ -52,21 +52,21 @@ export default function EventFaq({ event, commentsCount }: EventFaqProps) {
         collapsible
         value={openItemId}
         onValueChange={setOpenItemId}
-        className="w-full"
+        className="w-full border-t border-white/5"
       >
         {visibleItems.map(item => (
-          <AccordionItem key={item.id} value={item.id}>
+          <AccordionItem key={item.id} value={item.id} className="border-b border-white/5">
             <AccordionTrigger
               className="
-                w-full cursor-pointer py-5 text-[14px] text-foreground
-                hover:text-muted-foreground hover:no-underline
-                lg:py-6
+                w-full cursor-pointer py-4 text-left text-[14px] font-medium text-foreground transition-all
+                hover:text-primary hover:no-underline
+                sm:text-[15px] sm:py-5
               "
             >
               {item.question}
             </AccordionTrigger>
             <AccordionContent
-              className="text-[14px] leading-relaxed text-foreground [&>div]:pb-5 lg:[&>div]:pb-6"
+              className="text-[13px] leading-relaxed text-muted-foreground sm:text-[14px] pb-5"
             >
               {item.answer}
             </AccordionContent>

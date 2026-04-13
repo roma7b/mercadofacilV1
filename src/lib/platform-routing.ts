@@ -146,4 +146,3 @@ export function getMainTagSeoTitle(name: string) {
 export function getNewPageSeoTitle() {
   return getMainTagSeoTitle('New Events')
 }
-

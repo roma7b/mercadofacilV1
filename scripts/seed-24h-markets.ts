@@ -25,7 +25,7 @@ const markets = [
     opcoes: { sim: 'Mais de 10 Veículos', nao: 'Menos de 10 Veículos' },
     total_sim: 1540.50,
     total_nao: 1200.75,
-    volume: 2741.25
+    volume: 2741.25,
   },
   {
     id: 'live-btc-price-v2',
@@ -38,8 +38,8 @@ const markets = [
     opcoes: { sim: 'Subir (Bull)', nao: 'Descer (Bear)' },
     total_sim: 45200.00,
     total_nao: 41800.00,
-    volume: 87000.00
-  }
+    volume: 87000.00,
+  },
 ]
 
 async function seed() {
@@ -51,12 +51,13 @@ async function seed() {
       .upsert({
         ...m,
         updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       })
 
     if (error) {
       console.error(`❌ Erro ao ativar ${m.id}:`, error.message)
-    } else {
+    }
+    else {
       console.log(`✅ ${m.titulo} ativado com sucesso!`)
     }
   }

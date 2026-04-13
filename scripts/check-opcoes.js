@@ -1,12 +1,13 @@
+// Load env manually from .env.local
+const fs = require('node:fs')
+
 const { createClient } = require('@supabase/supabase-js')
 
-// Load env manually from .env.local
-const fs = require('fs')
 const envContent = fs.readFileSync('.env.local', 'utf8')
 const env = {}
-envContent.split('\n').forEach(line => {
+envContent.split('\n').forEach((line) => {
   const [key, ...vals] = line.split('=')
-  if (key && vals.length) env[key.trim()] = vals.join('=').trim()
+  if (key && vals.length) { env[key.trim()] = vals.join('=').trim() }
 })
 
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
@@ -17,11 +18,11 @@ async function run() {
     console.error('Error:', error.message)
     return
   }
-  data.forEach(row => {
+  data.forEach((row) => {
     console.log('\n--- Mercado:', row.titulo)
     console.log('ID:', row.id)
     console.log('Opcoes:', JSON.stringify(row.opcoes, null, 2))
   })
 }
 
-run().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1) })
+run().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1) })

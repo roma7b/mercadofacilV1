@@ -44,4 +44,3 @@ function Checkbox({
 }
 
 export { Checkbox }
-

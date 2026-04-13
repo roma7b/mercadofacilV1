@@ -1,6 +1,6 @@
-import { db } from './src/lib/drizzle'
-import { mercadosLive } from './src/lib/db/schema/mercado_facil_tables'
 import { eq } from 'drizzle-orm'
+import { mercadosLive } from './src/lib/db/schema/mercado_facil_tables'
+import { db } from './src/lib/drizzle'
 
 async function restoreDefaultMarkets() {
   console.log('Restornando mercados padrão...')
@@ -16,7 +16,7 @@ async function restoreDefaultMarkets() {
       opcoes: { op_0: 'ALTA', op_1: 'BAIXA' },
       total_sim: '48244.00',
       total_nao: '45130.00',
-      volume: '150420.00'
+      volume: '150420.00',
     },
     {
       id: 'LIVE-CAM-SP008-KM095',
@@ -28,18 +28,19 @@ async function restoreDefaultMarkets() {
       opcoes: { op_0: 'FLUXO ALTO', op_1: 'FLUXO BAIXO' },
       total_sim: '4335.50',
       total_nao: '4862.75',
-      volume: '89240.00'
-    }
+      volume: '89240.00',
+    },
   ]
 
   for (const m of markets) {
     try {
       await db.insert(mercadosLive).values(m).onConflictDoUpdate({
         target: mercadosLive.id,
-        set: m
+        set: m,
       })
       console.log(`Sucesso: ${m.titulo}`)
-    } catch (e) {
+    }
+    catch (e) {
       console.error(`Erro ao restaurar ${m.titulo}:`, e)
     }
   }

@@ -36,4 +36,3 @@ function IntentPrefetchLink({ ref, onFocus, onMouseEnter, onTouchStart, ...props
 }
 
 export default IntentPrefetchLink
-

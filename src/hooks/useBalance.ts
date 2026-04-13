@@ -64,11 +64,10 @@ export function useBalance(options: UseBalanceOptions = {}) {
 
   const balance = isQueryEnabled && data ? data : INITIAL_STATE
   const isLoadingBalance = !hasMounted || (isQueryEnabled ? (isLoading || (!data && isFetching)) : false)
-  
+
   return {
     balance,
     isLoadingBalance,
     refetchBalance: refetch,
   }
 }
-

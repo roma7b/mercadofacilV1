@@ -1,5 +1,6 @@
-import postgres from 'postgres'
 import * as dotenv from 'dotenv'
+import postgres from 'postgres'
+
 dotenv.config()
 
 async function checkDraft() {
@@ -10,18 +11,21 @@ async function checkDraft() {
       SELECT id, created_by_user_id, title, status FROM event_creations WHERE id = ${draftId}
     `
     console.log('Draft encontrado:', draft)
-    
+
     if (draft.length > 0) {
       const user = await sql`
         SELECT id, name, is_admin FROM users WHERE id = ${draft[0].created_by_user_id}
       `
       console.log('Dono do draft:', user)
-    } else {
+    }
+    else {
       console.log('Nenhum draft encontrado com esse ID.')
     }
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Erro:', err)
-  } finally {
+  }
+  finally {
     await sql.end()
   }
 }

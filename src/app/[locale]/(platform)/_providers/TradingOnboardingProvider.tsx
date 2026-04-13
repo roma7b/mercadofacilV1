@@ -6,7 +6,6 @@ import type { SafeTransactionRequestPayload } from '@/lib/safe/transactions'
 import type { User } from '@/types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { hashTypedData, UserRejectedRequestError } from 'viem'
-import { useSignMessage, useSignTypedData } from '@/hooks/useAppKitMock'
 import { getSafeNonceAction, submitSafeTransactionAction } from '@/app/[locale]/(platform)/_actions/approve-tokens'
 import { saveProxyWalletSignature } from '@/app/[locale]/(platform)/_actions/proxy-wallet'
 import { generateTradingAuthAction } from '@/app/[locale]/(platform)/_actions/trading-auth'
@@ -18,7 +17,7 @@ import {
   useTradingOnboarding,
 } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useSignMessage, useSignTypedData } from '@/hooks/useAppKitMock'
 import { useProxyWalletPolling } from '@/hooks/useProxyWalletPolling'
 import { useSignaturePromptRunner } from '@/hooks/useSignaturePromptRunner'
 import { defaultNetwork } from '@/lib/appkit'
@@ -546,7 +545,6 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
     setDepositModalOpen(true)
   }, [open, user])
 
-
   const startDepositFlow = useCallback(() => {
     if (!user) {
       queueMicrotask(() => {
@@ -570,7 +568,6 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
     // Bypass Web3 proxy wallet check for Mercado Fácil (PIX mode)
     setWithdrawModalOpen(true)
   }, [open, user])
-
 
   const closeFundModal = useCallback((nextOpen: boolean) => {
     setFundModalOpen(nextOpen)

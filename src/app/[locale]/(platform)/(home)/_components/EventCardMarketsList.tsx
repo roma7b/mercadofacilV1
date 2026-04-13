@@ -78,13 +78,13 @@ export default function EventCardMarketsList({
           return (
             <div key={market.condition_id} className="w-full space-y-2.5 pt-1">
               {market.outcomes.slice(0, MAX_DISPLAYED_ITEMS).map((outcome) => {
-                const probability = typeof outcome.probability === 'number' 
+                const probability = typeof outcome.probability === 'number'
                   ? outcome.probability
                   : fallbackOutcomeChance
 
                 return (
-                  <div 
-                    key={outcome.outcome_index} 
+                  <div
+                    key={outcome.outcome_index}
                     className="flex w-full items-center justify-between gap-2"
                   >
                     <div className="flex flex-1 items-center gap-2 overflow-hidden px-1">
@@ -94,8 +94,9 @@ export default function EventCardMarketsList({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="shrink-0 text-xs font-bold text-foreground tabular-nums min-w-8 text-right">
-                        {Math.round(probability)}%
+                      <span className="min-w-8 shrink-0 text-right text-xs font-bold text-foreground tabular-nums">
+                        {Math.round(probability)}
+                        %
                       </span>
                       <div className="flex gap-1">
                         <Button
@@ -131,14 +132,22 @@ export default function EventCardMarketsList({
                   </div>
                 )
               })}
-              
+
               {market.outcomes.length > MAX_DISPLAYED_ITEMS && (
                 <div className="pt-2 text-center">
                   <IntentPrefetchLink
                     href={resolveEventMarketPath(event, market.slug)}
-                    className="inline-block px-3 py-1 rounded-full bg-secondary/50 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200"
+                    className="
+                      inline-block rounded-full bg-secondary/50 px-3 py-1 text-[11px] font-semibold
+                      text-muted-foreground transition-all duration-200
+                      hover:bg-secondary hover:text-foreground
+                    "
                   >
-                    + {market.outcomes.length - MAX_DISPLAYED_ITEMS} opções
+                    +
+                    {' '}
+                    {market.outcomes.length - MAX_DISPLAYED_ITEMS}
+                    {' '}
+                    opções
                   </IntentPrefetchLink>
                 </div>
               )}
@@ -194,7 +203,8 @@ export default function EventCardMarketsList({
                 : (
                     <>
                       <span className="text-base font-semibold text-foreground">
-                        {Math.round(getDisplayChance(market.condition_id))}%
+                        {Math.round(getDisplayChance(market.condition_id))}
+                        %
                       </span>
                       <div className="flex gap-1">
                         <Button
@@ -237,9 +247,18 @@ export default function EventCardMarketsList({
         <div className="pt-2 text-center">
           <IntentPrefetchLink
             href={`/event/${event.slug}`}
-            className="inline-block px-3 py-1 rounded-full bg-secondary/50 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200"
+            className="
+              inline-block rounded-full bg-secondary/50 px-3 py-1 text-[11px] font-semibold text-muted-foreground
+              transition-all duration-200
+              hover:bg-secondary hover:text-foreground
+            "
           >
-            + {hiddenMarketsCount} mercado{hiddenMarketsCount !== 1 ? 's' : ''}
+            +
+            {' '}
+            {hiddenMarketsCount}
+            {' '}
+            mercado
+            {hiddenMarketsCount !== 1 ? 's' : ''}
           </IntentPrefetchLink>
         </div>
       )}

@@ -766,4 +766,3 @@ export async function loadRuntimeThemeSiteName() {
   const runtimeTheme = await loadRuntimeThemeState()
   return runtimeTheme.site.name
 }
-

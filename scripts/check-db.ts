@@ -1,5 +1,6 @@
-import postgres from 'postgres'
 import * as dotenv from 'dotenv'
+import postgres from 'postgres'
+
 dotenv.config()
 
 async function checkTables() {
@@ -11,9 +12,11 @@ async function checkTables() {
       WHERE table_schema = 'public'
     `
     console.log('Tabelas no banco:', tables.map(t => t.table_name).join(', '))
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Erro ao conectar ou consultar:', err)
-  } finally {
+  }
+  finally {
     await sql.end()
   }
 }

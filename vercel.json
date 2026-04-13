@@ -6,5 +6,19 @@
       "master": true,
       "*": true
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/bot-oracle",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/bot-noise",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/auto-resolve",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

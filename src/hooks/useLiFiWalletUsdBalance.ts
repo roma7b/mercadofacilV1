@@ -139,4 +139,3 @@ export function useLiFiWalletUsdBalance(walletAddress?: string | null, options: 
     refetchUsdBalance: query.refetch,
   }
 }
-

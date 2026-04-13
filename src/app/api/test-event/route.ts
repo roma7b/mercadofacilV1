@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getEventRouteBySlug, loadEventPagePublicContentData } from '@/lib/event-page-data'
 import { EventRepository } from '@/lib/db/queries/event'
+import { getEventRouteBySlug, loadEventPagePublicContentData } from '@/lib/event-page-data'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -10,19 +10,19 @@ export async function GET(request: Request) {
     const route = await getEventRouteBySlug(id)
     const pageData = await loadEventPagePublicContentData(id, 'pt')
     const rawData = await EventRepository.getEventBySlug(id)
-    
+
     return NextResponse.json({
       success: true,
       routeResult: route,
       pageDataResult: !!pageData,
-      rawEvent: rawData
+      rawEvent: rawData,
     })
-  } catch (e: any) {
+  }
+  catch (e: any) {
     return NextResponse.json({
       success: false,
       error: e?.message || e,
-      stack: e?.stack
+      stack: e?.stack,
     })
   }
 }
-

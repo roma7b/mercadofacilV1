@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase-client'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { fetchPolymarketOdds } from '@/lib/polymarket'
+import { supabase } from '@/lib/supabase-client'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params
 
@@ -21,7 +22,7 @@ export async function GET(
     if (slug.startsWith('live_')) {
       targetId = slug.replace('live_', '')
     }
-    
+
     let conditionId: string | null = null
 
     if (eventData) {
@@ -39,23 +40,23 @@ export async function GET(
       .select('*')
       .eq('id', targetId)
       .single()
-    
+
     // Se não encontrar no pool local e for um slug da poly, tentamos buscar dados reais
     const isPoly = slug.startsWith('poly-')
-    
+
     if (error || !row) {
       if (isPoly) {
-         // Tentar extrair conditionId se não resolveu via DB
-         // (Isso ajuda se o mercado for novo e o graph estiver lento)
-         return NextResponse.json({
-            success: true,
-            data: {
-               id: slug,
-               titulo: "Sincronizando...",
-               total_sim: 0.5,
-               total_nao: 0.5
-            }
-         })
+        // Tentar extrair conditionId se não resolveu via DB
+        // (Isso ajuda se o mercado for novo e o graph estiver lento)
+        return NextResponse.json({
+          success: true,
+          data: {
+            id: slug,
+            titulo: 'Sincronizando...',
+            total_sim: 0.5,
+            total_nao: 0.5,
+          },
+        })
       }
       return NextResponse.json({ error: 'Mercado não encontrado' }, { status: 404 })
     }
@@ -66,25 +67,25 @@ export async function GET(
 
     // Sincronização Híbrida: Se o pool local for quase zero, pegamos da Poly
     if (isPoly && (totalSim + totalNao) < 1.1) { // 1.1 cobre o seed de 1.0
-       // Se não pegamos o conditionId via Join do Supabase, buscamos direto se for um poly-
-       if (!conditionId) {
-          // Fallback: buscar o mercado no DB de novo pra garantir o condition_id
-          const { data: marketData } = await supabase
-            .from('markets')
-            .select('condition_id')
-            .eq('event_id', targetId)
-            .single()
-          if (marketData) conditionId = marketData.condition_id
-       }
+      // Se não pegamos o conditionId via Join do Supabase, buscamos direto se for um poly-
+      if (!conditionId) {
+        // Fallback: buscar o mercado no DB de novo pra garantir o condition_id
+        const { data: marketData } = await supabase
+          .from('markets')
+          .select('condition_id')
+          .eq('event_id', targetId)
+          .single()
+        if (marketData) { conditionId = marketData.condition_id }
+      }
 
-       if (conditionId) {
-          const polyData = await fetchPolymarketOdds(conditionId)
-          if (polyData.success) {
-             totalSim = polyData.yes
-             totalNao = 1 - polyData.yes
-             polyVolume = polyData.volume
-          }
-       }
+      if (conditionId) {
+        const polyData = await fetchPolymarketOdds(conditionId)
+        if (polyData.success) {
+          totalSim = polyData.yes
+          totalNao = 1 - polyData.yes
+          polyVolume = polyData.volume
+        }
+      }
     }
 
     return NextResponse.json({
@@ -102,9 +103,10 @@ export async function GET(
         descricao: row.descricao,
         camera_url: row.camera_url,
         data_resolucao: row.created_at,
-      }
+      },
     })
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('API Error /api/mercado/[slug]:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }

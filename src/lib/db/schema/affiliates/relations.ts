@@ -19,4 +19,3 @@ export const usersAffiliateRelations = relations(users, ({ many }) => ({
   referrals: many(affiliate_referrals, { relationName: 'user_referrals' }),
   affiliateReferrals: many(affiliate_referrals, { relationName: 'affiliate_referrals' }),
 }))
-

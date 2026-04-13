@@ -1,6 +1,6 @@
+import type { StructuredDataNode } from '@/lib/structured-data'
 import Script from 'next/script'
 import { useId } from 'react'
-import type { StructuredDataNode } from '@/lib/structured-data'
 
 interface StructuredDataScriptProps {
   data: StructuredDataNode
@@ -12,7 +12,7 @@ function serializeStructuredData(data: StructuredDataNode) {
 
 export default function StructuredDataScript({ data }: StructuredDataScriptProps) {
   const compId = useId()
-  
+
   if (typeof window !== 'undefined') {
     return null
   }
@@ -26,4 +26,3 @@ export default function StructuredDataScript({ data }: StructuredDataScriptProps
     />
   )
 }
-

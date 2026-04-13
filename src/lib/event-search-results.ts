@@ -71,4 +71,3 @@ export function compareSearchResultEvents(left: Event, right: Event) {
 export function sortSearchResultEvents(events: Event[]) {
   return [...events].sort(compareSearchResultEvents)
 }
-

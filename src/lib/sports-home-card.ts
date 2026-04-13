@@ -460,4 +460,3 @@ export function buildHomeSportsMoneylineModel(event: Event): HomeSportsMoneyline
     : buildBinaryMoneylineModel(moneylineMarkets, team1, team2)
       ?? buildSeparatedMoneylineModel(moneylineMarkets, team1, team2)
 }
-

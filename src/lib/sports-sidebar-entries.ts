@@ -491,4 +491,3 @@ export function buildSportsSidebarEntries(
 
   return entries
 }
-

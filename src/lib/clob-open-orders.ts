@@ -159,4 +159,3 @@ export function normalizeClobOpenOrdersResponse<TOrder>(result: unknown) {
 
   return { data: [] as TOrder[], next_cursor: 'LTE=' }
 }
-

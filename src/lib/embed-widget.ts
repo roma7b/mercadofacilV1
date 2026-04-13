@@ -154,4 +154,3 @@ function sanitizeCustomElementName(value: string) {
 
 export { EMBED_SCRIPT_URL }
 export type { EmbedTheme }
-

@@ -11,12 +11,13 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       data: {
-        tx_hash: '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+        tx_hash: `0x${Array.from({ length: 64 }).fill(Math.floor(Math.random() * 16).toString(16)).join('')}`,
         status: 'completed',
-        message: 'Aposta realizada com sucesso!'
-      }
+        message: 'Aposta realizada com sucesso!',
+      },
     })
-  } catch (error) {
+  }
+  catch (error) {
     return NextResponse.json({ success: false, error: 'Erro ao processar trade' }, { status: 500 })
   }
 }

@@ -6,7 +6,6 @@ import type {
   PredictionResultsStatusOption,
 } from '@/lib/prediction-results-filters'
 import type { Event, Market } from '@/types'
-import { useAppKitAccount } from '@/hooks/useAppKitMock'
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query'
 import { BookmarkIcon, CheckIcon, ChevronRightIcon, Clock3Icon, FlameIcon, MessageCircleIcon, SearchIcon, Settings2Icon, XIcon } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
@@ -27,7 +26,7 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useAppKitAccount } from '@/hooks/useAppKitMock'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
 import { usePathname, useRouter } from '@/i18n/navigation'

@@ -13,4 +13,3 @@ export default function SiteIdentityProvider({
 }) {
   return <SiteIdentityContext value={site}>{children}</SiteIdentityContext>
 }
-

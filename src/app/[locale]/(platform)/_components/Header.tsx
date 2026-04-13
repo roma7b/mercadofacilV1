@@ -8,8 +8,8 @@ export default async function Header() {
     <header className="sticky top-0 z-30 w-full border-b border-border/40 bg-background">
       <div
         className={`
-          relative z-50 mx-auto flex min-h-15 w-full max-w-[1332px] items-center justify-between gap-4 px-4 py-3
-          pb-1 md:min-h-17 md:px-6 md:pb-2
+          relative z-50 mx-auto flex min-h-15 w-full max-w-[1332px] items-center justify-between gap-4 px-4 py-3 pb-1
+          md:min-h-17 md:px-6 md:pb-2
         `}
       >
         <HeaderLogo />

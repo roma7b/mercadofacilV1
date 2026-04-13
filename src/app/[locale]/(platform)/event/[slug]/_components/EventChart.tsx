@@ -13,7 +13,6 @@ import type {
 import { useQuery } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useEventTradeMarkers } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventTradeMarkers'
 import { useMarketChannelSubscription } from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketChannelProvider'
 import {
   useEventOutcomeChanceChanges,
@@ -31,6 +30,7 @@ import {
   TIME_RANGES,
   useEventPriceHistory,
 } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventPriceHistory'
+import { useEventTradeMarkers } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventTradeMarkers'
 import { useXTrackerTweetCount } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useXTrackerTweetCount'
 import {
   areNumberMapsEqual,
@@ -402,13 +402,13 @@ function EventChartComponent({
   const isSingleMarketBase = useIsSingleMarket()
   const isCategorical = useMemo(() => event.markets.some(m => m.outcomes && m.outcomes.length > 2), [event.markets])
   const isSingleMarket = isSingleMarketBase && !isCategorical
-  
+
   const allCategoricalTokenIds = useMemo(() => {
     const ids: string[] = []
-    event.markets.forEach(m => {
+    event.markets.forEach((m) => {
       if (m.outcomes && m.outcomes.length > 2) {
-        m.outcomes.forEach(o => {
-          if (o.token_id) ids.push(o.token_id)
+        m.outcomes.forEach((o) => {
+          if (o.token_id) { ids.push(o.token_id) }
         })
       }
     })
@@ -416,7 +416,7 @@ function EventChartComponent({
   }, [event.markets])
 
   const isNegRiskEnabled = Boolean(event.enable_neg_risk || event.neg_risk)
-  // Non-single markets with neg_risk=false should hide chart, UNLESS it's a categorical market 
+  // Non-single markets with neg_risk=false should hide chart, UNLESS it's a categorical market
   // (which is treated as a multi-outcome single market).
   const shouldHideChart = !isSingleMarketBase && !isNegRiskEnabled && !isCategorical
   const currentOutcomeChances = useEventOutcomeChances()
@@ -427,38 +427,38 @@ function EventChartComponent({
   const updateMarketYesPrices = useUpdateMarketYesPrices()
   const updateMarketQuotes = useUpdateMarketQuotes()
   const updateOutcomeChanceChanges = useUpdateEventOutcomeChanceChanges()
-  
+
   const selectedOutcomeStore = useOrder(state => state.outcome)
 
   // LOG PARA DEPURAR O SERVIDOR SSR
   if (typeof window === 'undefined') {
-    event.markets.forEach(m => {
+    event.markets.forEach((m) => {
       console.log(`[SSR] EventChart render: Market ${m.condition_id} has ${m.outcomes?.length} outcomes.`)
       m.outcomes?.forEach((o, i) => {
-        if (i < 2) console.log(`[SSR] Outcome ${i}: text=${o.outcome_text}, token_id=${o.token_id}`)
+        if (i < 2) { console.log(`[SSR] Outcome ${i}: text=${o.outcome_text}, token_id=${o.token_id}`) }
       })
     })
     console.log(`[SSR] Computed isCategorical=${isCategorical}, shouldHideChart=${shouldHideChart}`)
   }
 
-
   const fallbackPrices = useQuery({
     queryKey: ['mercado-live-pool-fallback', event.slug],
     queryFn: async () => {
-      if (!event.slug?.startsWith('poly-') && !event.slug?.startsWith('live_')) return null
+      if (!event.slug?.startsWith('poly-') && !event.slug?.startsWith('live_')) { return null }
       try {
         const res = await fetch(`/api/mercado/${event.slug}`)
         const json = await res.json()
         if (json.success && json.data) {
-           return {
-              sim: Number(json.data.total_sim) || null,
-              nao: Number(json.data.total_nao) || null
-           }
+          return {
+            sim: Number(json.data.total_sim) || null,
+            nao: Number(json.data.total_nao) || null,
+          }
         }
-      } catch (e) { return null }
+      }
+      catch (e) { return null }
       return null
     },
-    enabled: Boolean(event.slug && (event.slug.startsWith('poly-') || event.slug.startsWith('live_')))
+    enabled: Boolean(event.slug && (event.slug.startsWith('poly-') || event.slug.startsWith('live_'))),
   })
 
   const [activeTimeRange, setActiveTimeRange] = useState<TimeRange>('all')
@@ -552,25 +552,26 @@ function EventChartComponent({
     const targets: { conditionId: string, tokenId: string }[] = []
     const addedTokens = new Set<string>()
 
-    event.markets.forEach(m => {
+    event.markets.forEach((m) => {
       if (m.outcomes && m.outcomes.length > 2) {
         // Categorical
-        m.outcomes.slice(0, 10).forEach(o => {
+        m.outcomes.slice(0, 10).forEach((o) => {
           if (o.token_id) {
             targets.push({ conditionId: o.token_id, tokenId: o.token_id })
             addedTokens.add(o.token_id)
           }
         })
-        
+
         // Ensure selected is included
         if (selectedOutcomeStore?.token_id && !addedTokens.has(selectedOutcomeStore.token_id)) {
-           const belongsToThisMarket = m.outcomes.some(o => o.token_id === selectedOutcomeStore.token_id)
-           if (belongsToThisMarket) {
-              targets.push({ conditionId: selectedOutcomeStore.token_id, tokenId: selectedOutcomeStore.token_id })
-              addedTokens.add(selectedOutcomeStore.token_id)
-           }
+          const belongsToThisMarket = m.outcomes.some(o => o.token_id === selectedOutcomeStore.token_id)
+          if (belongsToThisMarket) {
+            targets.push({ conditionId: selectedOutcomeStore.token_id, tokenId: selectedOutcomeStore.token_id })
+            addedTokens.add(selectedOutcomeStore.token_id)
+          }
         }
-      } else if (m.outcomes?.[OUTCOME_INDEX.YES]?.token_id) {
+      }
+      else if (m.outcomes?.[OUTCOME_INDEX.YES]?.token_id) {
         targets.push({ conditionId: m.condition_id, tokenId: m.outcomes[OUTCOME_INDEX.YES].token_id })
         addedTokens.add(m.outcomes[OUTCOME_INDEX.YES].token_id)
       }
@@ -579,9 +580,9 @@ function EventChartComponent({
   }, [event.markets, selectedOutcomeStore?.token_id])
 
   const noMarketTargets = useMemo(() => {
-    if (shouldHideChart || !isSingleMarket) return []
+    if (shouldHideChart || !isSingleMarket) { return [] }
     const targets: { conditionId: string, tokenId: string }[] = []
-    event.markets.forEach(m => {
+    event.markets.forEach((m) => {
       if (m.outcomes?.[OUTCOME_INDEX.NO]?.token_id) {
         targets.push({ conditionId: m.condition_id, tokenId: m.outcomes[OUTCOME_INDEX.NO].token_id })
       }
@@ -680,11 +681,11 @@ function EventChartComponent({
   const allMarketIds = useMemo(
     () => {
       const ids: string[] = []
-      event.markets.forEach(market => {
+      event.markets.forEach((market) => {
         if (market.outcomes && market.outcomes.length > 2) {
           // Mercado categórico: usa token_id dos outcomes (se disponíveis)
           let addedCount = 0
-          market.outcomes.slice(0, 10).forEach(o => {
+          market.outcomes.slice(0, 10).forEach((o) => {
             if (o.token_id) {
               ids.push(o.token_id)
               addedCount++
@@ -693,11 +694,12 @@ function EventChartComponent({
           // Fallback: se não tiver token_ids, usa condition_id do mercado
           if (addedCount === 0) {
             const id = market.condition_id
-            if (id) ids.push(id)
+            if (id) { ids.push(id) }
           }
-        } else {
+        }
+        else {
           const id = market.condition_id
-          if (id) ids.push(id)
+          if (id) { ids.push(id) }
         }
       })
       return ids
@@ -947,17 +949,17 @@ function EventChartComponent({
   const chartAnnotationMarkers = useMemo<PredictionChartAnnotationMarker[]>(() => {
     const userMarkers = userTradeActivities.flatMap((activity, index) => {
       const conditionId = activity.market.condition_id
-      if (!conditionId || !markerConditionIds.includes(conditionId)) return []
+      if (!conditionId || !markerConditionIds.includes(conditionId)) { return [] }
       const createdAtTimestamp = new Date(activity.created_at).getTime()
-      if (!Number.isFinite(createdAtTimestamp)) return []
+      if (!Number.isFinite(createdAtTimestamp)) { return [] }
       const rawPrice = Number(activity.price)
-      if (!Number.isFinite(rawPrice)) return []
+      if (!Number.isFinite(rawPrice)) { return [] }
       const outcomeIndex = Number(activity.outcome.index)
       const isYesOutcome = outcomeIndex === OUTCOME_INDEX.YES
       const isNoOutcome = outcomeIndex === OUTCOME_INDEX.NO
-      if (!isYesOutcome && !isNoOutcome) return []
+      if (!isYesOutcome && !isNoOutcome) { return [] }
       const normalizedLineValue = showBothOutcomes ? rawPrice * 100 : (isNoOutcome ? (1 - rawPrice) * 100 : rawPrice * 100)
-      if (!Number.isFinite(normalizedLineValue)) return []
+      if (!Number.isFinite(normalizedLineValue)) { return [] }
       const sharesValue = Number.parseFloat(fromMicro(activity.amount, 4))
       const outcomeLabel = normalizeOutcomeLabel(activity.outcome.text)
       const actionLabel = activity.side === 'sell' ? 'Vendeu' : 'Comprou'
@@ -976,7 +978,9 @@ function EventChartComponent({
             <span className="font-bold text-primary">SUA APOSTA:</span>
             <span className="font-semibold text-foreground">{actionLabel}</span>
             <span className={cn('font-semibold', isYesOutcome ? 'text-yes' : 'text-no')}>
-              {formatSharesLabel(sharesValue)} {outcomeLabel}
+              {formatSharesLabel(sharesValue)}
+              {' '}
+              {outcomeLabel}
             </span>
           </div>
         ),
@@ -1248,7 +1252,7 @@ function EventChartComponent({
     // Para mercados categóricos, aguardar os dados mas mostrar um placeholder
     if (isCategorical && allMarketIds.length > 0) {
       return (
-        <div className="flex items-center justify-center min-h-[300px] text-muted-foreground text-sm">
+        <div className="flex min-h-[300px] items-center justify-center text-sm text-muted-foreground">
           <div className="flex flex-col items-center gap-3">
             <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             <span>Carregando histórico de preços...</span>

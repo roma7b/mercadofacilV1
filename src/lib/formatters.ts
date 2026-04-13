@@ -290,7 +290,7 @@ export function formatCentsLabel(
   // Divide por 100 porque o valor chega em 'centavos' (ex: 96) e queremos R$ 0,96
   return formatCurrency(numeric / 100, {
     minimumFractionDigits: 2,
-    maximumFractionDigits: numeric < 1 ? 3 : 2
+    maximumFractionDigits: numeric < 1 ? 3 : 2,
   })
 }
 
@@ -374,4 +374,3 @@ export function formatAmountInputValue(value: number, options: AmountInputFormat
 
   return normalized.toFixed(2)
 }
-

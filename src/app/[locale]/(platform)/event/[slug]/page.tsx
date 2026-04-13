@@ -1,22 +1,21 @@
-import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import type { SupportedLocale } from '@/i18n/locales'
+import { eq } from 'drizzle-orm'
 import { setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import EventContent from '@/app/[locale]/(platform)/event/[slug]/_components/EventContent'
+import { syncSingleMarketAction } from '@/app/[locale]/admin/mercado-hype/_actions/sync-odds'
 import EventStructuredData from '@/components/seo/EventStructuredData'
 import { redirect } from '@/i18n/navigation'
+import { conditions, events, markets } from '@/lib/db/schema/events/tables'
+import { db } from '@/lib/drizzle'
 import { buildEventPageMetadata } from '@/lib/event-open-graph'
 import { getEventRouteBySlug, loadEventPagePublicContentData } from '@/lib/event-page-data'
 import { resolveEventBasePath, resolveEventPagePath } from '@/lib/events-routing'
+import { isLivePoolMarketType, resolveMarketTypeFromSlug } from '@/lib/market-type'
 import { STATIC_PARAMS_PLACEHOLDER } from '@/lib/static-params'
 import { loadRuntimeThemeState } from '@/lib/theme-settings'
-import { db } from '@/lib/drizzle'
-import { eq } from 'drizzle-orm'
-import { events, markets, conditions } from '@/lib/db/schema/events/tables'
-import { syncSingleMarketAction } from '@/app/[locale]/admin/mercado-hype/_actions/sync-odds'
-import { isLivePoolMarketType, resolveMarketTypeFromSlug } from '@/lib/market-type'
-
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/event/[slug]'>): Promise<Metadata> {
   const { locale, slug } = await params
@@ -46,7 +45,8 @@ async function LiveSyncContent({ slug }: { slug: string }) {
       if (match.length > 0 && match[0].conditions.question_id) {
         syncSingleMarketAction(match[0].conditions.question_id)
       }
-    } catch (err) {
+    }
+    catch (err) {
       console.error('[NEXT_JS_DB_SYNC_ERROR]', err)
       // Não trava a renderização por erro de sync
     }
@@ -61,7 +61,6 @@ async function CachedEventPageContent({
   locale: SupportedLocale
   slug: string
 }) {
-
   const eventRoute = await getEventRouteBySlug(slug)
   if (!eventRoute) {
     notFound()
@@ -78,11 +77,11 @@ async function CachedEventPageContent({
   try {
     console.log('[SSR_DEBUG] Loading data for slug:', slug)
     const [eventPageData, runtimeTheme] = await Promise.all([
-      loadEventPagePublicContentData(slug, locale).catch(e => {
+      loadEventPagePublicContentData(slug, locale).catch((e) => {
         console.error('[SSR_DEBUG_DATA_ERROR]', e)
         return null
       }),
-      loadRuntimeThemeState().catch(e => {
+      loadRuntimeThemeState().catch((e) => {
         console.error('[SSR_DEBUG_THEME_ERROR]', e)
         return { site: { name: 'Mercado Fácil' } } as any
       }),
@@ -113,7 +112,8 @@ async function CachedEventPageContent({
         />
       </>
     )
-  } catch (criticalError: any) {
+  }
+  catch (criticalError: any) {
     console.error('[SSR_CRITICAL_DEBUG_ERROR]', criticalError.message, criticalError.stack)
     throw criticalError // Permite que a Vercel logue o erro real
   }

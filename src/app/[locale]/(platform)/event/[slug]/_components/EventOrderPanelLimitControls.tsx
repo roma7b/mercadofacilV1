@@ -280,104 +280,132 @@ export default function EventOrderPanelLimitControls({
   }
 
   return (
-    <div className="mt-4 space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-lg font-medium text-foreground">
+    <div className="mt-4 space-y-6">
+      {/* Input de Preço Limite */}
+      <div className="
+        group relative flex items-center justify-between rounded-2xl border border-white/5 bg-zinc-900/40 p-4
+        transition-all
+        focus-within:border-emerald-500/30 focus-within:bg-zinc-900/60
+      "
+      >
+        <div className="flex flex-col gap-0.5">
+          <span className="text-2xs font-black tracking-[0.2em] text-zinc-500 uppercase">
             {t('Limit Price')}
           </span>
-          {isLimitOrder && side === ORDER_SIDE.BUY && (
-            <span className="text-xs text-muted-foreground">
-              {t('Balance')}
-              {areValuesHidden ? '****' : `R$ ${formattedBalanceText}`}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-black text-emerald-500">R$</span>
+            <span className="text-xs font-bold text-zinc-400">
+              {side === ORDER_SIDE.BUY ? (areValuesHidden ? '****' : formattedBalanceText) : t('Venda')}
             </span>
-          )}
-        </div>
-
-        <NumberInput
-          value={limitPriceNumber}
-          onChange={updateLimitPrice}
-        />
-      </div>
-
-      <div className="my-4 border-b border-border" />
-
-      <div>
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <span
-            className={cn(
-              'text-lg font-medium text-foreground',
-              { 'animate-order-shake': shouldShakeShares },
-            )}
-          >
-            {t('Shares')}
-          </span>
-          <div className="flex w-1/2 items-center justify-end gap-2">
-            <Input
-              ref={limitSharesRef}
-              placeholder="0"
-              inputMode="decimal"
-              value={formattedLimitShares}
-              onChange={event => handleLimitSharesInputChange(event.target.value)}
-              onBlur={event => handleLimitSharesBlur(event.target.value)}
-              className={cn(
-                'h-10 bg-transparent! text-right font-bold',
-                limitSharesSizeClass,
-                { 'animate-order-shake': shouldShakeShares },
-              )}
-            />
           </div>
         </div>
-        {side === ORDER_SIDE.SELL
-          ? (
-              <div className="ml-auto flex h-8 w-1/2 justify-end gap-2">
-                {['25%', '50%', 'max'].map((value) => {
-                  const label = value === 'max' ? maxLabel : value
-                  return (
-                    <button
-                      type="button"
-                      key={value}
-                      className={QUICK_BUTTON_CLASS}
-                      onClick={() => {
-                        if (availableShares <= 0) {
-                          return
-                        }
 
-                        if (value === 'max') {
-                          updateLimitShares(availableShares, 'floor')
-                          return
-                        }
+        <div className="flex items-center gap-3">
+          <div className="font-mono text-2xl font-black tracking-tighter text-white">
+            {limitPriceNumber.toFixed(1)}
+            %
+          </div>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => updateLimitPrice(limitPriceNumber + 0.1)}
+              className="rounded-sm bg-white/5 p-1 transition-colors hover:bg-white/10"
+            >
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="rotate-180"><path d="M1 1L5 5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => updateLimitPrice(limitPriceNumber - 0.1)}
+              className="rounded-sm bg-white/5 p-1 transition-colors hover:bg-white/10"
+            >
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
-                        const percent = Number.parseInt(label.replace('%', ''), 10) / 100
-                        const calculatedShares = Number.parseFloat((availableShares * percent).toFixed(2))
-                        updateLimitShares(calculatedShares)
-                      }}
-                    >
-                      {label}
-                    </button>
-                  )
-                })}
-              </div>
-            )
-          : (
-              <div className="ml-auto flex h-8 w-1/2 justify-end gap-2">
-                {BUY_CHIPS.map((chip) => {
-                  const label = chip > 0 ? `+${chip}` : `${chip}`
-                  return (
-                    <Button
-                      type="button"
-                      key={chip}
-                      size="sm"
-                      variant="outline"
-                      className="px-2 text-xs"
-                      onClick={() => updateLimitShares(limitSharesNumber + chip)}
-                    >
-                      {label}
-                    </Button>
-                  )
-                })}
-              </div>
-            )}
+      {/* Input de Cotas (Shares) */}
+      <div className="space-y-3">
+        <div className={cn(
+          `
+            group relative flex flex-col rounded-2xl border border-white/5 bg-zinc-900/40 p-4 transition-all
+            focus-within:border-emerald-500/30 focus-within:bg-zinc-900/60
+          `,
+          { 'animate-order-shake border-rose-500/50': shouldShakeShares },
+        )}
+        >
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-2xs font-black tracking-[0.2em] text-zinc-500 uppercase">
+              {t('Shares to buy')}
+            </span>
+            <div className="text-2xs font-bold text-zinc-600">
+              {t('Available')}
+              :
+              {formatSharesLabel(availableShares)}
+            </div>
+          </div>
+
+          <input
+            ref={limitSharesRef}
+            placeholder="0"
+            inputMode="decimal"
+            value={formattedLimitShares}
+            onChange={event => handleLimitSharesInputChange(event.target.value)}
+            onBlur={event => handleLimitSharesBlur(event.target.value)}
+            className="
+              w-full border-0 bg-transparent p-0 font-mono text-3xl font-black tracking-tighter text-white outline-none
+              placeholder:text-white/5
+            "
+          />
+        </div>
+
+        {/* Botões Rápidos de Ajuste */}
+        <div className="grid grid-cols-4 gap-2">
+          {side === ORDER_SIDE.SELL
+            ? (['25%', '50%', '75%', 'MAX'].map((value) => {
+                const label = value
+                return (
+                  <button
+                    type="button"
+                    key={value}
+                    className="
+                      rounded-xl border border-white/5 bg-zinc-900/60 py-2.5 text-2xs font-black tracking-widest
+                      text-zinc-500 uppercase transition-all
+                      hover:border-white/20 hover:text-white
+                    "
+                    onClick={() => {
+                      if (availableShares <= 0) { return }
+                      if (value === 'MAX') {
+                        updateLimitShares(availableShares, 'floor')
+                        return
+                      }
+                      const percent = Number.parseInt(label.replace('%', ''), 10) / 100
+                      const calculatedShares = Number.parseFloat((availableShares * percent).toFixed(2))
+                      updateLimitShares(calculatedShares)
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              }))
+            : (BUY_CHIPS.map((chip) => {
+                const label = chip > 0 ? `+${chip}` : `${chip}`
+                return (
+                  <button
+                    type="button"
+                    key={chip}
+                    className="
+                      rounded-xl border border-white/5 bg-zinc-900/60 py-2.5 font-mono text-2xs font-black text-zinc-500
+                      transition-all
+                      hover:border-white/20 hover:text-white
+                    "
+                    onClick={() => updateLimitShares(limitSharesNumber + chip)}
+                  >
+                    {label}
+                  </button>
+                )
+              }))}
+        </div>
         {matchingSharesLabel && (
           <div className="mt-2 ml-auto flex w-1/2 justify-end">
             <Tooltip>

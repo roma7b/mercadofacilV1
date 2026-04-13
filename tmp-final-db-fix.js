@@ -1,22 +1,21 @@
+const fs = require('node:fs')
+const postgres = require('postgres')
 
-const postgres = require('postgres');
-const fs = require('node:fs');
+const envContent = fs.readFileSync('.env', 'utf8')
+const env = {}
+envContent.split('\n').forEach((line) => {
+  const parts = line.split('=')
+  if (parts.length >= 2) {
+    env[parts[0].trim()] = parts.slice(1).join('=').trim()
+  }
+})
 
-const envContent = fs.readFileSync('.env', 'utf8');
-const env = {};
-envContent.split('\n').forEach(line => {
-    const parts = line.split('=');
-    if (parts.length >= 2) {
-        env[parts[0].trim()] = parts.slice(1).join('=').trim();
-    }
-});
-
-const sql = postgres(env.POSTGRES_URL);
+const sql = postgres(env.POSTGRES_URL)
 
 async function fix() {
-    try {
-        console.log('Creating markets table...');
-        await sql`
+  try {
+    console.log('Creating markets table...')
+    await sql`
             CREATE TABLE IF NOT EXISTS markets (
               condition_id          TEXT PRIMARY KEY REFERENCES conditions (id) ON DELETE CASCADE ON UPDATE CASCADE,
               event_id              CHAR(26)    NOT NULL REFERENCES events (id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -47,11 +46,11 @@ async function fix() {
               CHECK (volume_24h >= 0),
               CHECK (volume >= 0)
             )
-        `;
-        console.log('SUCCESS: Table markets created.');
+        `
+    console.log('SUCCESS: Table markets created.')
 
-        console.log('Creating views...');
-        await sql`
+    console.log('Creating views...')
+    await sql`
           CREATE OR REPLACE VIEW v_main_tag_subcategories AS
           SELECT main_tag.id                    AS main_tag_id,
                  main_tag.slug                  AS main_tag_slug,
@@ -89,14 +88,16 @@ async function fix() {
                    sub_tag.slug,
                    sub_tag.is_main_category,
                    sub_tag.is_hidden;
-        `;
-        console.log('SUCCESS: View created.');
-    } catch (e) {
-        console.error('ERROR:', e.message);
-        console.error('Detail:', e.detail);
-    } finally {
-        await sql.end();
-    }
+        `
+    console.log('SUCCESS: View created.')
+  }
+  catch (e) {
+    console.error('ERROR:', e.message)
+    console.error('Detail:', e.detail)
+  }
+  finally {
+    await sql.end()
+  }
 }
 
-fix();
+fix()

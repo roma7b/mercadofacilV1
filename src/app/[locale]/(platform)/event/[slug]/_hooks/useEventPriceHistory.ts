@@ -14,7 +14,7 @@ export const TIME_RANGES = [
 ] as const
 
 export function buildMarketTargets(markets: Market[] = [], outcomeIndex: number = 0) {
-  if (!Array.isArray(markets)) return []
+  if (!Array.isArray(markets)) { return [] }
   return markets
     .map(m => ({ conditionId: m.condition_id, tokenId: m.outcomes?.[outcomeIndex]?.token_id }))
     .filter(t => t.tokenId)
@@ -90,7 +90,7 @@ function buildTimeRangeFilters(range: TimeRange, eventCreatedAt: string): RangeF
 
 export function buildNormalizedHistory(historyByMarket: PriceHistoryByMarket = {}): NormalizedHistoryResult {
   const timeline = new Map<number, Map<string, { p: number, v: number }>>()
-  
+
   if (historyByMarket && typeof historyByMarket === 'object') {
     Object.entries(historyByMarket).forEach(([id, history]) => {
       if (Array.isArray(history)) {
@@ -119,18 +119,19 @@ export function buildNormalizedHistory(historyByMarket: PriceHistoryByMarket = {
       lastKnownPrice.set(id, data.p)
     })
 
-    if (!lastKnownPrice.size) return
+    if (!lastKnownPrice.size) { return }
 
     const point: Record<string, number | Date> & { date: Date } = { date: new Date(timestamp) }
     lastKnownPrice.forEach((price, id) => {
       latestRawPrices[id] = price
       point[id] = price * 100
-      
+
       const updateData = updates?.get(id)
       if (updateData) {
         point[`${id}-volume`] = updateData.v
         latestVolumes[id] = updateData.v
-      } else {
+      }
+      else {
         point[`${id}-volume`] = 0
       }
     })
@@ -154,7 +155,7 @@ interface UseEventPriceHistoryOptions {
   event: Event
   eventId?: string
   range: TimeRange
-  targets?: { conditionId: string; tokenId: string }[]
+  targets?: { conditionId: string, tokenId: string }[]
   eventCreatedAt?: string
   eventResolvedAt?: string | null
 }
@@ -163,7 +164,7 @@ export function useEventPriceHistory({
   event,
   range = '1d',
   targets: providedTargets,
-  eventCreatedAt: providedCreatedAt
+  eventCreatedAt: providedCreatedAt,
 }: UseEventPriceHistoryOptions) {
   const eventId = event?.id
   const eventCreatedAt = providedCreatedAt || event?.created_at || new Date().toISOString()
@@ -172,19 +173,20 @@ export function useEventPriceHistory({
   const { data, isLoading } = useQuery({
     queryKey: ['event-price-history', eventId, range],
     queryFn: async () => {
-      if (!eventId || !markets.length) return {}
+      if (!eventId || !markets.length) { return {} }
 
       const targets: { key: string, tokenId: string }[] = []
-      
-      markets.forEach(m => {
+
+      markets.forEach((m) => {
         if (m.outcomes && m.outcomes.length > 2) {
           // Categorical market: fetch top 10 outcomes by default or all if reasonable
-          m.outcomes.slice(0, 10).forEach(o => {
+          m.outcomes.slice(0, 10).forEach((o) => {
             if (o.token_id) {
               targets.push({ key: o.token_id, tokenId: o.token_id })
             }
           })
-        } else {
+        }
+        else {
           // Binary market: just fetch the first outcome (YES)
           if (m.outcomes?.[0]?.token_id) {
             targets.push({ key: m.condition_id, tokenId: m.outcomes[0].token_id })
@@ -192,7 +194,7 @@ export function useEventPriceHistory({
         }
       })
 
-      if (targets.length === 0) return {}
+      if (targets.length === 0) { return {} }
 
       const filters = buildTimeRangeFilters(range, eventCreatedAt)
       const results: PriceHistoryByMarket = {}
@@ -217,7 +219,8 @@ export function useEventPriceHistory({
               }))
             }
           }
-        } catch (e) {
+        }
+        catch (e) {
           console.error('[PriceHistory] Fetch error:', e)
         }
       }))
@@ -240,18 +243,19 @@ export function useEventPriceHistory({
       const steps = 100
 
       const keysToSimulate: string[] = []
-      markets.forEach(market => {
+      markets.forEach((market) => {
         if (market.outcomes && market.outcomes.length > 2) {
-          market.outcomes.slice(0, 10).forEach(o => {
-            if (o.token_id) keysToSimulate.push(o.token_id)
+          market.outcomes.slice(0, 10).forEach((o) => {
+            if (o.token_id) { keysToSimulate.push(o.token_id) }
           })
-        } else {
+        }
+        else {
           const key = market.condition_id
-          if (key) keysToSimulate.push(key)
+          if (key) { keysToSimulate.push(key) }
         }
       })
 
-      keysToSimulate.forEach(key => {
+      keysToSimulate.forEach((key) => {
         const points: PriceHistoryPoint[] = []
         let lastP = 0.45 + (Math.random() * 0.1)
 

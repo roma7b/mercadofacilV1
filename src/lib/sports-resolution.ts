@@ -72,4 +72,3 @@ export function doesTextMatchTeam<T extends ComparableSportsTeam>(
 
   return findMatchingTeamInText(value, [team]) != null
 }
-

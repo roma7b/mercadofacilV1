@@ -41,4 +41,3 @@ function Input({ className, defaultValue, type, value, ...props }: React.Compone
 }
 
 export { Input }
-

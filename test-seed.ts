@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
+
 dotenv.config()
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
@@ -25,8 +26,10 @@ async function main() {
   const resolvido = mercados?.find((m: any) => m.status !== 'AO_VIVO')
   if (resolvido) {
     const { error } = await db.from('mercados_live').update({ status: 'AO_VIVO' }).eq('id', resolvido.id)
-    if (error) console.error('[ERRO] ao atualizar status:', error)
-    else console.log(`\n✅ Mercado "${resolvido.titulo}" (${resolvido.id}) atualizado para AO_VIVO`)
+    if (error) {
+      console.error('[ERRO] ao atualizar status:', error)
+    }
+    else { console.log(`\n✅ Mercado "${resolvido.titulo}" (${resolvido.id}) atualizado para AO_VIVO`) }
   }
 }
 

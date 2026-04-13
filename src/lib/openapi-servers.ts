@@ -16,4 +16,3 @@ export const OPENAPI_SERVER_URLS = {
   priceReference: resolveServerUrl(process.env.PRICE_REFERENCE_URL),
   relayer: resolveServerUrl(process.env.RELAYER_URL),
 } as const
-

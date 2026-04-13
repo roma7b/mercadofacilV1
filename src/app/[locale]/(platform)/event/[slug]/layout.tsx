@@ -14,7 +14,7 @@ export default async function EventLayout({ params, children }: LayoutProps<'/[l
   const isLiveMarket = slug.startsWith('live_')
 
   const content = (
-    <main className="container grid min-h-screen gap-8 pb-12 lg:grid-cols-[minmax(0,3fr)_21.25rem]">
+    <main className="flex min-h-screen flex-col gap-8 pb-12">
       {children}
     </main>
   )

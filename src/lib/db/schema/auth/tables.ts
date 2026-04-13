@@ -103,4 +103,3 @@ export const two_factors = pgTable('two_factors', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
 })
-

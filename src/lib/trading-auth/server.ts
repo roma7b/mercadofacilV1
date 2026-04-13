@@ -330,4 +330,3 @@ export async function markTokenApprovalsCompleted(userId: string) {
     updatedAt,
   }
 }
-

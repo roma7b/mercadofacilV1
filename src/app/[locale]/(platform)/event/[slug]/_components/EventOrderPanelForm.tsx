@@ -1,18 +1,19 @@
+'use client'
+
+import EventMarketCountdown from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketCountdown'
 import type { InfiniteData } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import type { PortfolioUserOpenOrder } from '@/app/[locale]/(platform)/portfolio/_types/PortfolioOpenOrdersTypes'
 import type { OddsFormat } from '@/lib/odds-format'
 import type { SafeTransactionRequestPayload } from '@/lib/safe/transactions'
 import type { Event, Market, Outcome, UserPosition } from '@/types'
-import { useAppKitAccount } from '@/hooks/useAppKitMock'
-import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckIcon, TriangleAlertIcon } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import Form from 'next/form'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { hashTypedData } from 'viem'
-import { useSignMessage, useSignTypedData } from '@/hooks/useAppKitMock'
 import { getSafeNonceAction, submitSafeTransactionAction } from '@/app/[locale]/(platform)/_actions/approve-tokens'
 import { useTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingProvider'
 import { useOrderBookSummaries } from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderBook'
@@ -37,7 +38,8 @@ import {
 } from '@/app/[locale]/(platform)/event/[slug]/_utils/resolved-order-panel-market'
 import { Button } from '@/components/ui/button'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useAppKitAccount, useSignMessage, useSignTypedData } from '@/hooks/useAppKitMock'
+
 import { SAFE_BALANCE_QUERY_KEY, useBalance } from '@/hooks/useBalance'
 import { useCurrentTimestamp } from '@/hooks/useCurrentTimestamp'
 import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
@@ -46,8 +48,8 @@ import { defaultNetwork } from '@/lib/appkit'
 import { CLOB_ORDER_TYPE, DEFAULT_ERROR_MESSAGE, getExchangeEip712Domain, ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { resolveEventPagePath } from '@/lib/events-routing'
 import { formatCentsLabel, formatCurrency, formatSharesLabel, toCents } from '@/lib/formatters'
-import { isLivePoolEvent } from '@/lib/market-type'
 import { resolveFallbackOutcomeUnitPrice, resolveMarketOutcome } from '@/lib/market-pricing'
+import { isLivePoolEvent } from '@/lib/market-type'
 import {
   applyPositionDeltasToUserPositions,
   buildOptimisticOpenOrder,
@@ -229,24 +231,25 @@ export default function EventOrderPanelForm({
   const fallbackPrices = useQuery({
     queryKey: ['mercado-live_pool-fallback', activeMarket?.slug],
     queryFn: async () => {
-      if (!activeMarket?.slug) return null
-      if (!activeMarket.slug.startsWith('poly-') && !activeMarket.slug.startsWith('live_')) return null
-      
+      if (!activeMarket?.slug) { return null }
+      if (!activeMarket.slug.startsWith('poly-') && !activeMarket.slug.startsWith('live_')) { return null }
+
       try {
         const res = await fetch(`/api/mercado/${activeMarket.slug}`)
         const json = await res.json()
         if (json.success && json.data) {
-           return {
-              sim: Number(json.data.total_sim) || null,
-              nao: Number(json.data.total_nao) || null
-           }
+          return {
+            sim: Number(json.data.total_sim) || null,
+            nao: Number(json.data.total_nao) || null,
+          }
         }
-      } catch (e) {
+      }
+      catch (e) {
         return null
       }
       return null
     },
-    enabled: Boolean(activeMarket?.slug && (activeMarket.slug.startsWith('poly-') || activeMarket.slug.startsWith('live_')))
+    enabled: Boolean(activeMarket?.slug && (activeMarket.slug.startsWith('poly-') || activeMarket.slug.startsWith('live_'))),
   })
 
   const activeLiveYesPrice = hasMatchingStoreMarket ? liveYesPrice : null
@@ -255,9 +258,19 @@ export default function EventOrderPanelForm({
   const yesPrice = (isCategorical && activeOutcome)
     ? (fallbackPrices.data?.sim ?? resolveFallbackOutcomeUnitPrice(activeMarket, activeOutcome))
     : (activeLiveYesPrice ?? fallbackPrices.data?.sim ?? resolveFallbackOutcomeUnitPrice(activeMarket, yesOutcome))
-  const noPrice = isCategorical 
-    ? null 
+  const noPrice = isCategorical
+    ? null
     : (activeLiveNoPrice ?? fallbackPrices.data?.nao ?? resolveFallbackOutcomeUnitPrice(activeMarket, noOutcome))
+  const formatProb = (val: number | null | undefined) => {
+    if (val == null || !Number.isFinite(val)) { return 0 }
+    // Se o valor for > 1, assumimos que já é porcentagem (ex: 94)
+    // Se for <= 1, assumimos que é decimal (ex: 0.94)
+    const prob = val > 1 ? val : val * 100
+    return Math.min(100, Math.max(0, Math.round(prob)))
+  }
+  const displayYesPrice = formatProb(yesPrice)
+  const displayNoPrice = formatProb(noPrice)
+
   const outcomeTokenId = activeOutcome?.token_id ? String(activeOutcome.token_id) : null
   const shouldLoadOrderBookSummary = Boolean(
     outcomeTokenId
@@ -752,7 +765,7 @@ export default function EventOrderPanelForm({
   const avgSellPriceLabel = formatCentsLabel(avgSellPriceDollars, { fallback: '—' })
   const fallbackActivePrice = activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? fallbackPrices.data?.sim : Math.max(0, fallbackPrices.data?.nao ?? (fallbackPrices.data?.sim !== undefined && fallbackPrices.data?.sim !== null ? 1 - fallbackPrices.data.sim! : fallbackPrices.data?.nao!))
 
-  const outcomeFallbackBuyPriceCents = fallbackActivePrice != null 
+  const outcomeFallbackBuyPriceCents = fallbackActivePrice != null
     ? Number((fallbackActivePrice * 100).toFixed(1))
     : activeOutcome?.buy_price != null && !Number.isNaN(Number(activeOutcome.buy_price))
       ? Number((Number(activeOutcome.buy_price) * 100).toFixed(1))
@@ -1451,12 +1464,12 @@ export default function EventOrderPanelForm({
     }
   }
 
-  const normalizedPrimaryOutcomeIndex = typeof primaryOutcomeIndex === 'number' 
-    ? primaryOutcomeIndex 
+  const normalizedPrimaryOutcomeIndex = typeof primaryOutcomeIndex === 'number'
+    ? primaryOutcomeIndex
     : (activeMarket?.outcomes?.[0]?.outcome_index ?? 0)
 
   // isCategorical already declared above
-  
+
   const normalizedSecondaryOutcomeIndex
     = normalizedPrimaryOutcomeIndex === OUTCOME_INDEX.YES
       ? OUTCOME_INDEX.NO
@@ -1466,11 +1479,11 @@ export default function EventOrderPanelForm({
     outcome => outcome.outcome_index === normalizedPrimaryOutcomeIndex,
   ) ?? activeMarket?.outcomes?.[0]
 
-  const secondaryOutcome = isCategorical 
-    ? null 
+  const secondaryOutcome = isCategorical
+    ? null
     : activeMarket?.outcomes.find(
-        outcome => outcome.outcome_index === normalizedSecondaryOutcomeIndex,
-      ) ?? activeMarket?.outcomes[normalizedSecondaryOutcomeIndex]
+      outcome => outcome.outcome_index === normalizedSecondaryOutcomeIndex,
+    ) ?? activeMarket?.outcomes[normalizedSecondaryOutcomeIndex]
 
   const primaryPrice = normalizedPrimaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
   const secondaryPrice = normalizedSecondaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
@@ -1497,8 +1510,9 @@ export default function EventOrderPanelForm({
     return (
       <div className={cn({
         'rounded-xl border lg:w-85': !isMobile,
-      }, 'w-full p-4 lg:shadow-xl/5')}>
-        <div className="rounded-lg border border-border/50 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+      }, 'w-full p-4 lg:shadow-xl/5')}
+      >
+        <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-sm text-muted-foreground">
           {t('This market uses live pool betting. Use the live panel to place bets.')}
         </div>
       </div>
@@ -1509,49 +1523,21 @@ export default function EventOrderPanelForm({
     <Form
       action={onSubmit}
       id="event-order-form"
-      className={cn('w-full flex flex-col gap-6', isMobile ? 'px-6 pb-6 pt-2 bg-background' : 'px-4 pb-4 pt-1')}
+      className={cn('flex w-full flex-col', isMobile
+        ? 'max-h-[90vh] overflow-y-auto bg-background px-6 pt-2 pb-20'
+        : `flex flex-col gap-1 px-4 pt-4 pb-4`)}
     >
       {isMobile && !isResolvedMarket && (
-        <div className="flex flex-col gap-5 py-2">
-            {/* Mobile Header Card (Arredondado e Glassmorphism) */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-zinc-900/50 p-6 ring-1 ring-white/15 backdrop-blur-3xl shadow-2xl">
-                <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1.5 min-w-0">
-                        <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                            <span className="truncate text-xl font-black text-white uppercase tracking-tighter">
-                                {activeOutcome?.outcome_text ? (normalizeOutcomeLabel(activeOutcome.outcome_text) || activeOutcome.outcome_text) : (activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? t('Yes') : t('No'))}
-                            </span>
-                        </div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none truncate opacity-60">
-                            {event.title}
-                        </p>
-                    </div>
-                    <div className="bg-zinc-800/80 p-2 rounded-2xl border border-white/5">
-                        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 1.5L6 6.5L11 1.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                    </div>
-                </div>
-                
-                <div className="mt-8 mb-4 flex flex-col items-center justify-center">
-                    <div className="relative group p-[2px] rounded-[2.2rem] bg-gradient-to-b from-white/10 to-transparent">
-                        <div className="absolute inset-0 bg-emerald-500/10 blur-3xl rounded-full opacity-40 animate-pulse" />
-                        <div className="relative flex flex-col items-center justify-center px-10 py-5 rounded-[2.1rem] bg-[#1a1b1e] border border-white/5 shadow-inner min-w-[220px]">
-                            <div className="pointer-events-none select-none text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-1 opacity-50">
-                                {activeOutcome?.outcome_text ? (normalizeOutcomeLabel(activeOutcome.outcome_text) || activeOutcome.outcome_text) : (activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? t('Yes') : t('No'))}
-                            </div>
-                            <div className="text-3xl font-black text-white font-mono tracking-tighter drop-shadow-sm">
-                                R$ {yesPrice != null ? formatCentsLabel(yesPrice).replace('R$', '').trim() : '0,00'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex justify-center mt-2 opacity-20">
-                    <div className="size-1 bg-white rounded-full mx-1" />
-                </div>
-            </div>
+        <div className="flex flex-col gap-6 py-4">
+          {/* Cabeçalho Mobile Minimalista e Elegante - Novo Estilo Ref */}
+          <div className="flex flex-col gap-4 text-center">
+            <span className="text-2xs font-black tracking-[0.4em] text-zinc-500 uppercase opacity-60">
+              {event.title}
+            </span>
+            <h2 className="px-4 text-2xl/tight font-black tracking-tighter text-white uppercase">
+              {activeMarket?.short_title || activeMarket?.title || event.title}
+            </h2>
+          </div>
         </div>
       )}
       {!isResolvedMarket && !isMobile && (
@@ -1604,25 +1590,9 @@ export default function EventOrderPanelForm({
           )
         : (
             <>
-              <div className={cn("mb-3 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5", isMobile ? "hidden" : "block")}>
-                <p className="text-[11px] font-semibold text-muted-foreground">{t('Passo atual')}</p>
-                <p className="mt-0.5 text-sm font-semibold text-foreground">{`${sideLabel} • ${selectedOutcomeLabel}`}</p>
-                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedMarketLabel}</p>
-              </div>
-
+              {/* Removed redundant Passo Atual block */}
               <EventOrderPanelBuySellTabs
                 side={state.side}
-                type={state.type}
-                availableMergeShares={availableMergeShares}
-                availableSplitBalance={availableSplitBalance}
-                eventId={event.id}
-                eventSlug={event.slug}
-                isNegRiskMarket={isNegRiskMarket}
-                conditionId={activeMarket?.condition_id}
-                marketSlug={activeMarket?.slug}
-                eventPath={resolveEventPagePath(event)}
-                marketTitle={activeMarket?.title || activeMarket?.short_title}
-                marketIconUrl={activeMarket?.icon_url}
                 onSideChange={state.setSide}
                 onTypeChange={handleTypeChange}
                 onAmountReset={() => state.setAmount('')}
@@ -1631,59 +1601,61 @@ export default function EventOrderPanelForm({
 
               {shouldShowOutcomePickerInPanel
                 ? (
-                    <div className={cn("mb-2 flex", isCategorical ? "flex-col gap-1.5" : "gap-2")}>
-                      {isCategorical ? (
-                        <div className={isMobile ? "hidden" : "block w-full"}>
-                          <EventOrderPanelOutcomeButton
-                            variant="yes"
-                            price={selectedOutcomePrice}
-                            label={selectedShareLabel ?? t('Buy')}
-                            isSelected={true}
-                            oddsFormat={oddsFormat}
-                            styleVariant={outcomeButtonStyleVariant}
-                            onSelect={() => focusInput()}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <EventOrderPanelOutcomeButton
-                            variant="yes"
-                            price={primaryPrice}
-                            label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) ?? t('Yes')}
-                            isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
-                            oddsFormat={oddsFormat}
-                            styleVariant={outcomeButtonStyleVariant}
-                            onSelect={() => {
-                              if (!activeMarket || !primaryOutcome) {
-                                return
-                              }
-                              if (!state.market) {
-                                state.setMarket(activeMarket)
-                              }
-                              state.setOutcome(primaryOutcome)
-                              focusInput()
-                            }}
-                          />
-                          <EventOrderPanelOutcomeButton
-                            variant="no"
-                            price={secondaryPrice}
-                            label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) ?? t('No')}
-                            isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
-                            oddsFormat={oddsFormat}
-                            styleVariant={outcomeButtonStyleVariant}
-                            onSelect={() => {
-                              if (!activeMarket || !secondaryOutcome) {
-                                return
-                              }
-                              if (!state.market) {
-                                state.setMarket(activeMarket)
-                              }
-                              state.setOutcome(secondaryOutcome)
-                              focusInput()
-                            }}
-                          />
-                        </>
-                      )}
+                    <div className={cn('mb-2 flex', isCategorical ? 'flex-col gap-1.5' : 'gap-2')}>
+                      {isCategorical
+                        ? (
+                            <div className={isMobile ? 'hidden' : 'block w-full'}>
+                              <EventOrderPanelOutcomeButton
+                                variant="yes"
+                                price={selectedOutcomePrice}
+                                label={selectedShareLabel || t('Buy')}
+                                isSelected={true}
+                                oddsFormat={oddsFormat}
+                                styleVariant={outcomeButtonStyleVariant}
+                                onSelect={() => focusInput()}
+                              />
+                            </div>
+                          )
+                        : (
+                            <>
+                              <EventOrderPanelOutcomeButton
+                                variant="yes"
+                                price={primaryPrice}
+                                label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) || t('Yes')}
+                                isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
+                                oddsFormat={oddsFormat}
+                                styleVariant={outcomeButtonStyleVariant}
+                                onSelect={() => {
+                                  if (!activeMarket || !primaryOutcome) {
+                                    return
+                                  }
+                                  if (!state.market) {
+                                    state.setMarket(activeMarket)
+                                  }
+                                  state.setOutcome(primaryOutcome)
+                                  focusInput()
+                                }}
+                              />
+                              <EventOrderPanelOutcomeButton
+                                variant="no"
+                                price={secondaryPrice}
+                                label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) || t('No')}
+                                isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
+                                oddsFormat={oddsFormat}
+                                styleVariant={outcomeButtonStyleVariant}
+                                onSelect={() => {
+                                  if (!activeMarket || !secondaryOutcome) {
+                                    return
+                                  }
+                                  if (!state.market) {
+                                    state.setMarket(activeMarket)
+                                  }
+                                  state.setOutcome(secondaryOutcome)
+                                  focusInput()
+                                }}
+                              />
+                            </>
+                          )}
                     </div>
                   )
                 : (
@@ -1693,7 +1665,9 @@ export default function EventOrderPanelForm({
                         {selectedShareLabel ?? t('Escolha uma opção na lista ao lado')}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {t('Preço atual')}: {formatCentsLabel(selectedOutcomePrice)}
+                        {t('Preço atual')}
+                        :
+                        {formatCentsLabel(selectedOutcomePrice)}
                       </p>
                     </div>
                   )}
@@ -1740,7 +1714,7 @@ export default function EventOrderPanelForm({
                               activeOutcome={outcomeIndex}
                             />
                           )
-                        : <div className="mb-4"></div>}
+                        : null}
                       <EventOrderPanelInput
                         isMobile={isMobile}
                         side={state.side}
@@ -1753,17 +1727,8 @@ export default function EventOrderPanelForm({
                         onAmountChange={state.setAmount}
                         shouldShake={shouldShakeInput}
                       />
-                      <div
-                        className={cn(
-                          'overflow-hidden transition-all duration-500 ease-in-out',
-                          shouldShowEarnings
-                            ? 'max-h-96 translate-y-0 opacity-100'
-                            : 'pointer-events-none max-h-0 -translate-y-2 opacity-0',
-                        )}
-                        aria-hidden={!shouldShowEarnings}
-                      >
+                      <div className="mb-3">
                         <EventOrderPanelEarnings
-                          isMobile={isMobile}
                           side={state.side}
                           sellAmountLabel={sellAmountLabel}
                           avgSellPriceLabel={avgSellPriceLabel}
@@ -1771,8 +1736,6 @@ export default function EventOrderPanelForm({
                           avgSellPriceCents={avgSellPriceCentsValue}
                           avgBuyPriceCents={avgBuyPriceCentsValue}
                           buyPayout={buyPayoutSummary.payout}
-                          buyProfit={buyPayoutSummary.profit}
-                          buyChangePct={buyPayoutSummary.changePct}
                           buyMultiplier={buyPayoutSummary.multiplier}
                         />
                       </div>
@@ -1817,10 +1780,12 @@ export default function EventOrderPanelForm({
                 </div>
               )}
 
+              <EventMarketCountdown endDate={event.end_date} className="mb-2" />
               <EventOrderPanelSubmitButton
                 type={!isInteractiveWalletReady || shouldShowDepositCta ? 'button' : 'submit'}
                 isLoading={state.isLoading}
                 isDisabled={state.isLoading}
+                outcomeVariant={outcomeIndex === OUTCOME_INDEX.YES ? 'yes' : outcomeIndex === OUTCOME_INDEX.NO ? 'no' : null}
                 onClick={(event) => {
                   if (!isInteractiveWalletReady) {
                     void open()
@@ -1835,17 +1800,17 @@ export default function EventOrderPanelForm({
                 }}
                 label={(() => {
                   if (!isInteractiveWalletReady) {
-                    return t('Conectar carteira')
+                    return t('Connect wallet') || 'CONECTAR CARTEIRA'
                   }
                   if (shouldShowDepositCta) {
-                    return t('Depositar saldo')
+                    return t('Deposit balance') || 'DEPOSITAR SALDO'
                   }
                   const outcomeLabel = selectedShareLabel
                   if (outcomeLabel) {
-                    const verb = state.side === ORDER_SIDE.SELL ? t('Sell') : t('Buy')
+                    const verb = state.side === ORDER_SIDE.SELL ? (t('Sell') || 'Vender') : (t('Buy') || 'Comprar')
                     return `${verb} ${outcomeLabel}`
                   }
-                  return t('Trade')
+                  return t('Trade') || 'Negociar'
                 })()}
               />
               <p className="mt-2 text-center text-[11px] text-muted-foreground">{beginnerHint}</p>

@@ -3,7 +3,7 @@
 /**
  * Tradução de nomes de mercados e outcomes usando IA (Placeholder).
  */
-export async function translateMarketAI(title: string, description: string, outcomes: string[]): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function translateMarketAI(title: string, description: string, outcomes: string[]): Promise<{ success: boolean, data?: any, error?: string }> {
   try {
     const translateText = (text: string) => {
       return text
@@ -15,9 +15,9 @@ export async function translateMarketAI(title: string, description: string, outc
         .replace(/\bwin\b/gi, 'ganha')
     }
 
-    const translatedOutcomes = outcomes.map(oc => {
-      if (oc.toLowerCase() === 'yes') return 'SIM'
-      if (oc.toLowerCase() === 'no') return 'NÃO'
+    const translatedOutcomes = outcomes.map((oc) => {
+      if (oc.toLowerCase() === 'yes') { return 'SIM' }
+      if (oc.toLowerCase() === 'no') { return 'NÃO' }
       return oc
     })
 
@@ -26,11 +26,11 @@ export async function translateMarketAI(title: string, description: string, outc
       data: {
         question: translateText(title),
         description: translateText(description || ''),
-        outcomes: translatedOutcomes
-      }
+        outcomes: translatedOutcomes,
+      },
     }
-  } catch (err: any) {
+  }
+  catch (err: any) {
     return { success: false, error: err.message }
   }
 }
-

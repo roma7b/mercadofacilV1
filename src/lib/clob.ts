@@ -86,4 +86,3 @@ export function getRoundedCents(rawPrice: number, side: 'ask' | 'bid') {
   const normalized = Math.max(0, Math.min(roundedScaled / 10, MAX_LIMIT_PRICE))
   return Number(normalized.toFixed(1))
 }
-

@@ -277,4 +277,3 @@ async function updateMarketVolume(conditionId: string, totalVolume: string, volu
     })
     .where(eq(markets.condition_id, conditionId))
 }
-

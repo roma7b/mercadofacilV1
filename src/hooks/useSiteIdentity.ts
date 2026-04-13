@@ -9,4 +9,3 @@ export const SiteIdentityContext = createContext<ThemeSiteIdentity>(createDefaul
 export function useSiteIdentity() {
   return use(SiteIdentityContext)
 }
-

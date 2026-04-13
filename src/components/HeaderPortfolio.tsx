@@ -6,8 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useBalance } from '@/hooks/useBalance'
 import { usePendingUsdcDeposit } from '@/hooks/usePendingUsdcDeposit'
 import { usePortfolioValue } from '@/hooks/usePortfolioValue'
-import { usePortfolioValueVisibility } from '@/stores/usePortfolioValueVisibility'
 import { cn } from '@/lib/utils'
+import { usePortfolioValueVisibility } from '@/stores/usePortfolioValueVisibility'
 
 export default function HeaderPortfolio({ className }: { className?: string }) {
   const { balance, isLoadingBalance } = useBalance()
@@ -41,7 +41,9 @@ export default function HeaderPortfolio({ className }: { className?: string }) {
                 ? '****'
                 : (
                     <>
-                      R$ {formattedPortfolioValue}
+                      R$
+                      {' '}
+                      {formattedPortfolioValue}
                     </>
                   )}
           </div>
@@ -70,7 +72,9 @@ export default function HeaderPortfolio({ className }: { className?: string }) {
                 ? '****'
                 : (
                     <>
-                      R$ {formattedCashValue}
+                      R$
+                      {' '}
+                      {formattedCashValue}
                     </>
                   )}
           </div>
@@ -79,4 +83,3 @@ export default function HeaderPortfolio({ className }: { className?: string }) {
     </div>
   )
 }
-

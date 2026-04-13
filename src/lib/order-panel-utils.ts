@@ -114,4 +114,3 @@ export function calculateMarketFill(
     totalCost: Number(totalCost.toFixed(4)),
   }
 }
-

@@ -19,13 +19,13 @@ const supabase = createClient(url, key)
  * Edite os campos abaixo para criar o mercado que desejar!
  */
 const NOVO_MERCADO = {
-  titulo: "Rodovia SP-055 KM 92 - Contagem de Veículos", // Título que aparece no Kuest
-  descricao: "Contagem de veículos em tempo real na Rodovia SP-055", // Descrição
-  camera_id: "cam-sp055-123",                            // ID da Câmera (Obrigatório)
-  status: "AO_VIVO",                                     // AO_VIVO para permitir apostas
-  total_sim: 0,                                          // Pool inicial SIM
-  total_nao: 0,                                          // Pool inicial NÃO
-  termina_em: new Date(Date.now() + 86400000).toISOString() // Finaliza em 24h
+  titulo: 'Rodovia SP-055 KM 92 - Contagem de Veículos', // Título que aparece no Kuest
+  descricao: 'Contagem de veículos em tempo real na Rodovia SP-055', // Descrição
+  camera_id: 'cam-sp055-123', // ID da Câmera (Obrigatório)
+  status: 'AO_VIVO', // AO_VIVO para permitir apostas
+  total_sim: 0, // Pool inicial SIM
+  total_nao: 0, // Pool inicial NÃO
+  termina_em: new Date(Date.now() + 86400000).toISOString(), // Finaliza em 24h
 }
 
 async function criarMercado() {

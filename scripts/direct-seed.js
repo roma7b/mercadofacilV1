@@ -15,7 +15,7 @@ const markets = [
     total_nao: 1200.75,
     volume: 2741.25,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'live-btc-price-v2',
@@ -30,14 +30,14 @@ const markets = [
     total_nao: 41800.00,
     volume: 87000.00,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
+    updated_at: new Date().toISOString(),
+  },
 ]
 
 async function run() {
   const sql = postgres(process.env.POSTGRES_URL)
   console.log('🚀 Inserindo dados de mercado via conexão direta Postgres...')
-  
+
   for (const m of markets) {
     await sql`
       INSERT INTO public.mercados_live 
@@ -59,7 +59,7 @@ async function run() {
     `
     console.log(`✅ ${m.titulo} atualizado!`)
   }
-  
+
   await sql.end()
   console.log('--- Sucesso ---')
 }

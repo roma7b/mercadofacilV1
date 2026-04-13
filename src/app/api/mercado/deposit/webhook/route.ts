@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/drizzle'
+import type { NextRequest } from 'next/server'
+import { and, eq } from 'drizzle-orm'
+import { NextResponse } from 'next/server'
 import { mercadoTransactions, mercadoWallets } from '@/lib/db/schema/mercado_facil_tables'
-import { eq, and } from 'drizzle-orm'
+import { db } from '@/lib/drizzle'
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,11 +30,11 @@ export async function POST(req: NextRequest) {
         .where(
           and(
             eq(mercadoTransactions.referencia_externa, txid),
-            eq(mercadoTransactions.status, 'PENDENTE')
-          )
+            eq(mercadoTransactions.status, 'PENDENTE'),
+          ),
         )
         .limit(1)
-      if (results.length > 0) transaction = results[0]
+      if (results.length > 0) { transaction = results[0] }
     }
 
     if (!transaction && externalId) {
@@ -42,11 +43,11 @@ export async function POST(req: NextRequest) {
         .where(
           and(
             eq(mercadoTransactions.external_id_horsepay, BigInt(externalId)),
-            eq(mercadoTransactions.status, 'PENDENTE')
-          )
+            eq(mercadoTransactions.status, 'PENDENTE'),
+          ),
         )
         .limit(1)
-      if (results.length > 0) transaction = results[0]
+      if (results.length > 0) { transaction = results[0] }
     }
 
     if (!transaction) {
@@ -66,14 +67,15 @@ export async function POST(req: NextRequest) {
 
     // 2. Creditar na carteira
     const userWallets = await db.select().from(mercadoWallets).where(eq(mercadoWallets.user_id, userId)).limit(1)
-    
+
     if (userWallets.length === 0) {
       // Se não tem carteira, cria uma (teoricamente o trigger do banco já criaria, mas garantimos aqui)
       await db.insert(mercadoWallets).values({
         user_id: userId,
-        saldo: String(amount)
+        saldo: String(amount),
       })
-    } else {
+    }
+    else {
       const currentBalance = Number(userWallets[0].saldo)
       await db.update(mercadoWallets)
         .set({ saldo: String(currentBalance + amount), updated_at: new Date() })
@@ -83,10 +85,9 @@ export async function POST(req: NextRequest) {
     console.log(`[HORSEPAY_WEBHOOK] ✅ Depósito de R$ ${amount} confirmado para usuario ${userId}`)
 
     return NextResponse.json({ received: true, confirmed: true })
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('[HORSEPAY_WEBHOOK_ERROR]', error)
     return NextResponse.json({ error: 'Erro interno ao processar webhook' }, { status: 500 })
   }
 }
-

@@ -1,5 +1,7 @@
 'use client'
 
+import BigChanceMeter from '@/app/[locale]/(platform)/event/[slug]/_components/BigChanceMeter'
+
 import type {
   ConditionChangeLogEntry,
   Event,
@@ -9,7 +11,7 @@ import type {
   Outcome,
   User,
 } from '@/types'
-import { ArrowUpIcon, Trophy, Info, ChevronRight } from 'lucide-react'
+import { ArrowUpIcon, ChevronRight, Info, Trophy } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -22,6 +24,7 @@ import EventMarketOpenOrders from '@/app/[locale]/(platform)/event/[slug]/_compo
 import EventMarketPositions from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketPositions'
 import EventMarkets from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarkets'
 import EventOrderPanelForm from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelForm'
+
 import EventOrderPanelMobile from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelMobile'
 import EventOrderPanelTermsDisclaimer from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelTermsDisclaimer'
 import { EventOutcomeChanceProvider } from '@/app/[locale]/(platform)/event/[slug]/_components/EventOutcomeChanceProvider'
@@ -29,14 +32,15 @@ import EventRelated from '@/app/[locale]/(platform)/event/[slug]/_components/Eve
 import EventRules from '@/app/[locale]/(platform)/event/[slug]/_components/EventRules'
 import EventSingleMarketOrderBook from '@/app/[locale]/(platform)/event/[slug]/_components/EventSingleMarketOrderBook'
 import EventTabs from '@/app/[locale]/(platform)/event/[slug]/_components/EventTabs'
+import EventStatsBar from '@/app/[locale]/(platform)/event/[slug]/_components/EventStatsBar'
 import ResolutionTimelinePanel from '@/app/[locale]/(platform)/event/[slug]/_components/ResolutionTimelinePanel'
-import LiveCameraFeed from '@/components/LiveCameraFeed'
-import { isLivePoolEvent } from '@/lib/market-type'
 import { buildResolutionTimeline, shouldDisplayResolutionTimeline } from '@/app/[locale]/(platform)/event/[slug]/_utils/resolution-timeline-builder'
+import LiveCameraFeed from '@/components/LiveCameraFeed'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { isLivePoolEvent } from '@/lib/market-type'
 import { cn } from '@/lib/utils'
 import { useOrder, useSyncLimitPriceWithOutcome } from '@/stores/useOrder'
 import { useUser } from '@/stores/useUser'
-import { useIsMobile } from '@/hooks/useIsMobile'
 
 interface EventContentProps {
   event: Event
@@ -52,7 +56,7 @@ interface EventContentProps {
 
 function OrderStoreSync({ event }: { event: Event }) {
   const { setEvent, setMarket, setOutcome, outcome, market: currentMarket } = useOrder()
-  
+
   useEffect(() => {
     if (event && !currentMarket) {
       const initialMarket = event.markets?.[0]
@@ -82,7 +86,7 @@ export default function EventContent({
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [mounted, setMounted] = useState(false)
   const isMobile = isMobileProp ?? isMobileClient
-  
+
   if (!event || !event.slug) {
     return <div className="min-h-screen animate-pulse bg-background/50" />
   }
@@ -112,52 +116,80 @@ export default function EventContent({
     <EventMarketChannelProvider markets={event.markets}>
       <EventOutcomeChanceProvider eventId={event.id}>
         <OrderStoreSync event={event} />
-        
-        <div className="flex flex-col gap-6 pt-2 pb-10">
-          
-          {/* Header Section */}
-          <EventHeader event={event} />
 
-          <div className="flex flex-col gap-8">
-            
+        <div className="flex flex-col gap-4 md:gap-6 pt-2 pb-10">
+
+          {/* Header Section */}
+          <div className="flex flex-col gap-4">
+            <EventHeader event={event} />
+            <EventStatsBar event={event} />
+          </div>
+
+          <div className="flex flex-col gap-6 md:gap-8">
+
             {/* Main Visual Component (Camera or Professional Chart) */}
-            <div className="relative group">
-              {isLiveMercadoEvent ? (
-                <div className="relative aspect-video w-full overflow-hidden rounded-[2rem] bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
-                  <LiveCameraFeed
-                    liveId={event.slug}
-                    originalStreamUrl={event.livestream_url || undefined}
-                    showMetrics={event.slug.includes('rodovia')}
-                    metadata={{ 
-                       title: event.title,
-                       iconUrl: event.icon_url,
-                       mainTag: event.main_tag
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="bg-card/30 backdrop-blur-2xl rounded-[2.5rem] border border-white/5 overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
-                  <div className="p-0 md:p-1 min-h-[300px] md:min-h-[480px] bg-gradient-to-b from-white/[0.03] to-transparent">
-                    <EventChart event={event} isMobile={!!isMobile} seriesEvents={seriesEvents} />
-                  </div>
-                </div>
-              )}
+            <div className="group relative">
+              {isLiveMercadoEvent
+                ? (
+                    <div className="
+                      relative aspect-video w-full overflow-hidden rounded-2xl md:rounded-4xl bg-black
+                      shadow-[0_20px_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10
+                    "
+                    >
+                      <LiveCameraFeed
+                        liveId={event.slug}
+                        originalStreamUrl={event.livestream_url || undefined}
+                        showMetrics={event.slug.includes('rodovia')}
+                        metadata={{
+                          title: event.title,
+                          iconUrl: event.icon_url,
+                          mainTag: event.main_tag,
+                        }}
+                      />
+                    </div>
+                  )
+                : (
+                    <div className="
+                      overflow-hidden rounded-[1rem] md:rounded-[2.5rem] border border-white/5 bg-card/30
+                      shadow-[0_20px_40px_-5px_rgba(0,0,0,0.4)] md:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] backdrop-blur-2xl
+                    "
+                    >
+                      <div className="
+                        min-h-[260px] bg-linear-to-b from-white/3 to-transparent p-0
+                        md:min-h-[480px] md:p-1
+                      "
+                      >
+                        <EventChart event={event} isMobile={!!isMobile} seriesEvents={seriesEvents} />
+                      </div>
+                    </div>
+                  )}
             </div>
+
+            
+            {selectedMarket && (
+               <BigChanceMeter 
+                 marketSlug={selectedMarket.slug} 
+                 className="mb-2" 
+               />
+            )}
 
             {/* Markets List - High Density & Premium UI */}
             <section className="flex flex-col gap-4">
-               <div className="flex items-center justify-between px-2">
-                  <div className="flex items-center gap-3">
-                     <div className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
-                        <Trophy className="size-4" />
-                     </div>
-                     <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">{t('Opções de Aposta')}</h3>
+              <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-3">
+                  <div className="
+                    flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20
+                  "
+                  >
+                    <Trophy className="size-4" />
                   </div>
-               </div>
+                  <h3 className="text-sm font-bold tracking-wider text-foreground uppercase">{t('Opções de Aposta')}</h3>
+                </div>
+              </div>
 
-               <div className="bg-card/20 backdrop-blur-xl rounded-3xl border border-white/5 p-4 md:p-6 shadow-2xl">
-                  <EventMarkets event={event} isMobile={!!isMobile} />
-               </div>
+              <div className="rounded-2xl md:rounded-3xl border border-white/5 bg-card/20 p-4 shadow-2xl backdrop-blur-xl md:p-6">
+                <EventMarkets event={event} isMobile={!!isMobile} />
+              </div>
             </section>
 
             {/* Info Tabs & Details */}
@@ -165,16 +197,16 @@ export default function EventContent({
               <div className="border-t border-white/5 pt-8">
                 <EventTabs event={event} user={currentUser} />
               </div>
-              
+
               <div className="grid gap-6">
                 <div className="flex items-center gap-3 px-2">
-                   <Info className="size-4 text-muted-foreground" />
-                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('Regras & Resolução')}</h4>
+                  <Info className="size-4 text-muted-foreground" />
+                  <h4 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">{t('Regras & Resolução')}</h4>
                 </div>
                 <EventRules event={event} />
-                
+
                 {selectedMarket && shouldDisplayResolutionTimeline(selectedMarket) && (
-                  <div className="rounded-[2rem] border border-white/5 bg-card/10 backdrop-blur-md p-8 shadow-inner">
+                  <div className="rounded-4xl border border-white/5 bg-card/10 p-8 shadow-inner backdrop-blur-md">
                     <ResolutionTimelinePanel
                       market={selectedMarket}
                       settledUrl={null}
@@ -190,9 +222,15 @@ export default function EventContent({
 
         {/* Portal: Side Betting Form for Desktop */}
         {mounted && !isMobile && sidebarTarget && createPortal(
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-8 duration-1000">
+          <div className="flex w-full max-w-[320px] animate-in flex-col gap-6 duration-1000 fade-in slide-in-from-right-8 mx-auto">
             {/* Main Betting Form */}
-            <div className="bg-card/50 backdrop-blur-3xl rounded-[2rem] border border-white/10 p-1 shadow-[0_30px_60px_rgba(0,0,0,0.6)] ring-1 ring-white/5 transition-all hover:shadow-[0_40px_80px_rgba(0,0,0,0.7)]">
+            <div className="
+              rounded-3xl border border-white/10 bg-[#161d28] shadow-[0_30px_70px_rgba(0,0,0,0.8)] ring-1 ring-white/5
+              backdrop-blur-3xl transition-all overflow-hidden relative
+              hover:shadow-[0_40px_80px_rgba(0,0,0,0.9)] hover:border-white/20
+            "
+            >
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/5 to-transparent" />
               <EventOrderPanelForm
                 event={event}
                 isMobile={false}
@@ -201,27 +239,56 @@ export default function EventContent({
                 <EventOrderPanelTermsDisclaimer />
               </div>
             </div>
-            
+
+            {/* Minhas Posições Section */}
+            {(selectedMarket && currentUser) ? (
+              <div className="group/positions relative overflow-hidden rounded-3xl border border-white/5 bg-[#161d28] p-4 shadow-2xl sm:p-6 transition-all hover:border-white/10">
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/[0.03] to-transparent" />
+                <div className="relative mb-4 flex items-center justify-between">
+                  <h3 className="text-2xs font-black tracking-[0.2em] text-muted-foreground uppercase opacity-80">
+                    {t('Minhas Posições')}
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <EventMarketPositions
+                    market={selectedMarket}
+                    eventId={event.id}
+                    eventSlug={event.slug}
+                    isNegRiskEnabled={Boolean(event.enable_neg_risk || event.neg_risk)}
+                  />
+                  <div className="mt-2 border-t border-white/5 pt-4">
+                     <EventMarketOpenOrders market={selectedMarket} eventSlug={event.slug} />
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {/* Related Events Section (Subtle Look) */}
-            <div className="bg-card/10 rounded-3xl border border-white/5 p-6 shadow-xl group/related">
-               <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 group-hover/related:opacity-100 transition-opacity">{t('Outros Mercados')}</h3>
-                  <ChevronRight className="size-3 text-muted-foreground opacity-30" />
-               </div>
-               <div className="opacity-90 grayscale-[30%] hover:grayscale-0 transition-all">
-                 <EventRelated event={event} />
-               </div>
+            <div className="group/related rounded-3xl border border-white/5 bg-card/10 p-6 shadow-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="
+                  text-2xs font-black tracking-[0.2em] text-muted-foreground uppercase opacity-50 transition-opacity
+                  group-hover/related:opacity-100
+                "
+                >
+                  {t('Outros Mercados')}
+                </h3>
+                <ChevronRight className="size-3 text-muted-foreground opacity-30" />
+              </div>
+              <div className="opacity-90 grayscale-30 transition-all hover:grayscale-0">
+                <EventRelated event={event} />
+              </div>
             </div>
           </div>,
-          sidebarTarget
+          sidebarTarget,
         )}
-        
+
         {/* Mobile Betting Drawer (Bottom Fixed) */}
         {isMobile && mounted && (
-          <div className="fixed inset-x-0 bottom-0 z-[9999] pointer-events-none">
-             <div className="pointer-events-auto">
-                <EventOrderPanelMobile event={event} showDefaultTrigger={true} />
-             </div>
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-9999">
+            <div className="pointer-events-auto">
+              <EventOrderPanelMobile event={event} showDefaultTrigger={true} />
+            </div>
           </div>
         )}
 
@@ -229,7 +296,13 @@ export default function EventContent({
         {showBackToTop && (
           <button
             onClick={handleBackToTop}
-            className="fixed bottom-28 right-6 z-40 p-4 rounded-2xl bg-primary text-primary-foreground shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] hover:scale-110 active:scale-95 transition-all md:bottom-12"
+            className="
+              fixed right-6 bottom-28 z-40 rounded-2xl bg-primary p-4 text-primary-foreground
+              shadow-[0_15px_30px_rgba(var(--primary-rgb),0.4)] transition-all
+              hover:scale-110
+              active:scale-95
+              md:bottom-12
+            "
           >
             <ArrowUpIcon className="size-5" />
           </button>

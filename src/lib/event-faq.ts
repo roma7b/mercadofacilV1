@@ -21,14 +21,14 @@ interface FaqSelection {
 
 const LOW_VOLUME_THRESHOLD = 10_000
 const ACTIVE_COMMENTS_THRESHOLD = 10
-const CENTS_FORMATTER = new Intl.NumberFormat('en-US', {
+const CENTS_FORMATTER = new Intl.NumberFormat('pt-BR', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 1,
 })
 
 function quoteLabel(value: string | null | undefined) {
   const normalized = value?.trim()
-  return normalized ? `"${normalized}"` : '"this market"'
+  return normalized ? `"${normalized}"` : '"este mercado"'
 }
 
 function clampCents(value: number) {
@@ -49,22 +49,22 @@ function formatPercentFromCents(cents: number) {
 
 function formatFaqCurrency(value: number) {
   if (!Number.isFinite(value) || value <= 0) {
-    return '$0'
+    return 'R$ 0'
   }
 
   if (value >= 1_000_000) {
     const millions = value / 1_000_000
     const display = Number.isInteger(Math.round(millions)) && Math.abs(millions - Math.round(millions)) < 0.05
       ? `${Math.round(millions)}`
-      : millions.toFixed(1).replace(/\.0$/, '')
-    return `$${display} million`
+      : millions.toFixed(1).replace(/\.0$/, '').replace('.', ',')
+    return `R$ ${display} milhões`
   }
 
   if (value >= 1_000) {
-    return `$${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`
+    return `R$ ${(value / 1_000).toFixed(1).replace(/\.0$/, '').replace('.', ',')}K`
   }
 
-  return `$${Math.round(value)}`
+  return `R$ ${Math.round(value)}`
 }
 
 function formatMonthDayYear(value: string | null | undefined) {
@@ -81,7 +81,7 @@ function formatMonthDayYear(value: string | null | undefined) {
 }
 
 function resolveMarketLabel(market: Market) {
-  return market.short_title?.trim() || market.title?.trim() || 'this outcome'
+  return market.short_title?.trim() || market.title?.trim() || 'este resultado'
 }
 
 function resolveMarketPriceCents(market: Market) {
@@ -143,7 +143,7 @@ function resolveBinaryYesCents(event: Event) {
 
 function resolveBinarySelection(event: Event): FaqSelection {
   return {
-    label: 'Yes',
+    label: 'Sim',
     cents: resolveBinaryYesCents(event),
   }
 }
@@ -162,23 +162,23 @@ function resolvePrimarySelection(event: Event) {
   }
 
   return resolveFrontRunnerSelections(event)[0] ?? {
-    label: 'this outcome',
+    label: 'este resultado',
     cents: 50,
   }
 }
 
 function formatChoice(selection: FaqSelection) {
-  return `${quoteLabel(selection.label)} at ${formatFaqCents(selection.cents)} (${formatPercentFromCents(selection.cents)} implied probability)`
+  return `${quoteLabel(selection.label)} a ${formatFaqCents(selection.cents)} (${formatPercentFromCents(selection.cents)} de probabilidade implícita)`
 }
 
 function buildSiteAccuracySentence(siteName: string) {
-  return ` Prediction markets like ${siteName} tend to become more informative as events approach resolution and more traders participate.`
+  return ` Mercados de previsão como o ${siteName} tendem a se tornar mais informativos conforme os eventos se aproximam da resolução e mais traders participam.`
 }
 
 function buildWhatIsBinaryAnswer(event: Event, siteName: string) {
   const yesSelection = resolveBinarySelection(event)
 
-  return `${quoteLabel(event.title)} is a prediction market on ${siteName} where traders buy and sell "Yes" or "No" shares based on whether they believe this event will happen. The current crowd-sourced probability is ${formatPercentFromCents(yesSelection.cents)} for "Yes." For example, if "Yes" is priced at ${formatFaqCents(yesSelection.cents)}, the market collectively assigns a ${formatPercentFromCents(yesSelection.cents)} chance that this event will occur. These odds shift continuously as traders react to new developments and information. Shares in the correct outcome are redeemable for $1 each upon market resolution.`
+  return `${quoteLabel(event.title)} é um mercado de previsão no ${siteName} onde os traders compram e vendem ações de "Sim" ou "Não" com base em se acreditam que este evento acontecerá. A probabilidade atual da multidão é de ${formatPercentFromCents(yesSelection.cents)} para "Sim". Por exemplo, se o "Sim" estiver cotado a ${formatFaqCents(yesSelection.cents)}, o mercado atribui coletivamente uma chance de ${formatPercentFromCents(yesSelection.cents)} de que este evento ocorra. Essas probabilidades mudam continuamente à medida que os traders reagem a novos desenvolvimentos e informações. As ações no resultado correto podem ser resgatadas por R$ 1 cada na resolução do mercado.`
 }
 
 function buildWhatIsMultiAnswer(event: Event, siteName: string) {
@@ -186,42 +186,42 @@ function buildWhatIsMultiAnswer(event: Event, siteName: string) {
   const leader = frontRunners[0] ?? null
   const runnerUp = frontRunners[1] ?? null
   const leaderSentence = leader
-    ? ` The current leading outcome is ${formatChoice(leader)}.`
+    ? ` O resultado líder atual é ${formatChoice(leader)}.`
     : ''
   const runnerUpSentence = runnerUp
-    ? ` The next closest outcome is ${formatChoice(runnerUp)}.`
+    ? ` O próximo resultado mais próximo é ${formatChoice(runnerUp)}.`
     : ''
-  const exampleSelection = leader ?? runnerUp ?? { label: 'this outcome', cents: 50 }
+  const exampleSelection = leader ?? runnerUp ?? { label: 'este resultado', cents: 50 }
 
-  return `${quoteLabel(event.title)} is a prediction market on ${siteName} with ${resolveTotalMarketsCount(event)} possible outcomes where traders buy and sell shares based on what they believe will happen.${leaderSentence}${runnerUpSentence} Prices reflect real-time crowd-sourced probabilities. For example, a share priced at ${formatFaqCents(exampleSelection.cents)} implies that the market collectively assigns a ${formatPercentFromCents(exampleSelection.cents)} chance to that outcome. These odds shift continuously as traders react to new developments and information. Shares in the correct outcome are redeemable for $1 each upon market resolution.`
+  return `${quoteLabel(event.title)} é um mercado de previsão no ${siteName} com ${resolveTotalMarketsCount(event)} resultados possíveis onde os traders compram e vendem ações com base no que acreditam que acontecerá.${leaderSentence}${runnerUpSentence} Os preços refletem as probabilidades em tempo real da multidão. Por exemplo, uma ação cotada a ${formatFaqCents(exampleSelection.cents)} implica que o mercado atribui coletivamente uma chance de ${formatPercentFromCents(exampleSelection.cents)} a esse resultado. Essas probabilidades mudam continuamente à medida que os traders reagem a novos desenvolvimentos e informações. As ações no resultado correto podem ser resgatadas por R$ 1 cada na resolução do mercado.`
 }
 
 function buildLowVolumeAnswer(event: Event) {
   const createdAtLabel = formatMonthDayYear(event.created_at)
-  const launchedText = createdAtLabel ? `, launched on ${createdAtLabel}` : ''
+  const launchedText = createdAtLabel ? `, lançado em ${createdAtLabel}` : ''
 
-  return `${quoteLabel(event.title)} is a newly created market${launchedText}. As an early market, this is your opportunity to be among the first traders to set the odds and establish the market's initial price signals. You can also bookmark this page to track volume and trading activity as the market gains traction over time.`
+  return `${quoteLabel(event.title)} é um mercado recém-criado${launchedText}. Como um mercado inicial, esta é a sua oportunidade de estar entre os primeiros traders a definir as probabilidades e estabelecer os sinais de preço iniciais do mercado. Você também pode marcar esta página para acompanhar o volume e a atividade de negociação conforme o mercado ganha tração ao longo do tempo.`
 }
 
 function buildStandardVolumeAnswer(event: Event, siteName: string) {
   const createdAtLabel = formatMonthDayYear(event.created_at)
-  const launchedText = createdAtLabel ? ` since the market launched on ${createdAtLabel}` : ''
+  const launchedText = createdAtLabel ? ` desde que o mercado foi lançado em ${createdAtLabel}` : ''
 
-  return `As of today, ${quoteLabel(event.title)} has generated ${formatFaqCurrency(event.volume)} in total trading volume${launchedText}. This level of trading activity reflects strong engagement from the ${siteName} community and helps ensure that the current odds are informed by a deep pool of market participants. You can track live price movements and trade on any outcome directly on this page.`
+  return `Até hoje, ${quoteLabel(event.title)} gerou ${formatFaqCurrency(event.volume)} em volume total de negociação${launchedText}. Esse nível de atividade reflete o forte engajamento da comunidade do ${siteName} e ajuda a garantir que as probabilidades atuais sejam informadas por um profundo pool de participantes. Você pode acompanhar movimentos de preço ao vivo e negociar em qualquer resultado diretamente nesta página.`
 }
 
 function buildTradeBinaryAnswer(event: Event) {
-  return `To trade on ${quoteLabel(event.title)}, simply choose whether you believe the answer will be "Yes" or "No." Each side has a current price that reflects the market's implied probability. Enter your amount and click "Trade." If you buy "Yes" shares and the outcome resolves as "Yes," each share pays out $1. If it resolves as "No," your "Yes" shares pay out $0. You can also sell your shares at any time before resolution if you want to lock in a profit or cut a loss.`
+  return `Para negociar no ${quoteLabel(event.title)}, basta escolher se você acredita que a resposta será "Sim" ou "Não". Cada lado tem um preço atual que reflete a probabilidade implícita do mercado. Insira sua quantia e clique em "Negociar". Se você comprar ações de "Sim" e o resultado for resolvido como "Sim", cada ação paga R$ 1. Se for resolvido como "Não", suas ações de "Sim" pagam R$ 0. Você também pode vender suas ações a qualquer momento antes da resolução se quiser garantir um lucro ou cortar um prejuízo.`
 }
 
 function buildTradeMultiAnswer(event: Event) {
-  return `To trade on ${quoteLabel(event.title)}, browse the ${resolveTotalMarketsCount(event)} available outcomes listed on this page. Each outcome displays a current price representing the market's implied probability. To take a position, select the outcome you believe is most likely, choose "Yes" to trade in favor of it or "No" to trade against it, enter your amount, and click "Trade." If your chosen outcome is correct when the market resolves, your "Yes" shares pay out $1 each. If it is incorrect, they pay out $0. You can also sell your shares at any time before resolution if you want to lock in a profit or cut a loss.`
+  return `Para negociar no ${quoteLabel(event.title)}, navegue pelos ${resolveTotalMarketsCount(event)} resultados disponíveis listados nesta página. Cada resultado exibe um preço atual que representa a probabilidade implícita do mercado. Para assumir uma posição, selecione o resultado que você acredita ser mais provável, escolha "Sim" para negociar a favor dele ou "No" para negociar contra ele, insira sua quantia e clique em "Negociar". Se o resultado escolhido estiver correto quando o mercado for resolvido, suas ações de "Sim" pagam R$ 1 cada. Se estiver incorreto, elas pagam R$ 0. Você também pode vender suas ações a qualquer momento antes da resolução se quiser garantir um lucro ou cortar um prejuízo.`
 }
 
 function buildCurrentOddsBinaryAnswer(event: Event, siteName: string) {
   const yesSelection = resolveBinarySelection(event)
 
-  return `The current probability for ${quoteLabel(event.title)} is ${formatPercentFromCents(yesSelection.cents)} for "Yes." This means the ${siteName} crowd currently believes there is a ${formatPercentFromCents(yesSelection.cents)} chance that this event will occur. These odds update in real-time based on actual trades, providing a continuously updated signal of what the market expects to happen.`
+  return `A probabilidade atual para ${quoteLabel(event.title)} é de ${formatPercentFromCents(yesSelection.cents)} para "Sim". Isso significa que a multidão do ${siteName} acredita atualmente que há uma chance de ${formatPercentFromCents(yesSelection.cents)} de que este evento ocorra. Essas probabilidades são atualizadas em tempo real com base em negociações reais, fornecendo um sinal continuamente atualizado do que o mercado espera que aconteça.`
 }
 
 function buildCurrentOddsMultiAnswer(event: Event) {
@@ -229,68 +229,68 @@ function buildCurrentOddsMultiAnswer(event: Event) {
   const leader = frontRunners[0] ?? null
   const runnerUp = frontRunners[1] ?? null
   const leaderSentence = leader
-    ? `The current frontrunner for ${quoteLabel(event.title)} is ${formatChoice(leader)}, meaning the market assigns a ${formatPercentFromCents(leader.cents)} chance to that outcome.`
-    : `The current prices for ${quoteLabel(event.title)} update in real time on this page.`
+    ? `O líder atual para ${quoteLabel(event.title)} é ${formatChoice(leader)}, o que significa que o mercado atribui uma chance de ${formatPercentFromCents(leader.cents)} a esse resultado.`
+    : `Os preços atuais para ${quoteLabel(event.title)} são atualizados em tempo real nesta página.`
   const runnerUpSentence = runnerUp
-    ? ` The next closest outcome is ${formatChoice(runnerUp)}.`
+    ? ` O próximo resultado mais próximo é ${formatChoice(runnerUp)}.`
     : ''
 
-  return `${leaderSentence}${runnerUpSentence} These odds update in real-time as traders buy and sell shares, so they reflect the latest collective view of what is most likely to happen. Check back frequently or bookmark this page to follow how the odds shift as new information emerges.`
+  return `${leaderSentence}${runnerUpSentence} Essas probabilidades são atualizadas em tempo real conforme os traders compram e vendem ações, refletindo a visão coletiva mais recente do que é mais provável de acontecer. Volte com frequência ou marque esta página para acompanhar como as probabilidades mudam à medida que novas informações surgem.`
 }
 
 function buildResolutionAnswer(event: Event) {
-  return `The resolution rules for ${quoteLabel(event.title)} define exactly what needs to happen for each outcome to be declared a winner, including the official data sources used to determine the result. You can review the complete resolution criteria in the "Rules" section on this page above the comments. We recommend reading the rules carefully before trading, as they specify the precise conditions, edge cases, and sources that govern how this market is settled.`
+  return `As regras de resolução para ${quoteLabel(event.title)} definem exatamente o que precisa acontecer para que cada resultado seja declarado vencedor, incluindo as fontes de dados oficiais usadas para determinar o resultado. Você pode revisar os critérios de resolução completos na seção "Regras" nesta página, acima dos comentários. Recomendamos ler as regras cuidadosamente antes de negociar, pois elas especificam as condições precisas, casos excepcionais e fontes que regem como este mercado é liquidado.`
 }
 
 function buildFollowAnswer(event: Event) {
-  return `Yes. You don't need to trade to stay informed. This page serves as a live tracker for ${quoteLabel(event.title)}. The outcome probabilities update in real-time as new trades come in. You can bookmark this page and check the comments section to see what other traders are saying. You can also use the time-range filters on the chart to see how the odds have shifted over time. It's a free, real-time window into what the market expects to happen.`
+  return `Sim. Você não precisa negociar para se manter informado. Esta página serve como um rastreador ao vivo para ${quoteLabel(event.title)}. As probabilidades de resultado são atualizadas em tempo real conforme novas negociações ocorrem. Você pode marcar esta página e verificar a seção de comentários para ver o que outros traders estão dizendo. Você também pode usar os filtros de intervalo de tempo no gráfico para ver como as probabilidades mudaram ao longo do tempo. É uma janela gratuita e em tempo real para o que o mercado espera que aconteça.`
 }
 
 function buildReliabilityAnswer(event: Event, siteName: string) {
-  return `${siteName} odds are set by real traders putting real money behind their beliefs, which tends to surface accurate predictions. With ${formatFaqCurrency(event.volume)} traded on ${quoteLabel(event.title)}, these prices aggregate the collective knowledge and conviction of thousands of participants, often outperforming polls, expert forecasts, and traditional surveys.${buildSiteAccuracySentence(siteName)}`
+  return `As probabilidades do ${siteName} são definidas por traders reais colocando dinheiro real em suas crenças, o que tende a produzir previsões precisas. Com ${formatFaqCurrency(event.volume)} negociados em ${quoteLabel(event.title)}, esses preços agregam o conhecimento coletivo e a convicção de milhares de participantes, muitas vezes superando pesquisas, previsões de especialistas e levantamentos tradicionais.${buildSiteAccuracySentence(siteName)}`
 }
 
 function buildStartTradingAnswer(event: Event, siteName: string) {
-  return `To place your first trade on ${quoteLabel(event.title)}, sign up for a free ${siteName} account and fund it using crypto, a credit or debit card, or a bank transfer. Once your account is funded, return to this page, select the outcome you want to trade, enter your amount, and click "Trade." If you are new to prediction markets, click the "How it works" link at the top of any ${siteName} page for a quick step-by-step walkthrough of how trading works.`
+  return `Para fazer sua primeira negociação em ${quoteLabel(event.title)}, crie uma conta gratuita no ${siteName} e adicione fundos usando cripto, um cartão de crédito ou débito, ou transferência bancária. Assim que sua conta tiver fundos, volte a esta página, selecione o resultado que deseja negociar, insira sua quantia e clique em "Negociar". Se você é novo em mercados de previsão, clique no link "Como funciona" no topo de qualquer página do ${siteName} para um guia rápido de como as negociações funcionam.`
 }
 
 function buildPriceMeaningBinaryAnswer(event: Event, siteName: string) {
   const yesSelection = resolveBinarySelection(event)
   const profitCents = clampCents(100 - yesSelection.cents)
 
-  return `On ${siteName}, the price of "Yes" or "No" represents the market's implied probability. A "Yes" price of ${formatFaqCents(yesSelection.cents)} for ${quoteLabel(event.title)} means traders collectively believe there is a ${formatPercentFromCents(yesSelection.cents)} chance this event will happen. If you buy "Yes" at ${formatFaqCents(yesSelection.cents)} and the event does happen, you receive $1.00 per share — a profit of ${formatFaqCents(profitCents)} per share. If the event doesn't happen, those shares are worth $0.`
+  return `No ${siteName}, o preço de "Sim" ou "Não" representa a probabilidade implícita do mercado. Um preço de "Sim" de ${formatFaqCents(yesSelection.cents)} para ${quoteLabel(event.title)} significa que os traders acreditam coletivamente que há uma chance de ${formatPercentFromCents(yesSelection.cents)} deste evento acontecer. Se você comprar "Sim" a ${formatFaqCents(yesSelection.cents)} e o evento de fato ocorrer, você recebe R$ 1,00 por ação — um lucro de ${formatFaqCents(profitCents)} por ação. Se o evento não acontecer, essas ações valerão R$ 0.`
 }
 
 function buildPriceMeaningMultiAnswer(event: Event, siteName: string) {
   const selection = resolvePrimarySelection(event)
   const profitCents = clampCents(100 - selection.cents)
 
-  return `On ${siteName}, the price of each outcome represents the market's implied probability. A price of ${formatFaqCents(selection.cents)} for ${quoteLabel(selection.label)} in the ${quoteLabel(event.title)} market means traders collectively believe there is roughly a ${formatPercentFromCents(selection.cents)} chance that ${quoteLabel(selection.label)} will be the correct result. If you buy "Yes" shares at ${formatFaqCents(selection.cents)} and the outcome is correct, you receive $1.00 per share — a profit of ${formatFaqCents(profitCents)} per share. If incorrect, those shares are worth $0.`
+  return `No ${siteName}, o preço de cada resultado representa a probabilidade implícita do mercado. Um preço de ${formatFaqCents(selection.cents)} para ${quoteLabel(selection.label)} no mercado ${quoteLabel(event.title)} significa que os traders acreditam coletivamente que há aproximadamente ${formatPercentFromCents(selection.cents)} de chance de que ${quoteLabel(selection.label)} seja o resultado correto. Se você comprar ações de "Sim" a ${formatFaqCents(selection.cents)} e o resultado estiver correto, você recebe R$ 1,00 por ação — um lucro de ${formatFaqCents(profitCents)} por ação. Se incorreto, essas ações valerão R$ 0.`
 }
 
 function buildCloseAnswer(event: Event) {
   if (isResolvedEvent(event)) {
-    return `The ${quoteLabel(event.title)} market has been resolved. The final result has been determined and the market is no longer open for trading. You can still review the historical odds, outcome probabilities, and comments on this page to see how predictions evolved over time.`
+    return `O mercado ${quoteLabel(event.title)} foi resolvido. O resultado final já foi determinado e o mercado não está mais aberto para negociações. Você ainda pode revisar o histórico de probabilidades, as chances dos resultados e os comentários nesta página para ver como a previsão evoluiu ao longo do tempo.`
   }
 
   const closeDate = formatMonthDayYear(event.end_date ?? event.resolved_at ?? event.start_date)
   if (!closeDate) {
-    return `The ${quoteLabel(event.title)} market remains open until the official result becomes available and the market can be settled under the rules on this page.`
+    return `O mercado ${quoteLabel(event.title)} permanece aberto até que o resultado oficial esteja disponível e o mercado possa ser liquidado sob as regras descritas nesta página.`
   }
 
-  return `The ${quoteLabel(event.title)} market is scheduled to resolve on or around ${closeDate}. This means trading will remain open and the odds will continue to shift as new information emerges until that date. The exact resolution timing depends on when the official result becomes available, as outlined in the "Rules" section on this page.`
+  return `O mercado ${quoteLabel(event.title)} está programado para ser resolvido em ou por volta de ${closeDate}. Isso significa que as negociações permanecerão abertas e as probabilidades continuaros a mudar à medida que novas informações surgem até essa data. O momento exato da resolução depende de quando o resultado oficial estiver disponível, conforme detalhado na seção "Regras" nesta página.`
 }
 
 function buildTradersSayingAnswer(event: Event, commentsCount: number | null | undefined) {
   if (commentsCount != null && Number.isFinite(commentsCount) && commentsCount >= ACTIVE_COMMENTS_THRESHOLD) {
-    return `The ${quoteLabel(event.title)} market has an active community of ${formatCompactCount(commentsCount)} comments where traders share their analysis, debate outcomes, and discuss breaking developments. Scroll down to the comments section below to read what other participants think. You can also filter by "Top Holders" to see what the market's biggest traders are positioned on, or check the "Activity" tab for a real-time feed of trades.`
+    return `O mercado ${quoteLabel(event.title)} tem uma comunidade ativa de ${formatCompactCount(commentsCount)} comentários onde os traders compartilham suas análises, debatem resultados e discutem os últimos acontecimentos. Role para baixo até a seção de comentários abaixo para ler o que outros participantes pensam. Você também pode filtrar por "Top Holders" para ver como os maiores traders do mercado estão posicionados, ou verificar a aba "Atividade" para um feed em tempo real das negociações.`
   }
 
-  return `The ${quoteLabel(event.title)} market was recently created. Be one of the first to share your analysis by posting a comment below, or check back as the market grows to read what other traders think. You can also view the "Activity" tab for a real-time feed of recent trades.`
+  return `O mercado ${quoteLabel(event.title)} foi criado recentemente. Seja um dos primeiros a compartilhar sua análise postando um comentário abaixo, ou volte conforme o mercado cresce para ler o que outros traders pensam. Você também pode ver a aba "Atividade" para um feed em tempo real das negociações recentes.`
 }
 
 function buildWhatIsSiteAnswer(siteName: string, eventTitle: string) {
-  return `${siteName} is a prediction market platform where you can stay informed and trade on real-world events. Traders buy and sell shares on outcomes across politics, sports, crypto, finance, tech, and culture, including markets like ${quoteLabel(eventTitle)}. Prices reflect real-time, crowd-sourced probabilities backed by real money, giving you a transparent market view of what participants expect to happen.`
+  return `O ${siteName} é uma plataforma de mercado de previsão onde você pode se manter informado e negociar em eventos do mundo real. Os traders compram e vendem ações em resultados de política, esportes, cripto, finanças, tecnologia e cultura, incluindo mercados como ${quoteLabel(eventTitle)}. Os preços refletem as probabilidades em tempo real da multidão, apoiadas por dinheiro real, oferecendo uma visão de mercado transparente sobre o que os participantes esperam que aconteça.`
 }
 
 export function buildEventFaqItems({
@@ -305,76 +305,75 @@ export function buildEventFaqItems({
   return [
     {
       id: 'what-is',
-      question: `What is the ${quoteLabel(event.title)} prediction market?`,
+      question: `O que é o mercado de previsão ${quoteLabel(event.title)}?`,
       answer: binaryEvent
         ? buildWhatIsBinaryAnswer(event, siteName)
         : buildWhatIsMultiAnswer(event, siteName),
     },
     {
       id: 'trading-activity',
-      question: `How much trading activity has ${quoteLabel(event.title)} generated on ${siteName}?`,
+      question: `Qual é o volume de negociação de ${quoteLabel(event.title)} no ${siteName}?`,
       answer: lowVolume
         ? buildLowVolumeAnswer(event)
         : buildStandardVolumeAnswer(event, siteName),
     },
     {
       id: 'how-to-trade',
-      question: `How do I trade on ${quoteLabel(event.title)}?`,
+      question: `Como eu negocio no ${quoteLabel(event.title)}?`,
       answer: binaryEvent
         ? buildTradeBinaryAnswer(event)
         : buildTradeMultiAnswer(event),
     },
     {
       id: 'current-odds',
-      question: `What are the current odds for ${quoteLabel(event.title)}?`,
+      question: `Quais são as probabilidades atuais para ${quoteLabel(event.title)}?`,
       answer: binaryEvent
         ? buildCurrentOddsBinaryAnswer(event, siteName)
         : buildCurrentOddsMultiAnswer(event),
     },
     {
       id: 'resolution',
-      question: `How will ${quoteLabel(event.title)} be resolved?`,
+      question: `Como o mercado ${quoteLabel(event.title)} será resolvido?`,
       answer: buildResolutionAnswer(event),
     },
     {
       id: 'follow-without-trade',
-      question: `Can I follow ${quoteLabel(event.title)} without placing a trade?`,
+      question: `Posso acompanhar o ${quoteLabel(event.title)} sem negociar?`,
       answer: buildFollowAnswer(event),
     },
     {
       id: 'odds-reliability',
-      question: `Why are ${siteName}'s odds for ${quoteLabel(event.title)} considered reliable?`,
+      question: `Por que as probabilidades do ${siteName} para ${quoteLabel(event.title)} são confiáveis?`,
       answer: buildReliabilityAnswer(event, siteName),
     },
     {
       id: 'start-trading',
-      question: `How do I start trading on ${quoteLabel(event.title)}?`,
+      question: `Como começo a negociar no ${quoteLabel(event.title)}?`,
       answer: buildStartTradingAnswer(event, siteName),
     },
     {
       id: 'price-meaning',
       question: binaryEvent
-        ? `What does a price of ${formatFaqCents(primarySelection.cents)} for "Yes" mean?`
-        : `What does a price of ${formatFaqCents(primarySelection.cents)} for ${quoteLabel(primarySelection.label)} mean?`,
+        ? `O que significa um preço de ${formatFaqCents(primarySelection.cents)} para "Sim"?`
+        : `O que significa um preço de ${formatFaqCents(primarySelection.cents)} para ${quoteLabel(primarySelection.label)}?`,
       answer: binaryEvent
         ? buildPriceMeaningBinaryAnswer(event, siteName)
         : buildPriceMeaningMultiAnswer(event, siteName),
     },
     {
       id: 'close-time',
-      question: `When does the ${quoteLabel(event.title)} market close?`,
+      question: `Quando o mercado ${quoteLabel(event.title)} fecha?`,
       answer: buildCloseAnswer(event),
     },
     {
       id: 'traders-saying',
-      question: `What are traders saying about ${quoteLabel(event.title)}?`,
+      question: `O que os traders estão dizendo sobre ${quoteLabel(event.title)}?`,
       answer: buildTradersSayingAnswer(event, commentsCount),
     },
     {
       id: 'what-is-site',
-      question: `What is ${siteName}?`,
+      question: `O que é o ${siteName}?`,
       answer: buildWhatIsSiteAnswer(siteName, event.title),
     },
   ]
 }
-

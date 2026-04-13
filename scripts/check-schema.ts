@@ -20,7 +20,8 @@ async function checkSchema() {
 
   if (data && data.length > 0) {
     console.log('✅ Colunas encontradas:', Object.keys(data[0]).join(', '))
-  } else {
+  }
+  else {
     console.log('⚠️ Tabela vazia, não foi possível determinar as colunas via SELECT.')
   }
 }

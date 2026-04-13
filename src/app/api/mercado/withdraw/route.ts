@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { db } from '@/lib/drizzle'
-import { mercadoWallets, mercadoTransactions } from '@/lib/db/schema'
-import { HorsePayService } from '@/lib/horsepay'
+import type { NextRequest } from 'next/server'
 import { eq, sql } from 'drizzle-orm'
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { mercadoTransactions, mercadoWallets } from '@/lib/db/schema'
+import { db } from '@/lib/drizzle'
+import { HorsePayService } from '@/lib/horsepay'
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,13 +64,13 @@ export async function POST(req: NextRequest) {
         .set({ status: 'CONFIRMADO' })
         .where(eq(mercadoTransactions.id, result.id))
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         message: 'Saque solicitado com sucesso!',
-        external_id: horsePayRes.external_id 
+        external_id: horsePayRes.external_id,
       })
-
-    } catch (hpError: any) {
+    }
+    catch (hpError: any) {
       // Se falhar no gateway, devolvemos o saldo ao usuário
       await db.transaction(async (tx) => {
         await tx.update(mercadoWallets)
@@ -80,13 +81,12 @@ export async function POST(req: NextRequest) {
           .set({ status: 'FALHOU' })
           .where(eq(mercadoTransactions.id, result.id))
       })
-      
+
       throw new Error(`Erro na processadora de pagamentos: ${hpError.message}`)
     }
-
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('[WITHDRAW_ERROR]', error)
     return NextResponse.json({ error: error.message || 'Erro ao processar saque' }, { status: 500 })
   }
 }
-

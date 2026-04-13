@@ -1,8 +1,8 @@
 import type { Comment, User } from '@/types'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
-import { useSignMessage } from '@/hooks/useAppKitMock'
 import { commentMetricsQueryKey } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useCommentMetrics'
+import { useSignMessage } from '@/hooks/useAppKitMock'
 import { useSignaturePromptRunner } from '@/hooks/useSignaturePromptRunner'
 import {
   clearCommunityAuth,

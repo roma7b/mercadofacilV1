@@ -20,4 +20,3 @@ export function buildDataApiUrl(pathname: string, searchParams?: URLSearchParams
 export function normalizeDataApiAddress(value: string) {
   return value.trim().toLowerCase()
 }
-

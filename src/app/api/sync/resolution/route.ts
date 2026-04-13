@@ -949,4 +949,3 @@ async function invalidateEventCaches(
     }
   }
 }
-

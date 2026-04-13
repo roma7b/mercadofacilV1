@@ -7,13 +7,12 @@ export const defaultNetwork = {
   rpcUrls: {
     default: { http: [''] },
     public: { http: [''] },
-  }
+  },
 }
 export const networks = [defaultNetwork]
 export const wagmiAdapter = {
   wagmiConfig: {
-    connectors: []
-  }
+    connectors: [],
+  },
 }
 export const wagmiConfig = wagmiAdapter.wagmiConfig
-

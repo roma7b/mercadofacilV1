@@ -3,7 +3,6 @@
 import type { Route } from 'next'
 import type { ComponentProps, ReactNode } from 'react'
 import type { SupportedLocale } from '@/i18n/locales'
-import { useAppKitAccount } from '@/hooks/useAppKitMock'
 import {
   BookOpenIcon,
   ChartLineIcon,
@@ -20,22 +19,22 @@ import {
   TrophyIcon,
   UnplugIcon,
 } from 'lucide-react'
-import { LiveChat } from '@/app/[locale]/(platform)/_components/LiveChat'
-import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import { useExtracted, useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { toast } from 'sonner'
+import { LiveChat } from '@/app/[locale]/(platform)/_components/LiveChat'
 import SearchDiscoveryContent from '@/app/[locale]/(platform)/_components/SearchDiscoveryContent'
 import { MOBILE_BOTTOM_NAV_OFFSET } from '@/app/[locale]/(platform)/_lib/mobile-bottom-nav'
+import { useOptionalTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingContext'
 import IntentPrefetchLink from '@/components/IntentPrefetchLink'
 import PwaInstallIosInstructions from '@/components/PwaInstallIosInstructions'
 import ThemeSelector from '@/components/ThemeSelector'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAppKit } from '@/hooks/useAppKitMock'
+import { useAppKit, useAppKitAccount } from '@/hooks/useAppKitMock'
 import { useBalance } from '@/hooks/useBalance'
 import { usePortfolioValue } from '@/hooks/usePortfolioValue'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
@@ -346,22 +345,24 @@ export default function MobileBottomNav() {
           <div className="grid h-16.5 grid-cols-5">
             <MobileNavLink href="/" label={t('Home')} active={pathname === '/'} icon={HouseIcon} />
             <MobileNavButton label={t('Search')} active={isSearchOpen} onClick={handleSearchAction} icon={SearchIcon} />
-            
-            <MobileNavButton 
-              label={t('Deposit')} 
-              active={false} 
+
+            <MobileNavButton
+              label={t('Deposit')}
+              active={false}
               onClick={() => {
-                if (startDepositFlow) startDepositFlow()
-                else setIsGuestMenuOpen(true)
-              }} 
-              icon={PlusCircleIcon} 
+                if (startDepositFlow) {
+                  startDepositFlow()
+                }
+                else { setIsGuestMenuOpen(true) }
+              }}
+              icon={PlusCircleIcon}
             />
 
-            <MobileNavButton 
-              label="Chat" 
-              active={isChatOpen} 
-              onClick={() => setIsChatOpen(true)} 
-              icon={MessageCircleIcon} 
+            <MobileNavButton
+              label="Chat"
+              active={isChatOpen}
+              onClick={() => setIsChatOpen(true)}
+              icon={MessageCircleIcon}
             />
 
             {isAuthenticated
@@ -381,16 +382,17 @@ export default function MobileBottomNav() {
       </nav>
 
       <Drawer open={isChatOpen} onOpenChange={setIsChatOpen}>
-        <DrawerContent className="h-[95dvh] pt-0 border-none rounded-t-[2rem] overflow-hidden bg-background">
+        <DrawerContent className="h-[95dvh] overflow-hidden rounded-t-4xl border-none bg-background pt-0">
           <DrawerHeader className="sr-only">
-             <DrawerTitle>Chat ao Vivo</DrawerTitle>
+            <DrawerTitle>Chat ao Vivo</DrawerTitle>
           </DrawerHeader>
-          <div className="flex-1 min-h-0">
-             <LiveChat events={[]} className="border-l-0" />
+          <div className="min-h-0 flex-1">
+            <LiveChat events={[]} className="border-l-0" />
           </div>
         </DrawerContent>
       </Drawer>
-    </>  )
+    </>
+  )
 }
 
 interface MobileNavLinkProps {

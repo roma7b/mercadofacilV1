@@ -18,4 +18,3 @@ export * from './bookmarks/relations'
 export * from './events/relations'
 export * from './notifications/relations'
 export * from './orders/relations'
-

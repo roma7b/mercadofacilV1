@@ -107,4 +107,3 @@ export async function POST(request: Request): Promise<Response> {
 export async function PUT(request: Request): Promise<Response> {
   return proxy(request)
 }
-

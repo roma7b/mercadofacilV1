@@ -105,19 +105,26 @@ export default function EventCardSingleMarketActions({
 
   return (
     <div className="mt-auto mb-2 flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-1 overflow-hidden rounded-lg border bg-muted/40 p-1.5 transition-colors hover:bg-muted/60 dark:bg-secondary/40 dark:hover:bg-secondary/60">
+      <div className="
+        flex items-center justify-between gap-1 overflow-hidden rounded-lg border bg-muted/40 p-1.5 transition-colors
+        hover:bg-muted/60
+        dark:bg-secondary/40
+        dark:hover:bg-secondary/60
+      "
+      >
         <div className="ml-2 flex flex-1 items-center gap-2 overflow-hidden">
           <span className="truncate text-[13px] font-semibold text-foreground/90">
             {normalizeOutcomeLabel(yesOutcome.outcome_text) || yesOutcome.outcome_text}
           </span>
           <span className="shrink-0 text-xs font-bold text-muted-foreground tabular-nums">
-            {primaryDisplayChance}%
+            {primaryDisplayChance}
+            %
           </span>
         </div>
         <Button
           asChild
           variant="yes"
-          className="h-8 min-w-[70px] px-2 py-1 text-[11px] font-extrabold uppercase tracking-tight shadow-sm"
+          className="h-8 min-w-[70px] px-2 py-1 text-[11px] font-extrabold tracking-tight uppercase shadow-sm"
         >
           <IntentPrefetchLink
             href={resolveEventOutcomePath(event, { outcomeIndex: OUTCOME_INDEX.YES })}
@@ -126,19 +133,26 @@ export default function EventCardSingleMarketActions({
           </IntentPrefetchLink>
         </Button>
       </div>
-      <div className="flex items-center justify-between gap-1 overflow-hidden rounded-lg border bg-muted/40 p-1.5 transition-colors hover:bg-muted/60 dark:bg-secondary/40 dark:hover:bg-secondary/60">
+      <div className="
+        flex items-center justify-between gap-1 overflow-hidden rounded-lg border bg-muted/40 p-1.5 transition-colors
+        hover:bg-muted/60
+        dark:bg-secondary/40
+        dark:hover:bg-secondary/60
+      "
+      >
         <div className="ml-2 flex flex-1 items-center gap-2 overflow-hidden">
           <span className="truncate text-[13px] font-semibold text-foreground/90">
             {normalizeOutcomeLabel(noOutcome.outcome_text) || noOutcome.outcome_text}
           </span>
           <span className="shrink-0 text-xs font-bold text-muted-foreground tabular-nums">
-            {100 - primaryDisplayChance}%
+            {100 - primaryDisplayChance}
+            %
           </span>
         </div>
         <Button
           asChild
           variant="no"
-          className="h-8 min-w-[70px] px-2 py-1 text-[11px] font-extrabold uppercase tracking-tight shadow-sm"
+          className="h-8 min-w-[70px] px-2 py-1 text-[11px] font-extrabold tracking-tight uppercase shadow-sm"
         >
           <IntentPrefetchLink
             href={resolveEventOutcomePath(event, { outcomeIndex: OUTCOME_INDEX.NO })}

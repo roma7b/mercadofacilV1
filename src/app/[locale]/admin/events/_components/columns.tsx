@@ -2,15 +2,15 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import type { AdminEventRow } from '@/app/[locale]/admin/events/_hooks/useAdminEvents'
-import { 
-  ArrowUpDownIcon, 
-  EyeIcon, 
-  EyeOffIcon, 
-  RadioIcon, 
-  RepeatIcon, 
-  TrophyIcon,
+import {
+  ArrowUpDownIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Loader2,
+  RadioIcon,
+  RepeatIcon,
   Trash2Icon,
-  Loader2
+  TrophyIcon,
 } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import EventIconImage from '@/components/EventIconImage'
@@ -307,7 +307,7 @@ export function useAdminEventsColumns({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  className="size-8 text-red-500 hover:bg-red-50 hover:text-red-700"
                   onClick={() => onDelete(event)}
                   disabled={isDeleting(event.id)}
                   aria-label={t('Delete')}

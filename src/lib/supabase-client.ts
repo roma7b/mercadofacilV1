@@ -9,7 +9,7 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 function createSafeSupabaseMock() {
   const handler: any = {
     get: (_: any, prop: string) => {
-      if (prop === 'then') return undefined
+      if (prop === 'then') { return undefined }
       return () => new Proxy({}, handler)
     },
     apply: () => new Proxy({}, handler),
@@ -23,13 +23,13 @@ function createSafeSupabaseMock() {
         update: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
         delete: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
         upsert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-        eq: function() { return this },
+        eq() { return this },
         single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-        order: function() { return this },
-        limit: function() { return this },
+        order() { return this },
+        limit() { return this },
       }),
     }),
-    handler
+    handler,
   ) as any
 }
 

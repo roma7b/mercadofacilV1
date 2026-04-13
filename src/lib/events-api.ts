@@ -105,4 +105,3 @@ export async function fetchEventsApi(options: BuildEventsApiSearchParamsOptions)
 
   return response.json()
 }
-

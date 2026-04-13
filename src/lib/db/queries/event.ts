@@ -31,9 +31,9 @@ import {
   buildPublicEventListVisibilityCondition,
   HIDE_FROM_NEW_TAG_SLUG,
 } from '@/lib/event-visibility'
-import { supabase, supabaseAdmin } from '@/lib/supabase-client'
 import { resolveSportsSection } from '@/lib/events-routing'
 import { resolveDisplayPrice } from '@/lib/market-chance'
+import { resolveMarketType } from '@/lib/market-type'
 import {
   isSportsAuxiliaryEventSlug,
   SPORTS_AUXILIARY_SLUG_SQL_REGEX,
@@ -43,8 +43,8 @@ import {
   resolveCanonicalSportsSportSlug,
   resolveSportsSportSlugQueryCandidates,
 } from '@/lib/sports-slug-mapping'
-import { resolveMarketType } from '@/lib/market-type'
 import { getPublicAssetUrl } from '@/lib/storage'
+import { supabase, supabaseAdmin } from '@/lib/supabase-client'
 
 type PriceApiResponse = Record<string, { BUY?: string, SELL?: string } | undefined>
 interface OutcomePrices { buy?: number, sell?: number }
@@ -843,24 +843,24 @@ function eventResource(
       icon_url: getPublicAssetUrl(market.icon_url),
       condition: market.condition
         ? {
-          ...market.condition,
-          outcome_slot_count: Number(market.condition.outcome_slot_count || 0),
-          payout_denominator: market.condition.payout_denominator ? Number(market.condition.payout_denominator) : undefined,
-          resolution_status: market.condition.resolution_status?.toLowerCase?.() ?? null,
-          resolution_flagged: market.condition.resolution_flagged == null ? null : Boolean(market.condition.resolution_flagged),
-          resolution_paused: market.condition.resolution_paused == null ? null : Boolean(market.condition.resolution_paused),
-          resolution_last_update: toOptionalIsoString(market.condition.resolution_last_update),
-          resolution_price: toOptionalNumber(market.condition.resolution_price),
-          resolution_was_disputed: market.condition.resolution_was_disputed == null
-            ? null
-            : Boolean(market.condition.resolution_was_disputed),
-          resolution_approved: market.condition.resolution_approved == null ? null : Boolean(market.condition.resolution_approved),
-          resolution_liveness_seconds: toOptionalNumber(market.condition.resolution_liveness_seconds),
-          resolution_deadline_at: toOptionalIsoString(market.condition.resolution_deadline_at),
-          volume: Number(market.condition.volume || 0),
-          open_interest: Number(market.condition.open_interest || 0),
-          active_positions_count: Number(market.condition.active_positions_count || 0),
-        }
+            ...market.condition,
+            outcome_slot_count: Number(market.condition.outcome_slot_count || 0),
+            payout_denominator: market.condition.payout_denominator ? Number(market.condition.payout_denominator) : undefined,
+            resolution_status: market.condition.resolution_status?.toLowerCase?.() ?? null,
+            resolution_flagged: market.condition.resolution_flagged == null ? null : Boolean(market.condition.resolution_flagged),
+            resolution_paused: market.condition.resolution_paused == null ? null : Boolean(market.condition.resolution_paused),
+            resolution_last_update: toOptionalIsoString(market.condition.resolution_last_update),
+            resolution_price: toOptionalNumber(market.condition.resolution_price),
+            resolution_was_disputed: market.condition.resolution_was_disputed == null
+              ? null
+              : Boolean(market.condition.resolution_was_disputed),
+            resolution_approved: market.condition.resolution_approved == null ? null : Boolean(market.condition.resolution_approved),
+            resolution_liveness_seconds: toOptionalNumber(market.condition.resolution_liveness_seconds),
+            resolution_deadline_at: toOptionalIsoString(market.condition.resolution_deadline_at),
+            volume: Number(market.condition.volume || 0),
+            open_interest: Number(market.condition.open_interest || 0),
+            active_positions_count: Number(market.condition.active_positions_count || 0),
+          }
         : null,
     }
   })
@@ -1416,11 +1416,11 @@ export const EventRepository = {
           .where(inArray(outcomes.condition_id, allConditionIds))
           .orderBy(asc(outcomes.outcome_index))
 
-        console.log('ALL CONDITION IDS =>', allConditionIds);
-        console.log('OUTCOME ROWS =>', outcomeRows);
+        console.log('ALL CONDITION IDS =>', allConditionIds)
+        console.log('OUTCOME ROWS =>', outcomeRows)
 
         for (const o of outcomeRows) {
-          const cId = (o.conditionId || '').trim();
+          const cId = (o.conditionId || '').trim()
           if (!outcomesByConditionId.has(cId)) {
             outcomesByConditionId.set(cId, [])
           }
@@ -1441,7 +1441,7 @@ export const EventRepository = {
           // Sanitiza o slug: se for uma URL completa ou inválido, usa o ID do evento
           const rawSlug = row.eventSlug || ''
           const safeSlug = rawSlug.startsWith('http') || rawSlug.length > 100
-            ? row.eventId  // fallback seguro para eventos antigos com slug corrompido
+            ? row.eventId // fallback seguro para eventos antigos com slug corrompido
             : rawSlug
 
           eventMap.set(row.eventId, {
@@ -1468,7 +1468,7 @@ export const EventRepository = {
         const event = eventMap.get(row.eventId)
         const isMarketActive = row.marketIsActive && !row.marketIsResolved
         // Usa os outcomes reais do banco; fallback para Sim/Não apenas se não houver dados
-        const cleanMarketCondId = (row.marketConditionId || '').trim();
+        const cleanMarketCondId = (row.marketConditionId || '').trim()
         const realOutcomes = outcomesByConditionId.get(cleanMarketCondId)
         const marketOutcomes = realOutcomes && realOutcomes.length > 0
           ? realOutcomes
@@ -1608,9 +1608,9 @@ export const EventRepository = {
 
     const searchCondition = trimmedSearch
       ? or(
-        ilike(events.title, `%${trimmedSearch}%`),
-        ilike(events.slug, `%${trimmedSearch}%`),
-      )
+          ilike(events.title, `%${trimmedSearch}%`),
+          ilike(events.slug, `%${trimmedSearch}%`),
+        )
       : undefined
     const activeStatusCondition = activeOnly ? eq(events.status, 'active') : undefined
 
@@ -1639,15 +1639,15 @@ export const EventRepository = {
 
     const mainCategoryCondition = categorySlugs && categorySlugs.length > 0
       ? exists(
-        db
-          .select({ event_id: event_tags.event_id })
-          .from(event_tags)
-          .innerJoin(tags, eq(event_tags.tag_id, tags.id))
-          .where(and(
-            eq(event_tags.event_id, events.id),
-            inArray(tags.slug, categorySlugs),
-          )),
-      )
+          db
+            .select({ event_id: event_tags.event_id })
+            .from(event_tags)
+            .innerJoin(tags, eq(event_tags.tag_id, tags.id))
+            .where(and(
+              eq(event_tags.event_id, events.id),
+              inArray(tags.slug, categorySlugs),
+            )),
+        )
       : undefined
 
     const baseWhereCondition = and(searchCondition, mainCategoryCondition, activeStatusCondition)
@@ -1763,21 +1763,21 @@ export const EventRepository = {
 
       const result = creatorFilterCondition
         ? await db
-          .select({
-            creator: events.creator,
-          })
-          .from(events)
-          .where(creatorFilterCondition)
-          .groupBy(events.creator)
-          .orderBy(asc(events.creator))
+            .select({
+              creator: events.creator,
+            })
+            .from(events)
+            .where(creatorFilterCondition)
+            .groupBy(events.creator)
+            .orderBy(asc(events.creator))
         : await db
-          .select({
-            creator: events.creator,
-          })
-          .from(events)
-          .where(sql`TRIM(COALESCE(${events.creator}, '')) <> ''`)
-          .groupBy(events.creator)
-          .orderBy(asc(events.creator))
+            .select({
+              creator: events.creator,
+            })
+            .from(events)
+            .where(sql`TRIM(COALESCE(${events.creator}, '')) <> ''`)
+            .groupBy(events.creator)
+            .orderBy(asc(events.creator))
 
       return { data: result, error: null }
     })
@@ -1801,21 +1801,21 @@ export const EventRepository = {
 
       const result = seriesFilterCondition
         ? await db
-          .select({
-            series_slug: events.series_slug,
-          })
-          .from(events)
-          .where(seriesFilterCondition)
-          .groupBy(events.series_slug)
-          .orderBy(asc(events.series_slug))
+            .select({
+              series_slug: events.series_slug,
+            })
+            .from(events)
+            .where(seriesFilterCondition)
+            .groupBy(events.series_slug)
+            .orderBy(asc(events.series_slug))
         : await db
-          .select({
-            series_slug: events.series_slug,
-          })
-          .from(events)
-          .where(sql`TRIM(COALESCE(${events.series_slug}, '')) <> ''`)
-          .groupBy(events.series_slug)
-          .orderBy(asc(events.series_slug))
+            .select({
+              series_slug: events.series_slug,
+            })
+            .from(events)
+            .where(sql`TRIM(COALESCE(${events.series_slug}, '')) <> ''`)
+            .groupBy(events.series_slug)
+            .orderBy(asc(events.series_slug))
 
       return { data: result, error: null }
     })
@@ -2465,7 +2465,7 @@ export const EventRepository = {
     return await runQuery(async () => {
       // Limpeza agressiva: retira espaços extras e converte espaços internos em hífens
       const cleanId = slugOrId.trim().replace(/\s+/g, '-')
-      
+
       // 1. Busca na tabela rápida mercados_live
       const { data: m, error: supabaseError } = await supabase
         .from('markets')
@@ -2502,22 +2502,22 @@ export const EventRepository = {
             is_resolved: m.status !== 'ABERTO',
             volume: totalPool,
             outcomes: [
-              { 
-                id: `yes-${m.id}`, 
-                outcome_text: m.label_sim || 'Sim', 
-                outcome_index: 0, 
-                price: chance, 
-                price_24h_ago: chance 
+              {
+                id: `yes-${m.id}`,
+                outcome_text: m.label_sim || 'Sim',
+                outcome_index: 0,
+                price: chance,
+                price_24h_ago: chance,
               },
-              { 
-                id: `no-${m.id}`, 
-                outcome_text: m.label_nao || 'Não', 
-                outcome_index: 1, 
-                price: 1 - chance, 
-                price_24h_ago: 1 - chance 
+              {
+                id: `no-${m.id}`,
+                outcome_text: m.label_nao || 'Não',
+                outcome_index: 1,
+                price: 1 - chance,
+                price_24h_ago: 1 - chance,
               },
             ],
-          } as any
+          } as any,
         ],
         tags: [{ slug: cat.toLowerCase(), name: m.categoria }],
         main_tag: cat.toLowerCase(),
@@ -2554,7 +2554,7 @@ export const EventRepository = {
           eventResult as any,
           userId,
           sportsSlugResolver,
-          locale
+          locale,
         )
         return { data: event, error: null }
       }
@@ -2725,26 +2725,26 @@ export const EventRepository = {
       const eventIds = rows.map(row => row.id)
       const marketRows = eventIds.length > 0
         ? await db
-          .select({
-            event_id: markets.event_id,
-            is_resolved: markets.is_resolved,
-          })
-          .from(markets)
-          .where(inArray(markets.event_id, eventIds))
+            .select({
+              event_id: markets.event_id,
+              is_resolved: markets.is_resolved,
+            })
+            .from(markets)
+            .where(inArray(markets.event_id, eventIds))
         : []
 
       const winningOutcomeRows = eventIds.length > 0
         ? await db
-          .select({
-            event_id: markets.event_id,
-            outcome_text: outcomes.outcome_text,
-          })
-          .from(markets)
-          .innerJoin(outcomes, and(
-            eq(outcomes.condition_id, markets.condition_id),
-            eq(outcomes.is_winning_outcome, true),
-          ))
-          .where(inArray(markets.event_id, eventIds))
+            .select({
+              event_id: markets.event_id,
+              outcome_text: outcomes.outcome_text,
+            })
+            .from(markets)
+            .innerJoin(outcomes, and(
+              eq(outcomes.condition_id, markets.condition_id),
+              eq(outcomes.is_winning_outcome, true),
+            ))
+            .where(inArray(markets.event_id, eventIds))
         : []
 
       const marketStateByEventId = new Map<string, { total: number, unresolved: number }>()
@@ -2842,8 +2842,6 @@ export const EventRepository = {
   },
 
   async getRelatedEventsBySlug(slug: string, options: RelatedEventOptions = {}): Promise<QueryResult<RelatedEvent[]>> {
-    
-
     return runQuery(async () => {
       const tagSlug = options.tagSlug?.toLowerCase()
       const locale = options.locale ?? DEFAULT_LOCALE
@@ -3012,4 +3010,3 @@ export const EventRepository = {
     })
   },
 }
-

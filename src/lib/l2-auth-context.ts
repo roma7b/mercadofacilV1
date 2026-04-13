@@ -76,4 +76,3 @@ export function normalizeL2AuthContextRecords(value: unknown, now = Date.now()):
 
   return records.slice(0, L2_AUTH_CONTEXT_MAX_PER_USER)
 }
-
