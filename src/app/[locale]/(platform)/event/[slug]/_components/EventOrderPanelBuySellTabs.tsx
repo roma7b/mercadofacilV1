@@ -38,8 +38,8 @@ export default function EventOrderPanelBuySellTabs({
   }
 
   const tabs = [
-    { id: ORDER_SIDE.BUY, label: t('Buy') || 'Comprar' },
-    { id: ORDER_SIDE.SELL, label: t('Sell') || 'Vender' },
+    { id: ORDER_SIDE.BUY, label: 'Comprar' },
+    { id: ORDER_SIDE.SELL, label: 'Vender' },
   ]
 
   return (

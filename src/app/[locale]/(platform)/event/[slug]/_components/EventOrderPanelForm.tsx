@@ -37,6 +37,7 @@ import {
   resolveResolvedOrderPanelDisplay,
 } from '@/app/[locale]/(platform)/event/[slug]/_utils/resolved-order-panel-market'
 import { Button } from '@/components/ui/button'
+import { GenericAuthModal } from '@/components/GenericAuthModal'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit, useAppKitAccount, useSignMessage, useSignTypedData } from '@/hooks/useAppKitMock'
 
@@ -216,6 +217,9 @@ export default function EventOrderPanelForm({
   const [isClaimSubmitting, setIsClaimSubmitting] = useState(false)
   const [claimedConditionIds, setClaimedConditionIds] = useState<Record<string, true>>({})
   const [hasMounted, setHasMounted] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authModalSignUp, setAuthModalSignUp] = useState(true)
+
   const limitSharesInputRef = useRef<HTMLInputElement | null>(null)
   const limitSharesNumber = Number.parseFloat(state.limitShares) || 0
   const { balance, isLoadingBalance } = useBalance()
@@ -476,9 +480,6 @@ export default function EventOrderPanelForm({
   ])
 
   const availableBalanceForOrders = Math.max(0, balance.raw)
-  const formattedBalanceText = Number.isFinite(balance.raw)
-    ? balance.raw.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : '0.00'
 
   const mergedSharesByCondition = useMemo(() => {
     const merged: Record<string, Record<typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO, number>> = {}
@@ -532,8 +533,6 @@ export default function EventOrderPanelForm({
   const availableNoPositionShares = Math.max(0, noPositionShares - lockedNoShares)
   const mergeableYesShares = Math.max(availableYesTokenShares, availableYesPositionShares)
   const mergeableNoShares = Math.max(availableNoTokenShares, availableNoPositionShares)
-  const availableMergeShares = Math.max(0, Math.min(mergeableYesShares, mergeableNoShares))
-  const availableSplitBalance = Math.max(0, balance.raw)
   const outcomeIndex = activeOutcome?.outcome_index as typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO | undefined
   const selectedTokenShares = outcomeIndex === undefined
     ? 0
@@ -763,7 +762,7 @@ export default function EventOrderPanelForm({
     ? sellOrderSnapshot.priceCents / 100
     : null
   const avgSellPriceLabel = formatCentsLabel(avgSellPriceDollars, { fallback: '—' })
-  const fallbackActivePrice = activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? fallbackPrices.data?.sim : Math.max(0, fallbackPrices.data?.nao ?? (fallbackPrices.data?.sim !== undefined && fallbackPrices.data?.sim !== null ? 1 - fallbackPrices.data.sim! : fallbackPrices.data?.nao!))
+  const fallbackActivePrice = activeOutcome?.outcome_index === OUTCOME_INDEX.YES ? fallbackPrices.data?.sim : Math.max(0, fallbackPrices.data?.nao ?? (fallbackPrices.data?.sim !== undefined && fallbackPrices.data?.sim !== null ? 1 - fallbackPrices.data.sim : 0))
 
   const outcomeFallbackBuyPriceCents = fallbackActivePrice != null
     ? Number((fallbackActivePrice * 100).toFixed(1))
@@ -831,9 +830,6 @@ export default function EventOrderPanelForm({
     ? sellOrderSnapshot.priceCents
     : null
   const sellAmountLabel = formatCurrency(sellAmountValue)
-  const selectedMarketLabel = activeMarket?.short_title || activeMarket?.title || event.title
-  const sideLabel = state.side === ORDER_SIDE.BUY ? t('Comprar') : t('Vender')
-  const selectedOutcomeLabel = selectedShareLabel ?? t('Selecione uma opção')
   const beginnerHint = state.side === ORDER_SIDE.BUY
     ? t('Se o resultado acontecer, cada cota vale R$1,00 na liquidação.')
     : t('Você está vendendo suas cotas atuais ao melhor preço disponível.')
@@ -1775,13 +1771,23 @@ export default function EventOrderPanelForm({
                 </div>
               )}
 
+              <GenericAuthModal
+                isOpen={authModalOpen}
+                onClose={() => setAuthModalOpen(false)}
+                defaultIsSignUp={authModalSignUp}
+              />
               <EventMarketCountdown endDate={event.end_date} className="mb-2" />
               <EventOrderPanelSubmitButton
                 type={!isInteractiveWalletReady || shouldShowDepositCta ? 'button' : 'submit'}
                 isLoading={state.isLoading}
                 isDisabled={state.isLoading}
-                outcomeVariant={Number(state.side) === 1 ? 'no' : 'yes'}
+                outcomeVariant={!isInteractiveWalletReady ? 'yes' : (Number(state.side) === 1 ? 'no' : 'yes')}
                 onClick={(event) => {
+                  if (!isInteractiveWalletReady) {
+                    setAuthModalSignUp(true)
+                    setAuthModalOpen(true)
+                    return
+                  }
                   if (!ensureTradingReady()) {
                     return
                   }
@@ -1794,7 +1800,7 @@ export default function EventOrderPanelForm({
                 }}
                 label={(() => {
                   if (!isInteractiveWalletReady) {
-                    return t('Connect wallet') || 'CONECTAR CARTEIRA'
+                    return 'Criar Conta'
                   }
                   const isSellSide = Number(state.side) === 1
                   const verb = isSellSide ? 'Venda' : 'Compre'
@@ -1808,3 +1814,4 @@ export default function EventOrderPanelForm({
     </Form>
   )
 }
+

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -26,6 +26,15 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Sync mode when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsSignUp(defaultIsSignUp)
+      setError('')
+    }
+  }, [isOpen, defaultIsSignUp])
+
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -43,8 +52,6 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
           setLoading(false)
           return
         }
-
-        const cleanCpf = cpf.replace(/\D/g, '')
 
         const { error: signUpError } = await authClient.signUp.email({
           email,

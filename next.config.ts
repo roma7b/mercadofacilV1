@@ -94,6 +94,7 @@ const withMDX = createMDX({
 })
 
 const withNextIntl = createNextIntlPlugin({
+/*
   experimental: {
     srcPath: './src',
     extract: {
@@ -105,6 +106,7 @@ const withNextIntl = createNextIntlPlugin({
       locales: 'infer',
     },
   },
+  */
 })
 
 export default withSentryConfig(withNextIntl(withMDX(config)), {

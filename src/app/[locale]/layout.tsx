@@ -62,9 +62,8 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export async function generateStaticParams() {
-  return [{ locale: 'en' }]
-}
+
+
 
 async function getCachedThemeState() {
   'use cache'

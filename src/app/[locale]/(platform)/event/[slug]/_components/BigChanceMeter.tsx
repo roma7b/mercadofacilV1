@@ -44,7 +44,7 @@ export default function BigChanceMeter({ marketSlug, className }: BigChanceMeter
   if (!data) return null
 
   return (
-    <div className={cn("w-full bg-[#1e2836] rounded-3xl p-6 border border-white/5 shadow-2xl backdrop-blur-xl", className)}>
+    <div className={cn("w-full bg-card rounded-3xl p-6 border border-border shadow-xl backdrop-blur-xl", className)}>
       <div className="flex items-center justify-between mb-4 px-2">
         <div className="flex items-center gap-2">
            <div className="size-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
@@ -53,7 +53,7 @@ export default function BigChanceMeter({ marketSlug, className }: BigChanceMeter
            <span className="text-sm font-black uppercase tracking-widest text-emerald-500">{t('Sim')}</span>
         </div>
         
-        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{t('Chance')}</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('Chance')}</span>
 
         <div className="flex items-center gap-2">
            <span className="text-sm font-black uppercase tracking-widest text-rose-500">{t('Não')}</span>
@@ -64,11 +64,11 @@ export default function BigChanceMeter({ marketSlug, className }: BigChanceMeter
       </div>
 
       <div className="flex items-center justify-between gap-8 mb-4">
-          <span className="text-5xl font-mono font-black text-white tracking-tighter">{data.sim}%</span>
-          <span className="text-5xl font-mono font-black text-white tracking-tighter">{data.nao}%</span>
+          <span className="text-5xl font-mono font-black text-foreground tracking-tighter">{data.sim}%</span>
+          <span className="text-5xl font-mono font-black text-foreground tracking-tighter">{data.nao}%</span>
       </div>
 
-      <div className="relative h-4 w-full bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+      <div className="relative h-4 w-full bg-muted rounded-full overflow-hidden flex shadow-inner">
           <div 
             className="h-full bg-emerald-500 transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(16,185,129,0.4)]" 
             style={{ width: `${data.sim}%` }} 
@@ -77,7 +77,7 @@ export default function BigChanceMeter({ marketSlug, className }: BigChanceMeter
             className="h-full bg-rose-500 transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(244,63,94,0.4)]" 
             style={{ width: `${data.nao}%` }} 
           />
-          <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-zinc-900/50 -translate-x-1/2" />
+          <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-border/50 -translate-x-1/2" />
       </div>
     </div>
   )

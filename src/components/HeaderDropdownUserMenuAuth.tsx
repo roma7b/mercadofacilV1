@@ -126,32 +126,17 @@ export default function HeaderDropdownUserMenuAuth() {
   async function handleLogout() {
     handleMenuClose()
 
-    if (!isReady) {
-      try {
-        await signOutAndRedirect({
-          currentPathname: window.location.pathname,
-        })
-      }
-      catch {
-        toast.error(t('Could not log out. Please try again.'))
-      }
-      return
-    }
-
     try {
-      await disconnect()
-      return
-    }
-    catch {
-      //
-    }
-
-    try {
+      if (isReady) {
+        await disconnect().catch(() => {})
+      }
+      
       await signOutAndRedirect({
         currentPathname: window.location.pathname,
       })
     }
-    catch {
+    catch (err) {
+      console.error('Logout failed:', err)
       toast.error(t('Could not log out. Please try again.'))
     }
   }

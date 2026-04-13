@@ -1,5 +1,7 @@
 'use cache'
 
+import { Suspense } from 'react'
+
 import type { SupportedLocale } from '@/i18n/locales'
 import { getExtracted, setRequestLocale } from 'next-intl/server'
 import { cacheTag } from 'next/cache'
@@ -27,7 +29,6 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
   const resolvedLocale = locale as SupportedLocale
   setRequestLocale(resolvedLocale)
   await getCachedPlatformLayoutData(resolvedLocale)
-  const t = await getExtracted()
   const tags = [
     { id: 'trending', slug: 'trending', name: 'Destaques', childs: [], sidebarItems: [] },
     { id: 'crypto', slug: 'crypto', name: 'Cripto', childs: [], sidebarItems: [] },
@@ -38,12 +39,18 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
 
   return (
     <>
-      <PlatformViewerState />
+      <Suspense fallback={null}>
+        <PlatformViewerState />
+      </Suspense>
       <FilterProvider>
         <TradingOnboardingProvider>
           <PlatformNavigationProvider tags={tags} childParentMap={childParentMap}>
-            <Header />
-            <NavigationTabs />
+            <Suspense fallback={<div className="h-16 w-full animate-pulse bg-background" />}>
+              <Header />
+            </Suspense>
+            <Suspense fallback={null}>
+              <NavigationTabs />
+            </Suspense>
             <div className="mx-auto flex w-full max-w-[1332px] gap-2 px-4 md:px-6">
               <div className="min-w-0 flex-1">
                 {children}
@@ -58,13 +65,19 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
                     backdrop-blur-md
                   "
                   >
-                    <LiveChat events={[]} />
+                    <Suspense fallback={<div className="size-full animate-pulse bg-card" />}>
+                      <LiveChat events={[]} />
+                    </Suspense>
                   </div>
                 </div>
               </aside>
             </div>
-            <MobileBottomNav />
-            <AffiliateQueryHandler />
+            <Suspense fallback={null}>
+              <MobileBottomNav />
+            </Suspense>
+            <Suspense fallback={null}>
+              <AffiliateQueryHandler />
+            </Suspense>
           </PlatformNavigationProvider>
         </TradingOnboardingProvider>
       </FilterProvider>

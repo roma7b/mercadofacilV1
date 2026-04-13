@@ -225,12 +225,12 @@ export default function EventContent({
           <div className="flex w-full max-w-[320px] animate-in flex-col gap-6 duration-1000 fade-in slide-in-from-right-8 mx-auto">
             {/* Main Betting Form */}
             <div className="
-              rounded-3xl border border-white/10 bg-[#161d28] shadow-[0_30px_70px_rgba(0,0,0,0.8)] ring-1 ring-white/5
-              backdrop-blur-3xl transition-all overflow-hidden relative
-              hover:shadow-[0_40px_80px_rgba(0,0,0,0.9)] hover:border-white/20
+              rounded-3xl border border-border bg-card shadow-2xl transition-all overflow-hidden relative
+              hover:shadow-[0_40px_80px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_40px_80px_rgba(0,0,0,0.9)]
+              hover:border-primary/20
             "
             >
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/5 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-primary/5 to-transparent opacity-50" />
               <EventOrderPanelForm
                 event={event}
                 isMobile={false}
@@ -242,8 +242,8 @@ export default function EventContent({
 
             {/* Minhas Posições Section */}
             {(selectedMarket && currentUser) ? (
-              <div className="group/positions relative overflow-hidden rounded-3xl border border-white/5 bg-[#161d28] p-4 shadow-2xl sm:p-6 transition-all hover:border-white/10">
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/[0.03] to-transparent" />
+              <div className="group/positions relative overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-xl sm:p-6 transition-all hover:border-primary/10">
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-primary/5 to-transparent opacity-30" />
                 <div className="relative mb-4 flex items-center justify-between">
                   <h3 className="text-2xs font-black tracking-[0.2em] text-muted-foreground uppercase opacity-80">
                     {t('Minhas Posições')}
