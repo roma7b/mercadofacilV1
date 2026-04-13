@@ -34,20 +34,20 @@ export default function EventOrderPanelSubmitButton({
         disabled={isDisabled}
         onClick={onClick}
         className={cn(
-          'w-full h-12 rounded-[14px] text-[16px] font-bold tracking-wide transition-all duration-200',
-          'hover:scale-[1.01] active:scale-[0.99]',
+          'w-full h-14 rounded-[16px] text-[16px] font-bold tracking-tight transition-all duration-300',
+          'hover:brightness-110 active:scale-[0.98] shadow-lg',
           'flex items-center justify-center gap-2',
           // Cores baseadas no variant
-          isYes && 'bg-[#10b981] text-black shadow-[0_8px_20px_rgba(16,185,129,0.3)]',
-          isNo && 'bg-[#f43f5e] text-black shadow-[0_8px_20px_rgba(244,63,94,0.3)]',
-          (!isYes && !isNo) && 'bg-white text-black shadow-[0_8px_20px_rgba(255,255,255,0.1)]',
+          isYes && 'bg-emerald-500 text-white shadow-emerald-500/20',
+          isNo && 'bg-rose-500 text-white shadow-rose-500/20',
+          (!isYes && !isNo) && 'bg-primary text-primary-foreground',
           // Estado desabilitado
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none',
         )}
       >
         {isLoading ? (
           <>
-            <div className="size-4 animate-spin rounded-full border-2 border-black/20 border-t-black" />
+            <div className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
             <span className="animate-pulse">
               {t('Processing...') || 'Processando...'}
             </span>
