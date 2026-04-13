@@ -1530,11 +1530,8 @@ export default function EventOrderPanelForm({
       {isMobile && !isResolvedMarket && (
         <div className="flex flex-col gap-6 py-4">
           {/* Cabeçalho Mobile Minimalista e Elegante - Novo Estilo Ref */}
-          <div className="flex flex-col gap-4 text-center">
-            <span className="text-2xs font-black tracking-[0.4em] text-zinc-500 uppercase opacity-60">
-              {event.title}
-            </span>
-            <h2 className="px-4 text-2xl/tight font-black tracking-tighter text-white uppercase">
+          <div className="flex flex-col text-center">
+            <h2 className="px-4 text-2xl/tight font-black tracking-tighter text-foreground uppercase">
               {activeMarket?.short_title || activeMarket?.title || event.title}
             </h2>
           </div>
