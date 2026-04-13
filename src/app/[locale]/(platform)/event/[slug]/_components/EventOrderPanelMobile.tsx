@@ -92,7 +92,10 @@ export default function EventOrderPanelMobile({
       {shouldShowDefaultTrigger && (
         <DrawerTrigger asChild>
           <div
-            className="fixed inset-x-0 z-30 border-t bg-background/95 px-4 py-3 backdrop-blur-md lg:hidden"
+            className={cn(
+              "fixed inset-x-0 z-30 border-t bg-background/95 px-3 py-3 backdrop-blur-md lg:hidden",
+              state.isMobileOrderPanelOpen && "hidden"
+            )}
             style={{ bottom: MOBILE_BOTTOM_NAV_OFFSET }}
           >
             <div className="flex gap-3">
@@ -113,12 +116,12 @@ export default function EventOrderPanelMobile({
                 }}
               >
                 <div className="flex w-full items-center justify-between px-1">
-                  <span className="truncate text-[13px] tracking-wider uppercase opacity-90">
+                  <span className="truncate text-[11px] tracking-tight uppercase opacity-90">
                     {t('Buy')}
                     {' '}
                     {buyYesOutcomeLabel}
                   </span>
-                  <span className="ml-2 shrink-0 text-base font-black">
+                  <span className="ml-2 shrink-0 text-sm font-black text-yes">
                     {yesPriceLabel}
                   </span>
                 </div>
@@ -137,12 +140,12 @@ export default function EventOrderPanelMobile({
                 }}
               >
                 <div className="flex w-full items-center justify-between px-1">
-                  <span className="truncate text-[13px] tracking-wider uppercase opacity-90">
+                  <span className="truncate text-[11px] tracking-tight uppercase opacity-90">
                     {t('Buy')}
                     {' '}
                     {buyNoOutcomeLabel}
                   </span>
-                  <span className="ml-2 shrink-0 text-base font-black">
+                  <span className="ml-2 shrink-0 text-sm font-black text-no">
                     {noPriceLabel}
                   </span>
                 </div>

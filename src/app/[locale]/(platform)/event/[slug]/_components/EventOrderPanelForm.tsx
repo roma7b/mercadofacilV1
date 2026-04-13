@@ -1487,7 +1487,7 @@ export default function EventOrderPanelForm({
 
   const primaryPrice = normalizedPrimaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
   const secondaryPrice = normalizedSecondaryOutcomeIndex === OUTCOME_INDEX.NO ? noPrice : yesPrice
-  const shouldShowOutcomePickerInPanel = isMobile || isSingleMarket
+  const shouldShowOutcomePickerInPanel = isCategorical || (!isMobile && isSingleMarket)
   const selectedOutcomePrice = activeOutcome?.outcome_index === OUTCOME_INDEX.NO ? noPrice : yesPrice
   function handleTypeChange(nextType: typeof state.type) {
     state.setType(nextType)
