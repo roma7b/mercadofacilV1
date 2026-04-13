@@ -13,6 +13,8 @@ import { getPublicAssetUrl } from '@/lib/storage'
 
  
 
+import { Suspense } from 'react'
+
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings/affiliate'>): Promise<Metadata> {
   const { locale } = await params
   setRequestLocale(locale)
@@ -23,8 +25,7 @@ export async function generateMetadata({ params }: PageProps<'/[locale]/settings
   }
 }
 
-export default async function AffiliateSettingsPage({ params }: PageProps<'/[locale]/settings/affiliate'>) {
-  const { locale } = await params
+async function AffiliateSettingsPageInner({ locale }: { locale: string }) {
   setRequestLocale(locale)
   const resolvedLocale = SUPPORTED_LOCALES.includes(locale as SupportedLocale)
     ? locale as SupportedLocale
@@ -130,5 +131,17 @@ export default async function AffiliateSettingsPage({ params }: PageProps<'/[loc
         />
       </div>
     </section>
+  )
+}
+
+export const dynamic = 'force-dynamic'
+
+export default async function AffiliateSettingsPage({ params }: PageProps<'/[locale]/settings/affiliate'>) {
+  const { locale } = await params
+
+  return (
+    <Suspense fallback={null}>
+      <AffiliateSettingsPageInner locale={locale} />
+    </Suspense>
   )
 }

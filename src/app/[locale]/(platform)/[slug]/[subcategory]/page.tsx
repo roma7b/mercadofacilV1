@@ -11,6 +11,7 @@ import {
 import { isPlatformReservedRootSlug, normalizePublicProfileSlug } from '@/lib/platform-routing'
 import { STATIC_PARAMS_PLACEHOLDER } from '@/lib/static-params'
 
+export const dynamic = 'force-dynamic'
 export const generateStaticParams = generateDynamicHomeSubcategoryStaticParams
 
 export async function generateMetadata({ params }: PageProps<'/[locale]/[slug]/[subcategory]'>): Promise<Metadata> {
