@@ -9,6 +9,7 @@ import {
   CheckIcon,
   DownloadIcon,
   FileTextIcon,
+  HandCoinsIcon,
   HouseIcon,
   InfoIcon,
   MenuIcon,
@@ -18,6 +19,7 @@ import {
   SparkleIcon,
   TrophyIcon,
   UnplugIcon,
+  WalletIcon,
 } from 'lucide-react'
 import { useExtracted, useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
@@ -72,7 +74,7 @@ export default function MobileBottomNav() {
   const { canShowInstallUi, isIos, isPrompting, requestInstall } = usePwaInstall()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchFocusTrigger, setSearchFocusTrigger] = useState(0)
-  const [isGuestMenuOpen, setIsGuestMenuOpen] = useState(false)
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
 
@@ -80,7 +82,7 @@ export default function MobileBottomNav() {
 
   useEffect(() => {
     setIsSearchOpen(false)
-    setIsGuestMenuOpen(false)
+    setIsMoreMenuOpen(false)
     setIsHowItWorksOpen(false)
   }, [pathname])
 
@@ -146,7 +148,7 @@ export default function MobileBottomNav() {
   }
 
   async function handleInstallAction() {
-    setIsGuestMenuOpen(false)
+    setIsMoreMenuOpen(false)
 
     if (isIos) {
       toast.info(t('Install app'), {
@@ -167,14 +169,14 @@ export default function MobileBottomNav() {
   }
 
   function handleAuthAction() {
-    setIsGuestMenuOpen(false)
+    setIsMoreMenuOpen(false)
     window.setTimeout(() => {
       void open()
     }, 120)
   }
 
   function handleHowItWorksAction() {
-    setIsGuestMenuOpen(false)
+    setIsMoreMenuOpen(false)
     window.setTimeout(() => {
       setIsHowItWorksOpen(true)
     }, 120)
@@ -220,119 +222,171 @@ export default function MobileBottomNav() {
         </DrawerContent>
       </Drawer>
 
-      {!isAuthenticated && (
-        <Drawer open={isGuestMenuOpen} onOpenChange={setIsGuestMenuOpen}>
-          <DrawerContent className="max-h-[88vh] rounded-t-[1.75rem] border-border/70 bg-background px-4 pt-2 pb-6">
-            <div className="grid gap-4 pt-3">
+      <Drawer open={isMoreMenuOpen} onOpenChange={setIsMoreMenuOpen}>
+        <DrawerContent className="max-h-[88vh] rounded-t-[1.75rem] border-border/70 bg-background px-4 pt-2 pb-6">
+          <div className="grid gap-4 pt-3">
+            {isAuthenticated && (
               <div className="overflow-hidden rounded-2xl border border-border/70">
-                {canShowInstallUi && (
-                  <>
-                    <button
-                      type="button"
-                      className={`
-                        flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold
-                        disabled:pointer-events-none disabled:opacity-50
-                      `}
-                      onClick={() => {
-                        void handleInstallAction()
-                      }}
-                      disabled={isPrompting}
-                    >
-                      <DownloadIcon className="size-4 text-sky-500" />
-                      {t('Install app')}
-                    </button>
-
-                    <div className="mx-4 h-px bg-border/70" />
-                  </>
-                )}
-
                 <DrawerClose asChild>
                   <IntentPrefetchLink
-                    href="/leaderboard"
+                    href="/portfolio"
                     className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
                   >
-                    <TrophyIcon className="size-4 text-amber-500" />
-                    {t('Leaderboard')}
+                    <ChartLineIcon className="size-4 text-primary" />
+                    {t('Portfolio')}
                   </IntentPrefetchLink>
                 </DrawerClose>
 
                 <div className="mx-4 h-px bg-border/70" />
 
-                <DrawerClose asChild>
-                  <IntentPrefetchLink
-                    href="/docs/api-reference"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
-                  >
-                    <UnplugIcon className="size-4 text-pink-500" />
-                    {t('APIs')}
-                  </IntentPrefetchLink>
-                </DrawerClose>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold"
+                  onClick={() => {
+                    setIsMoreMenuOpen(false)
+                    tradingOnboarding?.startDepositFlow()
+                  }}
+                >
+                  <PlusCircleIcon className="size-4 text-emerald-500" />
+                  {t('Deposit')}
+                </button>
+
+                <div className="mx-4 h-px bg-border/70" />
+
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold"
+                  onClick={() => {
+                    setIsMoreMenuOpen(false)
+                    tradingOnboarding?.startWithdrawFlow()
+                  }}
+                >
+                  <HandCoinsIcon className="size-4 text-orange-500" />
+                  {t('Sacar') || 'Sacar'}
+                </button>
               </div>
+            )}
 
-              <div className="rounded-2xl border border-border/70 px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold">{t('Dark Mode')}</span>
-                  <ThemeSelector />
-                </div>
-              </div>
-
-              <MobileLocaleSwitcher onLocaleChange={() => setIsGuestMenuOpen(false)} />
-
-              <div className="overflow-hidden rounded-2xl border border-border/70">
-                <DrawerClose asChild>
+            <div className="overflow-hidden rounded-2xl border border-border/70">
+              {canShowInstallUi && (
+                <>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold"
-                    onClick={handleHowItWorksAction}
+                    className={`
+                      flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold
+                      disabled:pointer-events-none disabled:opacity-50
+                    `}
+                    onClick={() => {
+                      void handleInstallAction()
+                    }}
+                    disabled={isPrompting}
                   >
-                    <InfoIcon className="size-4 text-primary" />
-                    {t('How it works')}
+                    <DownloadIcon className="size-4 text-sky-500" />
+                    {t('Install app')}
                   </button>
-                </DrawerClose>
 
-                <div className="mx-4 h-px bg-border/70" />
+                  <div className="mx-4 h-px bg-border/70" />
+                </>
+              )}
 
-                <DrawerClose asChild>
-                  <IntentPrefetchLink
-                    href="/docs/users"
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
-                  >
-                    <BookOpenIcon className="size-4 text-muted-foreground" />
-                    {t('Documentation')}
-                  </IntentPrefetchLink>
-                </DrawerClose>
+              <DrawerClose asChild>
+                <IntentPrefetchLink
+                  href="/leaderboard"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
+                >
+                  <TrophyIcon className="size-4 text-amber-500" />
+                  {t('Leaderboard')}
+                </IntentPrefetchLink>
+              </DrawerClose>
 
-                <div className="mx-4 h-px bg-border/70" />
+              <div className="mx-4 h-px bg-border/70" />
 
-                <DrawerClose asChild>
-                  <IntentPrefetchLink
-                    href="/terms-of-use"
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
-                  >
-                    <FileTextIcon className="size-4 text-muted-foreground" />
-                    {t('Terms of Use')}
-                  </IntentPrefetchLink>
-                </DrawerClose>
-              </div>
+              <DrawerClose asChild>
+                <IntentPrefetchLink
+                  href="/docs/api-reference"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
+                >
+                  <UnplugIcon className="size-4 text-pink-500" />
+                  {t('APIs')}
+                </IntentPrefetchLink>
+              </DrawerClose>
+            </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <DrawerClose asChild>
-                  <Button type="button" variant="outline" className="h-10" onClick={handleAuthAction}>
-                    {t('Log In')}
-                  </Button>
-                </DrawerClose>
-                <DrawerClose asChild>
-                  <Button type="button" className="h-10" onClick={handleAuthAction}>
-                    {t('Sign Up')}
-                  </Button>
-                </DrawerClose>
+            <div className="rounded-2xl border border-border/70 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold">{t('Dark Mode')}</span>
+                <ThemeSelector />
               </div>
             </div>
-          </DrawerContent>
-        </Drawer>
-      )}
+
+            <MobileLocaleSwitcher onLocaleChange={() => setIsMoreMenuOpen(false)} />
+
+            <div className="overflow-hidden rounded-2xl border border-border/70">
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold"
+                  onClick={handleHowItWorksAction}
+                >
+                  <InfoIcon className="size-4 text-primary" />
+                  {t('How it works')}
+                </button>
+              </DrawerClose>
+
+              <div className="mx-4 h-px bg-border/70" />
+
+              <DrawerClose asChild>
+                <IntentPrefetchLink
+                  href="/docs/users"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
+                >
+                  <BookOpenIcon className="size-4 text-muted-foreground" />
+                  {t('Documentation')}
+                </IntentPrefetchLink>
+              </DrawerClose>
+
+              <div className="mx-4 h-px bg-border/70" />
+
+              <DrawerClose asChild>
+                <IntentPrefetchLink
+                  href="/terms-of-use"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold"
+                >
+                  <FileTextIcon className="size-4 text-muted-foreground" />
+                  {t('Terms of Use')}
+                </IntentPrefetchLink>
+              </DrawerClose>
+            </div>
+
+            {!isAuthenticated
+              ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button type="button" variant="outline" className="h-10" onClick={handleAuthAction}>
+                      {t('Log In')}
+                    </Button>
+                    <Button type="button" className="h-10" onClick={handleAuthAction}>
+                      {t('Sign Up')}
+                    </Button>
+                  </div>
+                )
+              : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 w-full"
+                    onClick={() => {
+                      setIsMoreMenuOpen(false)
+                      void authClient.signOut()
+                    }}
+                  >
+                    {t('Logout') || 'Sair'}
+                  </Button>
+                )}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 lg:hidden" aria-label="Primary navigation">
         <div
@@ -365,18 +419,12 @@ export default function MobileBottomNav() {
               icon={MessageCircleIcon}
             />
 
-            {isAuthenticated
-              ? (
-                  <MobilePortfolioNavLink active={pathname.startsWith('/portfolio')} />
-                )
-              : (
-                  <MobileNavButton
-                    label={t('More')}
-                    active={isGuestMenuOpen}
-                    onClick={() => setIsGuestMenuOpen(true)}
-                    icon={MenuIcon}
-                  />
-                )}
+            <MobileNavButton
+              label={t('More')}
+              active={isMoreMenuOpen}
+              onClick={() => setIsMoreMenuOpen(true)}
+              icon={MenuIcon}
+            />
           </div>
         </div>
       </nav>

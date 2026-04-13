@@ -12,12 +12,14 @@ import {
 } from '@/components/ui/dialog'
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
 import { Separator } from '@/components/ui/separator'
+import { X } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useSiteIdentity } from '@/hooks/useSiteIdentity'
 import { cn } from '@/lib/utils'
@@ -68,7 +70,12 @@ export function EnableTradingDialog({
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[90vh] w-full bg-background px-4 pt-4 pb-6">
           <div className="space-y-6">
-            <DrawerHeader className="space-y-3 text-center">
+            <DrawerHeader className="relative space-y-3 text-center">
+              <DrawerClose asChild>
+                <button className="absolute -top-2 right-0 p-2 text-muted-foreground hover:text-foreground">
+                  <X className="size-5" />
+                </button>
+              </DrawerClose>
               <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <WalletIcon className="size-8" />
               </div>
@@ -117,7 +124,12 @@ export function FundAccountDialog({
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[90vh] w-full bg-background px-4 pt-4 pb-6 text-center">
           <div className="space-y-6">
-            <DrawerHeader className="space-y-3 text-center">
+            <DrawerHeader className="relative space-y-3 text-center">
+              <DrawerClose asChild>
+                <button className="absolute -top-2 right-0 p-2 text-muted-foreground hover:text-foreground">
+                  <X className="size-5" />
+                </button>
+              </DrawerClose>
               <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <CircleDollarSignIcon className="size-8" />
               </div>
