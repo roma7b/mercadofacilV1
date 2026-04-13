@@ -11,6 +11,8 @@ import { TagRepository } from '@/lib/db/queries/tag'
 import { UserRepository } from '@/lib/db/queries/user'
 import { getPublicAssetUrl } from '@/lib/storage'
 
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: PageProps<'/[locale]/settings/affiliate'>): Promise<Metadata> {
   const { locale } = await params
   setRequestLocale(locale)
