@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const horsePayOrder = await HorsePayService.createOrder({
       amount: Number(amount),
-      payer_name: payer_name || session.user.name || 'Cliente Kuest',
+      payer_name: payer_name || session.user.name || 'Cliente Mercado Fácil',
       client_reference_id: orderId,
       callback_url: callbackUrl,
     })

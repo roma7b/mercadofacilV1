@@ -54,8 +54,8 @@ function EventMarketCardComponent({
   const t = useExtracted()
   const normalizeOutcomeLabel = useOutcomeLabel()
   const { market, yesOutcome, noOutcome, yesPriceValue, noPriceValue, chanceMeta } = row
-  const yesOutcomeText = normalizeOutcomeLabel(yesOutcome?.outcome_text) ?? t('Yes')
-  const noOutcomeText = normalizeOutcomeLabel(noOutcome?.outcome_text) ?? t('No')
+  const yesOutcomeText = normalizeOutcomeLabel(yesOutcome?.outcome_text) ?? t('Sim')
+  const noOutcomeText = normalizeOutcomeLabel(noOutcome?.outcome_text) ?? t('Não')
   const resolvedPositionTags = positionTags.filter(tag => tag.shares > 0)
   const hasOpenOrders = openOrdersCount > 0
   const shouldShowTags = resolvedPositionTags.length > 0 || hasOpenOrders
@@ -167,7 +167,7 @@ function EventMarketCardComponent({
                 event.stopPropagation()
                 onBuy(market, OUTCOME_INDEX.YES, isMobile ? 'mobile' : 'desktop')
               }}
-              title={t('Click to trade Sim')}
+              title={t('Clique para apostar em Sim')}
             >
               {chanceMeta.chanceDisplay}
             </span>
@@ -198,7 +198,7 @@ function EventMarketCardComponent({
                 md:text-2xs
               "
               >
-                Sim
+                {t('Sim')}
               </span>
               <span className="mx-auto text-[11px] sm:mx-0 md:text-sm">{formatCentsLabel(yesPriceValue)}</span>
             </Button>
@@ -262,7 +262,7 @@ function PositionTags({
   const t = useExtracted()
   const normalizeOutcomeLabel = useOutcomeLabel()
   const hasOpenOrders = openOrdersCount > 0
-  const openOrdersLabel = `${openOrdersCount} open order${openOrdersCount === 1 ? '' : 's'}`
+  const openOrdersLabel = `${openOrdersCount} ${openOrdersCount === 1 ? t('ordem aberta') : t('ordens abertas')}`
   return (
     <div className="flex flex-wrap gap-1">
       {hasOpenOrders && (
@@ -276,7 +276,7 @@ function PositionTags({
       )}
       {tags.map((tag) => {
         const isYes = tag.outcomeIndex === OUTCOME_INDEX.YES
-        const label = normalizeOutcomeLabel(tag.label) || (isYes ? t('Yes') : t('No'))
+        const label = normalizeOutcomeLabel(tag.label) || (isYes ? t('Sim') : t('Não'))
         const sharesLabel = formatSharesLabel(tag.shares)
         const avgPriceLabel = formatCentsLabel(tag.avgPrice, { fallback: '—' })
 
@@ -304,7 +304,7 @@ function PositionTags({
                 'transition-all duration-200 group-hover:w-3 group-hover:opacity-100',
                 'pointer-events-none group-hover:pointer-events-auto',
               )}
-              aria-label={`Sell ${label} shares`}
+              aria-label={`${t('Vender')} ${label}`}
               onClick={(event) => {
                 event.stopPropagation()
                 onCashOut?.(tag)

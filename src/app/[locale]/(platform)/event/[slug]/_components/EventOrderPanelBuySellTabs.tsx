@@ -12,6 +12,7 @@ interface EventOrderPanelBuySellTabsProps {
   onTypeChange: (type: OrderType) => void
   onAmountReset: () => void
   onFocusInput: () => void
+  allowSell?: boolean
 }
 
 export default function EventOrderPanelBuySellTabs({
@@ -20,6 +21,7 @@ export default function EventOrderPanelBuySellTabs({
   onTypeChange,
   onAmountReset,
   onFocusInput,
+  allowSell = true,
 }: EventOrderPanelBuySellTabsProps) {
   const t = useExtracted()
   const hasHydratedTypeRef = useRef(false)
@@ -40,7 +42,7 @@ export default function EventOrderPanelBuySellTabs({
   const tabs = [
     { id: ORDER_SIDE.BUY, label: 'Comprar' },
     { id: ORDER_SIDE.SELL, label: 'Vender' },
-  ]
+  ].filter(tab => allowSell || tab.id !== ORDER_SIDE.SELL)
 
   return (
     <div className="mt-4 mb-2 border-b border-border/10 pb-0">

@@ -113,3 +113,56 @@ export class HorsePayService {
     return data
   }
 }
+
+function collectStatusCandidates(payload: any) {
+  return [
+    payload?.status,
+    payload?.order_status,
+    payload?.payment_status,
+    payload?.transaction_status,
+    payload?.data?.status,
+    payload?.data?.order_status,
+    payload?.data?.payment_status,
+    payload?.data?.transaction_status,
+  ]
+}
+
+export function isHorsePayOrderConfirmed(payload: any) {
+  if (!payload) {
+    return false
+  }
+
+  const truthyConfirmationFlags = [
+    payload?.paid,
+    payload?.approved,
+    payload?.confirmed,
+    payload?.data?.paid,
+    payload?.data?.approved,
+    payload?.data?.confirmed,
+  ]
+
+  if (truthyConfirmationFlags.some(value => value === true)) {
+    return true
+  }
+
+  return collectStatusCandidates(payload).some((value) => {
+    if (typeof value === 'number') {
+      return value === 1
+    }
+
+    if (typeof value !== 'string') {
+      return false
+    }
+
+    const normalized = value.trim().toLowerCase()
+    if (!normalized) {
+      return false
+    }
+
+    if (['pending', 'processing', 'waiting', 'created', 'new', 'open'].includes(normalized)) {
+      return false
+    }
+
+    return ['paid', 'approved', 'confirmed', 'completed', 'success', 'confirmado'].includes(normalized)
+  })
+}

@@ -402,6 +402,8 @@ function EventChartComponent({
   const isSingleMarketBase = useIsSingleMarket()
   const isCategorical = useMemo(() => event.markets.some(m => m.outcomes && m.outcomes.length > 2), [event.markets])
   const isSingleMarket = isSingleMarketBase && !isCategorical
+  const firstMarket = event.markets[0] ?? null
+  const isBinarySingleMarket = isSingleMarket && (firstMarket?.outcomes?.length ?? 0) === 2
 
   const allCategoricalTokenIds = useMemo(() => {
     const ids: string[] = []
@@ -503,7 +505,7 @@ function EventChartComponent({
     }
   }, [])
 
-  const showBothOutcomes = isSingleMarket && chartSettings.bothOutcomes
+  const showBothOutcomes = isBinarySingleMarket || (isSingleMarket && chartSettings.bothOutcomes)
   const eventHistoryEndAt = useMemo(
     () => resolveEventHistoryEndAt(event),
     [event],

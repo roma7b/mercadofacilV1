@@ -352,7 +352,7 @@ export default function EventOrderPanelForm({
   const resolvedOutcomeIndex = inferredTweetResolvedOutcomeIndex ?? resolvedDisplay.resolvedOutcomeIndex
   const resolvedOutcomeLabel = useMemo(() => {
     if (inferredTweetResolvedOutcomeIndex != null) {
-      return inferredTweetResolvedOutcomeIndex === OUTCOME_INDEX.YES ? t('Yes') : t('No')
+        return inferredTweetResolvedOutcomeIndex === OUTCOME_INDEX.YES ? t('Sim') : t('Não')
     }
 
     if (resolvedDisplay.outcomeLabel) {
@@ -360,11 +360,11 @@ export default function EventOrderPanelForm({
     }
 
     if (resolvedOutcomeIndex === OUTCOME_INDEX.YES) {
-      return t('Yes')
+      return t('Sim')
     }
 
     if (resolvedOutcomeIndex === OUTCOME_INDEX.NO) {
-      return t('No')
+      return t('Não')
     }
 
     return null
@@ -420,10 +420,10 @@ export default function EventOrderPanelForm({
   ?? activeMarket?.outcomes.find(outcome => outcome.outcome_index === OUTCOME_INDEX.NO)?.outcome_text
   const resolvedYesOutcomeLabel = (resolvedYesOutcomeText ? normalizeOutcomeLabel(resolvedYesOutcomeText) : '')
     || resolvedYesOutcomeText
-    || t('Yes')
+    || t('Sim')
   const resolvedNoOutcomeLabel = (resolvedNoOutcomeText ? normalizeOutcomeLabel(resolvedNoOutcomeText) : '')
     || resolvedNoOutcomeText
-    || t('No')
+    || t('Não')
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
   const [showLimitMinimumWarning, setShowLimitMinimumWarning] = useState(false)
   const { positionsQuery, aggregatedPositionShares } = useEventOrderPanelPositions({
@@ -434,6 +434,13 @@ export default function EventOrderPanelForm({
   useEffect(() => {
     setHasMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (isLivePool && state.side === ORDER_SIDE.SELL) {
+      state.setSide(ORDER_SIDE.BUY)
+      state.setAmount('')
+    }
+  }, [isLivePool, state.setAmount, state.setSide, state.side])
 
   const normalizedOrderBook = useMemo(() => {
     const summary = outcomeTokenId ? orderBookSummaryQuery.data?.[outcomeTokenId] : undefined
@@ -543,9 +550,9 @@ export default function EventOrderPanelForm({
     : selectedTokenShares
   const selectedShareLabel = normalizeOutcomeLabel(activeOutcome?.outcome_text)
     ?? (outcomeIndex === OUTCOME_INDEX.NO
-      ? t('No')
+      ? t('Não')
       : outcomeIndex === OUTCOME_INDEX.YES
-        ? t('Yes')
+        ? t('Sim')
         : undefined)
   const claimablePositionsForMarket = useMemo(() => {
     if (!isResolvedMarket || !activeMarket?.condition_id) {
@@ -899,6 +906,82 @@ export default function EventOrderPanelForm({
     const endOfDayTimestamp = resolveEndOfDayTimestamp()
 
     if (!ensureTradingReady()) {
+      return
+    }
+
+    if (isLivePool) {
+      if (!activeMarket || !activeOutcome || !user) {
+        return
+      }
+
+      if (state.side === ORDER_SIDE.SELL) {
+        toast.info(t('Sell orders are not available for Mercado Facil markets yet.'))
+        return
+      }
+
+      if (!Number.isFinite(amountNumber) || amountNumber <= 0) {
+        setShowAmountTooLowWarning(true)
+        triggerInputShake()
+        return
+      }
+
+      if (amountNumber > availableBalanceForOrders) {
+        setShowInsufficientBalanceWarning(true)
+        triggerInputShake()
+        return
+      }
+
+      setShowLimitMinimumWarning(false)
+      setShowMarketMinimumWarning(false)
+      setShowInsufficientSharesWarning(false)
+      setShowInsufficientBalanceWarning(false)
+      setShowAmountTooLowWarning(false)
+      setShowNoLiquidityWarning(false)
+      setShouldShakeInput(false)
+      setShouldShakeLimitShares(false)
+
+      state.setIsLoading(true)
+
+      try {
+        const response = await fetch('/api/mercado/bet', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            market_id: activeMarket.condition_id,
+            opcao: activeOutcome.outcome_index === OUTCOME_INDEX.NO ? 'NAO' : 'SIM',
+            valor: amountNumber,
+          }),
+        })
+
+        const result = await response.json().catch(() => null)
+
+        if (!response.ok) {
+          throw new Error(result?.error || result?.message || DEFAULT_ERROR_MESSAGE)
+        }
+
+        state.setAmount('')
+        queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
+        queryClient.invalidateQueries({ queryKey: ['mercado-live_pool-fallback', activeMarket.slug] })
+        queryClient.invalidateQueries({ queryKey: ['event-activity'] })
+        queryClient.invalidateQueries({ queryKey: ['event-holders'] })
+
+        toast.success(t('Bet placed successfully!'), {
+          description: result?.message
+            || t('Your position has been registered in the Mercado Facil pool.'),
+        })
+      }
+      catch (error) {
+        const message = error instanceof Error ? error.message : DEFAULT_ERROR_MESSAGE
+        toast.error(t('Unable to place bet'), {
+          description: message,
+        })
+      }
+      finally {
+        state.setIsLoading(false)
+      }
+
       return
     }
 
@@ -1494,19 +1577,6 @@ export default function EventOrderPanelForm({
     state.setLimitPrice(cents.toFixed(1))
   }
 
-  if (isLivePool && !isMobile) {
-    return (
-      <div className={cn({
-        'rounded-xl border lg:w-85': !isMobile,
-      }, 'w-full p-4 lg:shadow-xl/5')}
-      >
-        <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-sm text-muted-foreground">
-          {t('This market uses live pool betting. Use the live panel to place bets.')}
-        </div>
-      </div>
-    )
-  }
-
   return (
     <Form
       action={onSubmit}
@@ -1582,6 +1652,7 @@ export default function EventOrderPanelForm({
                 onTypeChange={handleTypeChange}
                 onAmountReset={() => state.setAmount('')}
                 onFocusInput={focusInput}
+                allowSell={!isLivePool}
               />
 
               {shouldShowOutcomePickerInPanel
@@ -1606,7 +1677,7 @@ export default function EventOrderPanelForm({
                               <EventOrderPanelOutcomeButton
                                 variant="yes"
                                 price={primaryPrice}
-                                label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) || t('Yes')}
+                                 label={normalizeOutcomeLabel(primaryOutcome?.outcome_text) || t('Sim')}
                                 isSelected={activeOutcome?.outcome_index === normalizedPrimaryOutcomeIndex}
                                 oddsFormat={oddsFormat}
                                 styleVariant={outcomeButtonStyleVariant}
@@ -1624,7 +1695,7 @@ export default function EventOrderPanelForm({
                               <EventOrderPanelOutcomeButton
                                 variant="no"
                                 price={secondaryPrice}
-                                label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) || t('No')}
+                                 label={normalizeOutcomeLabel(secondaryOutcome?.outcome_text) || t('Não')}
                                 isSelected={activeOutcome?.outcome_index === normalizedSecondaryOutcomeIndex}
                                 oddsFormat={oddsFormat}
                                 styleVariant={outcomeButtonStyleVariant}

@@ -7,10 +7,10 @@ export function useOutcomeLabel() {
 
   return function normalizeOutcomeLabel(label: OutcomeLabel) {
     if (label === 'Yes') {
-      return t('Yes')
+      return t('Sim')
     }
     if (label === 'No') {
-      return t('No')
+      return t('Não')
     }
     if (label === 'Up') {
       return t('Up')

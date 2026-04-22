@@ -24,6 +24,14 @@ interface ListHomeEventsPageOptions {
   userId: string
 }
 
+function normalizeEventTitle(value: string) {
+  return String(value || '')
+    .replace(/^\s*\[BR\]\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
 export async function listHomeEventsPage({
   bookmarked,
   currentTimestamp,
@@ -96,10 +104,17 @@ export async function listHomeEventsPage({
 
   if (targetOffset === 0 && (tag === 'trending' || tag === 'all' || !tag)) {
     const liveEvents = await MercadoFacilRepository.listLiveEvents()
+    const liveIds = new Set(liveEvents.map(event => event.id))
+    const liveTitles = new Set(liveEvents.map(event => normalizeEventTitle(event.title)))
 
-    // Deduplicar: Se o ID já estiver nos liveEvents, não incluímos a versão do Engine padrão
-    const liveIds = new Set(liveEvents.map(e => e.id))
-    const filteredStandardEvents = visibleEvents.filter(e => !liveIds.has(e.id))
+    const filteredStandardEvents = visibleEvents.filter((event) => {
+      if (liveIds.has(event.id)) { return false }
+
+      const normalizedTitle = normalizeEventTitle(event.title)
+      if (normalizedTitle && liveTitles.has(normalizedTitle)) { return false }
+
+      return true
+    })
 
     visibleEvents = [...liveEvents, ...filteredStandardEvents]
   }

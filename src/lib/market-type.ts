@@ -12,13 +12,14 @@ export function resolveMarketTypeFromSlug(slug: string | null | undefined): Mark
   if (!slug) {
     return 'clob'
   }
+  // Prefixo live_ sempre indica mercado operado pelo fluxo simplificado do Mercado Fácil,
+  // inclusive quando o slug também contém referência à Polymarket.
+  if (slug.startsWith('live_')) {
+    return 'livePool'
+  }
   // Se contiver 'poly-', é CLOB direto ou importado da Polymarket
   if (slug.includes('poly-')) {
     return 'clob'
-  }
-  // Prefixo live_ para os mercados reais do Mercado Fácil (ex: rodovia)
-  if (slug.startsWith('live_')) {
-    return 'livePool'
   }
   // Padrão: CLOB (Polymarket)
   return 'clob'

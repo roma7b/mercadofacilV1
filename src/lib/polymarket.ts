@@ -10,6 +10,10 @@ export interface PolymarketMarket {
   active: boolean
   closed: boolean
   icon?: string
+  outcomePrices?: Array<string | number>
+  outcomes?: Array<string>
+  conditionId?: string
+  condition_id?: string
 }
 
 /**
@@ -70,5 +74,21 @@ export async function fetchPolymarketOdds(conditionId: string): Promise<{ yes: n
   }
   catch (e) {
     return { yes: 0.5, no: 0.5, volume: 0, success: false }
+  }
+}
+
+export async function fetchPolymarketMarketByConditionId(conditionId: string): Promise<PolymarketMarket | null> {
+  try {
+    const url = `${POLYMARKET_GAMMA_API}/markets?condition_id=${conditionId}`
+    const res = await fetch(url)
+    if (!res.ok) {
+      return null
+    }
+
+    const data = await res.json() as PolymarketMarket[]
+    return data[0] ?? null
+  }
+  catch {
+    return null
   }
 }

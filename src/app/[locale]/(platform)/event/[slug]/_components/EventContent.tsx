@@ -92,9 +92,15 @@ export default function EventContent({
   }
 
   const isLiveMercadoEvent = isLivePoolEvent(event)
-  const isPoly = event.slug.startsWith('poly-')
+  const hasLiveCameraFeed = isLiveMercadoEvent
+    && (
+      event.main_tag === 'live_cam'
+      || Boolean(event.livestream_url?.trim())
+    )
 
   const selectedMarket = event.markets?.[0]
+  const isBinarySingleMarket = event.markets.length === 1
+    && (selectedMarket?.outcomes?.length ?? 0) === 2
   const selectedMarketTimelineOutcome = selectedMarket ? buildResolutionTimeline(selectedMarket).outcome : null
 
   useEffect(() => {
@@ -129,7 +135,7 @@ export default function EventContent({
 
             {/* Main Visual Component (Camera or Professional Chart) */}
             <div className="group relative">
-              {isLiveMercadoEvent
+              {hasLiveCameraFeed
                 ? (
                     <div className="
                       relative aspect-video w-full overflow-hidden rounded-2xl md:rounded-4xl bg-black
@@ -139,7 +145,7 @@ export default function EventContent({
                       <LiveCameraFeed
                         liveId={event.slug}
                         originalStreamUrl={event.livestream_url || undefined}
-                        showMetrics={event.slug.includes('rodovia')}
+                        showMetrics={hasLiveCameraFeed}
                         metadata={{
                           title: event.title,
                           iconUrl: event.icon_url,
@@ -166,7 +172,7 @@ export default function EventContent({
             </div>
 
             
-            {selectedMarket && (
+            {selectedMarket && isBinarySingleMarket && (
                <BigChanceMeter 
                  marketSlug={selectedMarket.slug} 
                  className="mb-2" 
@@ -174,7 +180,8 @@ export default function EventContent({
             )}
 
             {/* Markets List - High Density & Premium UI */}
-            <section className="flex flex-col gap-4">
+            {!isBinarySingleMarket && (
+              <section className="flex flex-col gap-4">
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
                   <div className="
@@ -190,7 +197,8 @@ export default function EventContent({
               <div className="rounded-2xl md:rounded-3xl border border-white/5 bg-card/20 p-4 shadow-2xl backdrop-blur-xl md:p-6">
                 <EventMarkets event={event} isMobile={!!isMobile} />
               </div>
-            </section>
+              </section>
+            )}
 
             {/* Info Tabs & Details */}
             <div className="grid gap-10">

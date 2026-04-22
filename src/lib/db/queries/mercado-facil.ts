@@ -1,6 +1,78 @@
 import type { Event, Market } from '@/types'
 import { resolveMarketTypeFromSlug } from '@/lib/market-type'
+import { fetchPolymarketMarketByConditionId } from '@/lib/polymarket'
 import { supabase } from '@/lib/supabase-client'
+
+function sanitizeMarketTitle(value: string) {
+  return String(value || '')
+    .replace(/^\s*\[BR\]\s*/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function buildLiveDedupKey(row: any) {
+  const conditionId = String(row?.polymarket_condition_id || '').trim()
+  if (conditionId) { return `condition:${conditionId}` }
+
+  const normalizedTitle = sanitizeMarketTitle(row?.titulo || '').toLowerCase()
+  if (normalizedTitle && row?.market_origin === 'polymarket') {
+    return `poly-title:${normalizedTitle}`
+  }
+
+  return `id:${row?.id || ''}`
+}
+
+async function enrichPolymarketOptions(row: any) {
+  if (row?.market_origin !== 'polymarket' || !row?.polymarket_condition_id) {
+    return row
+  }
+
+  const opcoesRaw = row.opcoes
+  const opcoes = (opcoesRaw && typeof opcoesRaw === 'object' && opcoesRaw !== null)
+    ? { ...opcoesRaw }
+    : null
+
+  if (!opcoes) {
+    return row
+  }
+
+  const hasEmbeddedPrices = Object.values(opcoes).some((value: any) => {
+    const numeric = Number(value?.price)
+    return Number.isFinite(numeric)
+  })
+
+  if (hasEmbeddedPrices) {
+    return row
+  }
+
+  const polyMarket = await fetchPolymarketMarketByConditionId(String(row.polymarket_condition_id))
+  const outcomePrices = Array.isArray(polyMarket?.outcomePrices)
+    ? polyMarket.outcomePrices
+    : typeof polyMarket?.outcomePrices === 'string'
+      ? JSON.parse(polyMarket.outcomePrices)
+      : []
+
+  if (outcomePrices.length === 0) {
+    return row
+  }
+
+  return {
+    ...row,
+    opcoes: Object.fromEntries(
+      Object.entries(opcoes).map(([key, value], index) => {
+        const currentValue = value && typeof value === 'object'
+          ? { ...(value as any) }
+          : { text: String(value || '') }
+        const numericPrice = Number(outcomePrices[index])
+
+        return [key, {
+          ...currentValue,
+          price: Number.isFinite(numericPrice) ? numericPrice : currentValue.price ?? null,
+        }]
+      }),
+    ),
+  }
+}
 
 export const MercadoFacilRepository = {
   async listLiveEvents(): Promise<Event[]> {
@@ -12,7 +84,14 @@ export const MercadoFacilRepository = {
         .order('created_at', { ascending: false })
 
       if (error) { return [] }
-      return rows.map((row: any) => this.mapToEvent(row))
+
+      const dedupedRows = Array.from(
+        new Map((rows || []).map((row: any) => [buildLiveDedupKey(row), row])).values(),
+      )
+
+      const enrichedRows = await Promise.all(dedupedRows.map((row: any) => enrichPolymarketOptions(row)))
+
+      return enrichedRows.map((row: any) => this.mapToEvent(row))
     }
     catch (error) {
       console.error('Failed to fetch Mercado Fácil live events:', error)
@@ -48,7 +127,9 @@ export const MercadoFacilRepository = {
         return null
       }
 
-      return this.mapToEvent(row)
+      const enrichedRow = await enrichPolymarketOptions(row)
+
+      return this.mapToEvent(enrichedRow)
     }
     catch (error) {
       console.error('Failed to fetch Mercado Fácil live event:', error)
@@ -76,6 +157,10 @@ export const MercadoFacilRepository = {
       const isObj = value && typeof value === 'object'
       const outcomeText = isObj ? (value as any).text : String(value)
       const realTokenId = isObj ? (value as any).tokenId : null
+      const rawProbability = isObj ? Number((value as any).price) : null
+      const normalizedProbability = Number.isFinite(rawProbability)
+        ? Math.max(0, Math.min(100, rawProbability <= 1 ? rawProbability * 100 : rawProbability))
+        : null
 
       return {
         condition_id: id,
@@ -83,6 +168,7 @@ export const MercadoFacilRepository = {
         outcome_index: extractedIdx,
         // USA O CLOB TOKEN ID REAL — é o que o gráfico usa para buscar histórico!
         token_id: realTokenId || null,
+        probability: normalizedProbability,
         is_winning_outcome: false,
         created_at: row.created_at || new Date().toISOString(),
         updated_at: row.updated_at || new Date().toISOString(),
@@ -98,7 +184,7 @@ export const MercadoFacilRepository = {
       condition_id: id,
       question_id: id,
       event_id: id,
-      title: row.titulo || '',
+      title: sanitizeMarketTitle(row.titulo || ''),
       slug,
       icon_url: row.camera_url || row.imagem_url || '',
       is_active: row.status === 'AO_VIVO',
@@ -130,8 +216,8 @@ export const MercadoFacilRepository = {
     return {
       id,
       slug,
-      title: row.titulo || '',
-      creator: 'Polymarket via Kuest',
+      title: sanitizeMarketTitle(row.titulo || ''),
+      creator: 'Mercado Fácil',
       icon_url: row.imagem_url || row.camera_url || '',
       livestream_url: null,
       show_market_icons: false,

@@ -41,11 +41,12 @@ export async function GET(
       .eq('id', targetId)
       .single()
 
-    // Se não encontrar no pool local e for um slug da poly, tentamos buscar dados reais
-    const isPoly = slug.startsWith('poly-')
+    // Mercados live importados da Polymarket seguem no engine simplificado,
+    // mas continuam usando a origem externa para sync de odds/volume/resolução.
+    const isPoly = slug.includes('poly-') || row?.market_origin === 'polymarket'
 
     if (error || !row) {
-      if (isPoly) {
+      if (slug.includes('poly-')) {
         // Tentar extrair conditionId se não resolveu via DB
         // (Isso ajuda se o mercado for novo e o graph estiver lento)
         return NextResponse.json({
@@ -68,6 +69,10 @@ export async function GET(
     // Sincronização Híbrida: Se o pool local for quase zero, pegamos da Poly
     if (isPoly && (totalSim + totalNao) < 1.1) { // 1.1 cobre o seed de 1.0
       // Se não pegamos o conditionId via Join do Supabase, buscamos direto se for um poly-
+      if (!conditionId && row.polymarket_condition_id) {
+        conditionId = String(row.polymarket_condition_id)
+      }
+
       if (!conditionId) {
         // Fallback: buscar o mercado no DB de novo pra garantir o condition_id
         const { data: marketData } = await supabase

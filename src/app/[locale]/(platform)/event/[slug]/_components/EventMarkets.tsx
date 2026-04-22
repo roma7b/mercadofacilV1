@@ -41,7 +41,7 @@ import { resolveUniqueBinaryWinningOutcomeIndexFromPayoutNumerators } from '@/li
 import { ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { fetchUserActivityData, fetchUserOtherBalance, fetchUserPositionsForMarket } from '@/lib/data-api/user'
 import { formatAmountInputValue, formatSharesLabel, fromMicro } from '@/lib/formatters'
-import { resolveOutcomeUnitPrice } from '@/lib/market-pricing'
+import { resolveFallbackOutcomeUnitPrice, resolveOutcomeUnitPrice } from '@/lib/market-pricing'
 import { applyPositionDeltasToUserPositions } from '@/lib/optimistic-trading'
 import { calculateMarketFill, normalizeBookLevels } from '@/lib/order-panel-utils'
 import { buildUmaProposeUrl, buildUmaSettledUrl } from '@/lib/uma'
@@ -75,6 +75,18 @@ function getMarketEndTime(market: Event['markets'][number]) {
   }
   const parsed = Date.parse(market.end_time)
   return Number.isNaN(parsed) ? null : parsed
+}
+
+function formatOutcomeChanceLabel(chance: number | null) {
+  if (chance == null || !Number.isFinite(chance)) {
+    return '—'
+  }
+
+  if (chance > 0 && chance < 1) {
+    return '<1%'
+  }
+
+  return `${Math.round(chance)}%`
 }
 
 export function resolveWinningOutcomeIndex(market: Event['markets'][number]) {
@@ -666,8 +678,22 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
               <div key={market.condition_id} className="transition-colors">
                 {market.outcomes && market.outcomes.length > 2 && !isResolvedInlineRow
                   ? (
-                      <div className="flex max-h-[400px] flex-col gap-2 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
-                        {market.outcomes.map((outcome) => {
+                        <div className="flex max-h-[400px] flex-col gap-2 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                          {[...market.outcomes]
+                            .map((outcome) => {
+                              const rawChance = resolveFallbackOutcomeUnitPrice(market, outcome)
+                              const normalizedChance = rawChance != null
+                                ? Math.max(0, Math.min(100, rawChance * 100))
+                                : null
+
+                              return {
+                                outcome,
+                                normalizedChance,
+                                chanceLabel: formatOutcomeChanceLabel(normalizedChance),
+                              }
+                            })
+                            .sort((a, b) => (b.normalizedChance ?? -1) - (a.normalizedChance ?? -1))
+                            .map(({ outcome, chanceLabel, normalizedChance }) => {
                           const isSelected = activeOutcomeIndex === outcome.outcome_index
                           return (
                             <div
@@ -690,25 +716,42 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                                   : `bg-card/30`,
                               )}
                             >
-                              <span className={cn('text-sm font-semibold md:text-base', isSelected
-                                ? 'text-primary'
-                                : `text-foreground`)}
-                              >
-                                {outcome.outcome_text}
-                              </span>
-                              <Button
-                                size="sm"
-                                variant={isSelected ? 'default' : 'secondary'}
-                                className={cn(`h-7 rounded-full px-4 text-xs`, isSelected
-                                  ? `shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]`
-                                  : '')}
-                              >
-                                {isSelected ? t('Selecionado') : t('Apostar')}
-                              </Button>
+                              <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex min-w-0 flex-col">
+                                  <span className={cn('truncate text-sm font-semibold md:text-base', isSelected
+                                    ? 'text-primary'
+                                    : `text-foreground`)}
+                                  >
+                                    {normalizeOutcomeLabel(outcome.outcome_text) || outcome.outcome_text}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {normalizedChance != null && (
+                                  <span className={cn(
+                                    'rounded-full px-2.5 py-1 text-xs font-bold tabular-nums',
+                                    isSelected
+                                      ? 'bg-primary/15 text-primary'
+                                      : 'bg-muted text-foreground/80',
+                                  )}
+                                  >
+                                    {chanceLabel}
+                                  </span>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant={isSelected ? 'default' : 'secondary'}
+                                  className={cn(`h-7 rounded-full px-4 text-xs`, isSelected
+                                    ? `shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]`
+                                    : '')}
+                                >
+                                  {isSelected ? t('Selecionado') : t('Apostar')}
+                                </Button>
+                              </div>
                             </div>
                           )
                         })}
-                      </div>
+                        </div>
                     )
                   : isResolvedInlineRow
                     ? (

@@ -4,7 +4,6 @@ import type { LucideIcon } from 'lucide-react'
 import type { Route } from 'next'
 import { BadgePercentIcon, CalendarIcon, LanguagesIcon, SettingsIcon, SparklesIcon, SwatchBookIcon, TagsIcon, TextSelectIcon, UsersIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
-import { Button } from '@/components/ui/button'
 import { Link, usePathname } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
@@ -40,7 +39,7 @@ export default function AdminSidebar() {
     : (activeItem?.id ?? 'general')
 
   return (
-    <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start">
+    <aside className="relative z-10 min-w-0 lg:sticky lg:top-28 lg:self-start">
       <nav
         className={`
           flex w-full max-w-full snap-x snap-mandatory gap-2 overflow-x-auto rounded-sm
@@ -48,24 +47,21 @@ export default function AdminSidebar() {
         `}
       >
         {adminMenuItems.map(item => (
-          <Button
+          <Link
             key={item.id}
-            type="button"
-            variant="ghost"
+            href={item.href}
             className={cn(
               `
-                h-auto shrink-0 snap-start flex-col gap-1.5 px-3 py-2 text-foreground
+                inline-flex h-auto shrink-0 snap-start flex-col gap-1.5 rounded-sm px-3 py-2 text-foreground
                 lg:h-11 lg:min-w-0 lg:flex-row lg:justify-start lg:gap-2 lg:px-4 lg:py-2
+                hover:bg-accent hover:text-accent-foreground
               `,
               { 'bg-accent hover:bg-accent': active === item.id },
             )}
-            asChild
           >
-            <Link href={item.href}>
-              <item.icon className="size-6 text-muted-foreground lg:size-5" />
-              <span>{item.label}</span>
-            </Link>
-          </Button>
+            <item.icon className="size-6 text-muted-foreground lg:size-5" />
+            <span>{item.label}</span>
+          </Link>
         ))}
       </nav>
     </aside>
