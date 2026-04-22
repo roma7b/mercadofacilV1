@@ -1,7 +1,7 @@
 'use client'
 
 import type { ProxyWalletStatus } from '@/types'
-import { CheckCircle2, Copy, ExternalLink, Loader2, X } from 'lucide-react'
+import { CheckCircle2, Copy, Loader2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { toast } from 'sonner'
@@ -11,8 +11,6 @@ import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog'
 
 interface WalletFlowProps {
@@ -40,7 +38,6 @@ export function WalletFlow({
   const [amount, setAmount] = useState('10')
   const [pixData, setPixData] = useState<{ qr_code: string, copy_past: string, order_id: string } | null>(null)
 
-  // Reset state when opening/closing
   useEffect(() => {
     if (!depositOpen) {
       setStep('IDLE')
@@ -48,7 +45,6 @@ export function WalletFlow({
     }
   }, [depositOpen])
 
-  // Polling for confirmation
   useEffect(() => {
     let interval: NodeJS.Timeout
     if (step === 'PIX' && pixData?.order_id) {
@@ -86,7 +82,9 @@ export function WalletFlow({
         body: JSON.stringify({ amount: Number(amount) }),
       })
 
-      if (!res.ok) { throw new Error('Falha ao gerar PIX') }
+      if (!res.ok) {
+        throw new Error('Falha ao gerar PIX')
+      }
 
       const data = await res.json()
       setPixData(data)
@@ -105,17 +103,11 @@ export function WalletFlow({
   }
 
   const [withdrawAmount, setWithdrawAmount] = useState('10')
-  const [pixKey, setPixKey] = useState('')
-  const [pixType, setPixType] = useState('CPF')
   const [withdrawing, setWithdrawing] = useState(false)
 
   const handleWithdraw = async () => {
     if (!withdrawAmount || Number(withdrawAmount) < 10) {
       toast.error('Valor mínimo de R$ 10,00')
-      return
-    }
-    if (!pixKey) {
-      toast.error('Informe a chave PIX')
       return
     }
 
@@ -126,14 +118,12 @@ export function WalletFlow({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: Number(withdrawAmount),
-          pix_key: pixKey,
-          pix_type: pixType,
         }),
       })
 
       const data = await res.json()
       if (res.ok) {
-        toast.success('Saque solicitado com sucesso!')
+        toast.success(data.message || 'Saque enviado para análise com sucesso!')
         onWithdrawOpenChange(false)
       }
       else {
@@ -155,7 +145,7 @@ export function WalletFlow({
           <div className="relative max-h-[85vh] overflow-y-auto p-8">
             <button
               onClick={() => onDepositOpenChange(false)}
-              className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+              className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
             >
               <X className="size-5" />
             </button>
@@ -173,10 +163,7 @@ export function WalletFlow({
                       type="number"
                       value={amount}
                       onChange={e => setAmount(e.target.value)}
-                      className="
-                        h-14 border-zinc-800 bg-zinc-900 pl-12 text-xl font-bold text-white
-                        focus:border-primary focus:ring-primary
-                      "
+                      className="h-14 border-zinc-800 bg-zinc-900 pl-12 text-xl font-bold text-white focus:border-primary focus:ring-primary"
                       placeholder="0,00"
                     />
                   </div>
@@ -186,11 +173,7 @@ export function WalletFlow({
                       <button
                         key={val}
                         onClick={() => setAmount(val)}
-                        className="
-                          rounded-lg border border-zinc-800 bg-zinc-900 py-2 text-sm font-semibold text-white
-                          transition-colors
-                          hover:bg-zinc-800
-                        "
+                        className="rounded-lg border border-zinc-800 bg-zinc-900 py-2 text-sm font-semibold text-white transition-colors hover:bg-zinc-800"
                       >
                         R$
                         {' '}
@@ -239,11 +222,11 @@ export function WalletFlow({
 
                   <div className="flex items-center justify-center space-x-2 py-2">
                     <Loader2 className="size-4 animate-spin text-primary" />
-                    <span className="text-xs font-medium tracking-widest text-primary uppercase">Sincronizando banco...</span>
+                    <span className="text-xs font-medium uppercase tracking-widest text-primary">Sincronizando banco...</span>
                   </div>
                 </div>
 
-                <p className="text-center text-2xs tracking-tighter text-zinc-500 uppercase">
+                <p className="text-center text-2xs uppercase tracking-tighter text-zinc-500">
                   O saldo será creditado instantaneamente após a confirmação.
                 </p>
               </div>
@@ -282,19 +265,19 @@ export function WalletFlow({
           <div className="relative max-h-[85vh] overflow-y-auto p-8">
             <button
               onClick={() => onWithdrawOpenChange(false)}
-              className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+              className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
             >
               <X className="size-5" />
             </button>
             <div className="space-y-6 pt-4">
               <div className="text-center">
                 <h2 className="mb-2 text-2xl font-bold text-white">Solicitar Saque</h2>
-                <p className="text-sm text-zinc-400">Receba seus ganhos via PIX com segurança.</p>
+                <p className="text-sm text-zinc-400">Receba seus ganhos via PIX com segurança, sempre no CPF da conta.</p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-zinc-500 uppercase">Valor do Saque</label>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase text-zinc-500">Valor do Saque</label>
                   <div className="relative">
                     <span className="absolute top-1/2 left-4 -translate-y-1/2 font-medium text-white">R$</span>
                     <Input
@@ -307,37 +290,9 @@ export function WalletFlow({
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-zinc-500 uppercase">Tipo de Chave PIX</label>
-                  <select
-                    value={pixType}
-                    onChange={e => setPixType(e.target.value)}
-                    className="
-                      h-12 w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 text-white
-                      focus:ring-1 focus:ring-primary focus:outline-none
-                    "
-                  >
-                    <option value="CPF">CPF</option>
-                    <option value="EMAIL">E-mail</option>
-                    <option value="PHONE">Telefone</option>
-                    <option value="RANDOM">Chave Aleatória / EVP</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-zinc-500 uppercase">Sua Chave PIX</label>
-                  <Input
-                    type="text"
-                    value={pixKey}
-                    onInput={e => setPixKey(e.currentTarget.value)}
-                    className="h-12 border-zinc-800 bg-zinc-900 text-white"
-                    placeholder="Digite sua chave aqui"
-                  />
-                </div>
-
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
                   <p className="text-[11px] leading-relaxed text-zinc-500">
-                    * Saques via PIX costumam ser processados em até 24 horas. Certifique-se de que a chave está correta para evitar atrasos.
+                    * Saques via PIX são processados somente para o CPF vinculado à conta. O pedido ficará em análise antes do envio para a HorsePay.
                   </p>
                 </div>
 
@@ -354,7 +309,7 @@ export function WalletFlow({
                           Processando...
                         </span>
                       )
-                    : 'Confirmar Saque PIX'}
+                    : 'Solicitar Saque no CPF'}
                 </Button>
               </div>
             </div>

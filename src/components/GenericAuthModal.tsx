@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { authClient } from '@/lib/auth-client'
+import { formatCpf, isValidCpf, normalizeCpf } from '@/lib/cpf'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { authClient } from '@/lib/auth-client'
 
 interface GenericAuthModalProps {
   isOpen: boolean
@@ -26,14 +27,12 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Sync mode when modal opens
   useEffect(() => {
     if (isOpen) {
       setIsSignUp(defaultIsSignUp)
       setError('')
     }
   }, [isOpen, defaultIsSignUp])
-
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,12 +41,15 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
 
     try {
       if (isSignUp) {
-        if (!cpf || cpf.length < 11) {
+        const normalizedCpf = normalizeCpf(cpf)
+
+        if (!isValidCpf(normalizedCpf)) {
           setError('CPF inválido')
           setLoading(false)
           return
         }
-        if (!username) {
+
+        if (!username.trim()) {
           setError('Nome de usuário obrigatório')
           setLoading(false)
           return
@@ -56,8 +58,15 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
         const { error: signUpError } = await authClient.signUp.email({
           email,
           password,
-          name: username, // Usar o nome como Display Name
-        })
+          name: username,
+          username,
+          settings: {
+            identity: {
+              cpf: normalizedCpf,
+            },
+          },
+        } as any)
+
         if (signUpError) {
           setError(signUpError.message || 'Erro ao criar conta')
         }
@@ -120,11 +129,11 @@ export function GenericAuthModal({ isOpen, onClose, defaultIsSignUp = false }: G
               />
               <input
                 type="text"
-                placeholder="CPF (Apenas números)"
+                placeholder="CPF"
                 required
                 className="w-full rounded-sm border p-2 font-medium text-black"
                 value={cpf}
-                onChange={e => setCpf(e.target.value)}
+                onChange={e => setCpf(formatCpf(e.target.value))}
               />
             </>
           )}

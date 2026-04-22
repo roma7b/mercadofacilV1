@@ -1,4 +1,5 @@
 import { and, eq, sql } from 'drizzle-orm'
+import { users } from '@/lib/db/schema/auth/tables'
 import { mercadoBets, mercadosLive, mercadoTransactions, mercadoWallets } from '@/lib/db/schema'
 import { db } from '@/lib/drizzle'
 
@@ -86,20 +87,43 @@ export async function resolveMercadoLive(
         .set({ status: 'GANHOU', updated_at: new Date() })
         .where(eq(mercadoBets.id, bet.id))
 
-      await tx
-        .insert(mercadoWallets)
-        .values({
-          user_id: bet.user_id,
-          saldo: String(payoutGarantido),
-          updated_at: new Date(),
+      const [wallet] = await tx
+        .select({ id: mercadoWallets.id })
+        .from(mercadoWallets)
+        .where(eq(mercadoWallets.user_id, bet.user_id))
+        .limit(1)
+
+      const [user] = await tx
+        .select({
+          address: users.address,
+          email: users.email,
         })
-        .onConflictDoUpdate({
-          target: mercadoWallets.user_id,
-          set: {
+        .from(users)
+        .where(eq(users.id, bet.user_id))
+        .limit(1)
+
+      if (wallet) {
+        await tx
+          .update(mercadoWallets)
+          .set({
             saldo: sql`${mercadoWallets.saldo} + ${payoutGarantido}`,
             updated_at: new Date(),
-          },
-        })
+          })
+          .where(eq(mercadoWallets.user_id, bet.user_id))
+      }
+      else {
+        await tx
+          .insert(mercadoWallets)
+          .values({
+            user_id: bet.user_id,
+            address: String(user?.address || user?.email || `mercadofacil:${bet.user_id}`),
+            chain_id: 0,
+            is_primary: true,
+            saldo: String(payoutGarantido),
+            created_at: new Date(),
+            updated_at: new Date(),
+          })
+      }
 
       await tx.insert(mercadoTransactions).values({
         user_id: bet.user_id,

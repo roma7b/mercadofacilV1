@@ -19,6 +19,32 @@ export interface HorsePayOrderResponse {
   message?: string
 }
 
+function collectStatusCandidates(payload: any) {
+  return [
+    payload?.status,
+    payload?.order_status,
+    payload?.payment_status,
+    payload?.transaction_status,
+    payload?.withdraw_status,
+    payload?.withdrawal_status,
+    payload?.data?.status,
+    payload?.data?.order_status,
+    payload?.data?.payment_status,
+    payload?.data?.transaction_status,
+    payload?.data?.withdraw_status,
+    payload?.data?.withdrawal_status,
+  ]
+}
+
+function normalizeHorsePayStatusValue(value: unknown) {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalized = value.trim().toLowerCase()
+  return normalized || null
+}
+
 export class HorsePayService {
   private static async getToken(): Promise<string> {
     const clientKey = process.env.HORSE_PAY_CLIENT_KEY
@@ -87,6 +113,20 @@ export class HorsePayService {
     return res.json()
   }
 
+  static async checkWithdrawStatus(externalId: string): Promise<any> {
+    const token = await this.getToken()
+
+    const res = await fetch(`${BASE_URL}/api/orders/withdraw/${externalId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!res.ok) {
+      throw new Error(`Failed to check withdraw status: ${res.statusText}`)
+    }
+
+    return res.json()
+  }
+
   static async createWithdraw(params: {
     amount: number
     pix_key: string
@@ -114,19 +154,6 @@ export class HorsePayService {
   }
 }
 
-function collectStatusCandidates(payload: any) {
-  return [
-    payload?.status,
-    payload?.order_status,
-    payload?.payment_status,
-    payload?.transaction_status,
-    payload?.data?.status,
-    payload?.data?.order_status,
-    payload?.data?.payment_status,
-    payload?.data?.transaction_status,
-  ]
-}
-
 export function isHorsePayOrderConfirmed(payload: any) {
   if (!payload) {
     return false
@@ -150,11 +177,7 @@ export function isHorsePayOrderConfirmed(payload: any) {
       return value === 1
     }
 
-    if (typeof value !== 'string') {
-      return false
-    }
-
-    const normalized = value.trim().toLowerCase()
+    const normalized = normalizeHorsePayStatusValue(value)
     if (!normalized) {
       return false
     }
@@ -164,5 +187,116 @@ export function isHorsePayOrderConfirmed(payload: any) {
     }
 
     return ['paid', 'approved', 'confirmed', 'completed', 'success', 'confirmado'].includes(normalized)
+  })
+}
+
+export function isHorsePayWithdrawApproved(payload: any) {
+  if (!payload) {
+    return false
+  }
+
+  const truthyFlags = [
+    payload?.approved,
+    payload?.confirmed,
+    payload?.completed,
+    payload?.success,
+    payload?.paid,
+    payload?.data?.approved,
+    payload?.data?.confirmed,
+    payload?.data?.completed,
+    payload?.data?.success,
+    payload?.data?.paid,
+  ]
+
+  if (truthyFlags.some(value => value === true)) {
+    return true
+  }
+
+  return collectStatusCandidates(payload).some((value) => {
+    const normalized = normalizeHorsePayStatusValue(value)
+    if (!normalized) {
+      return false
+    }
+
+    if ([
+      'pending',
+      'processing',
+      'waiting',
+      'created',
+      'new',
+      'open',
+      'requested',
+      'queued',
+      'em_analise',
+      'em análise',
+      'analyzing',
+    ].includes(normalized)) {
+      return false
+    }
+
+    return [
+      'approved',
+      'confirmado',
+      'confirmed',
+      'completed',
+      'success',
+      'successful',
+      'paid',
+      'processed',
+      'processado',
+    ].includes(normalized)
+  })
+}
+
+export function isHorsePayWithdrawFailed(payload: any) {
+  if (!payload) {
+    return false
+  }
+
+  const failureFlags = [
+    payload?.failed,
+    payload?.rejected,
+    payload?.cancelled,
+    payload?.canceled,
+    payload?.reverted,
+    payload?.refunded,
+    payload?.data?.failed,
+    payload?.data?.rejected,
+    payload?.data?.cancelled,
+    payload?.data?.canceled,
+    payload?.data?.reverted,
+    payload?.data?.refunded,
+  ]
+
+  if (failureFlags.some(value => value === true)) {
+    return true
+  }
+
+  return collectStatusCandidates(payload).some((value) => {
+    if (value === false) {
+      return true
+    }
+
+    const normalized = normalizeHorsePayStatusValue(value)
+    if (!normalized) {
+      return false
+    }
+
+    return [
+      'failed',
+      'failure',
+      'error',
+      'rejected',
+      'denied',
+      'denegado',
+      'cancelled',
+      'canceled',
+      'cancelado',
+      'estornado',
+      'reverted',
+      'refunded',
+      'expired',
+      'chargeback',
+    ].includes(normalized)
   })
 }

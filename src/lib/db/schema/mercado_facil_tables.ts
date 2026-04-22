@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import { bigint, boolean, integer, jsonb, numeric, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { users } from './auth/tables'
 
@@ -63,8 +64,12 @@ export const mercadoBets = pgTable('bets', {
 })
 
 export const mercadoWallets = pgTable('wallets', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  user_id: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
+  id: text('id').primaryKey().default(sql`generate_ulid()`),
+  user_id: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  address: text('address').notNull(),
+  chain_id: integer('chain_id').notNull().default(0),
+  is_primary: boolean('is_primary').default(true),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   saldo: numeric('saldo', { precision: 14, scale: 2 }).notNull().default('0.00'),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })

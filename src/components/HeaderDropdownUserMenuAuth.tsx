@@ -1,6 +1,6 @@
 'use client'
 
-import { BadgePercentIcon, ChevronDownIcon, DownloadIcon, PlusCircleIcon, SettingsIcon, ShieldIcon, TrophyIcon, UnplugIcon } from 'lucide-react'
+import { ArrowUpRightIcon, BadgePercentIcon, ChevronDownIcon, DownloadIcon, PlusCircleIcon, SettingsIcon, ShieldIcon, TrophyIcon, UnplugIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
@@ -41,6 +41,7 @@ export default function HeaderDropdownUserMenuAuth() {
   const enableHoverOpen = !isMobile
   const tradingOnboarding = useOptionalTradingOnboarding()
   const startDepositFlow = tradingOnboarding?.startDepositFlow
+  const startWithdrawFlow = tradingOnboarding?.startWithdrawFlow
   const [menuOpen, setMenuOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -223,6 +224,21 @@ export default function HeaderDropdownUserMenuAuth() {
               <div className="flex w-full items-center gap-1.5">
                 <PlusCircleIcon className="size-4" />
                 {t('Deposit')}
+              </div>
+            </DropdownMenuItem>
+          )}
+
+          {startWithdrawFlow && (
+            <DropdownMenuItem
+              className="py-2 text-sm font-semibold text-primary focus:text-primary"
+              onSelect={() => {
+                handleMenuClose()
+                startWithdrawFlow()
+              }}
+            >
+              <div className="flex w-full items-center gap-1.5">
+                <ArrowUpRightIcon className="size-4" />
+                Saque
               </div>
             </DropdownMenuItem>
           )}

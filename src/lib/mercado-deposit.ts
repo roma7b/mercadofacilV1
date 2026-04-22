@@ -1,4 +1,5 @@
 import { eq, sql } from 'drizzle-orm'
+import { users } from '@/lib/db/schema/auth/tables'
 import { mercadoTransactions, mercadoWallets } from '@/lib/db/schema/mercado_facil_tables'
 import { db } from '@/lib/drizzle'
 
@@ -24,28 +25,51 @@ export async function confirmDepositTransactionById(transactionId: string) {
 
     const amount = Number(transaction.valor)
     if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error(`Valor de depósito inválido para transação ${transactionId}`)
+      throw new Error(`Valor de deposito invalido para transacao ${transactionId}`)
     }
+
+    const [user] = await tx
+      .select({
+        address: users.address,
+        email: users.email,
+      })
+      .from(users)
+      .where(eq(users.id, transaction.user_id))
+      .limit(1)
 
     await tx
       .update(mercadoTransactions)
       .set({ status: 'CONFIRMADO' })
       .where(eq(mercadoTransactions.id, transaction.id))
 
-    await tx
-      .insert(mercadoWallets)
-      .values({
-        user_id: transaction.user_id,
-        saldo: String(amount),
-        updated_at: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: mercadoWallets.user_id,
-        set: {
+    const [wallet] = await tx
+      .select({ id: mercadoWallets.id })
+      .from(mercadoWallets)
+      .where(eq(mercadoWallets.user_id, transaction.user_id))
+      .limit(1)
+
+    if (wallet) {
+      await tx
+        .update(mercadoWallets)
+        .set({
           saldo: sql`${mercadoWallets.saldo} + ${amount}`,
           updated_at: new Date(),
-        },
-      })
+        })
+        .where(eq(mercadoWallets.user_id, transaction.user_id))
+    }
+    else {
+      await tx
+        .insert(mercadoWallets)
+        .values({
+          user_id: transaction.user_id,
+          address: String(user?.address || user?.email || `mercadofacil:${transaction.user_id}`),
+          chain_id: 0,
+          is_primary: true,
+          saldo: String(amount),
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+    }
 
     return { status: 'confirmed' as const, transaction }
   })

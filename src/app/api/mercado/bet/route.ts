@@ -14,6 +14,7 @@ import {
 import { auth } from '@/lib/auth'
 import { mercadoBets, mercadosLive, mercadoTransactions, mercadoWallets } from '@/lib/db/schema'
 import { db } from '@/lib/drizzle'
+import { reconcileUserWalletFromConfirmedTransactions } from '@/lib/mercado-wallet-reconcile'
 
 export async function POST(req: NextRequest) {
   try {
@@ -59,11 +60,20 @@ export async function POST(req: NextRequest) {
       }
 
       // B. Buscar carteira do usuário
-      const [wallet] = await tx
+      let [wallet] = await tx
         .select()
         .from(mercadoWallets)
         .where(eq(mercadoWallets.user_id, userId))
         .limit(1)
+
+      if (!wallet) {
+        await reconcileUserWalletFromConfirmedTransactions(userId)
+        ;[wallet] = await tx
+          .select()
+          .from(mercadoWallets)
+          .where(eq(mercadoWallets.user_id, userId))
+          .limit(1)
+      }
 
       if (!wallet) {
         throw new Error('Carteira não encontrada. Faça um depósito para começar.')

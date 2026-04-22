@@ -189,6 +189,9 @@ interface TradingAuthStatus {
 }
 
 interface UserSettings {
+  identity?: {
+    cpf?: string
+  }
   notifications?: {
     email_resolutions?: boolean
     inapp_order_fills?: boolean
