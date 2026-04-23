@@ -105,79 +105,85 @@ export default function MercadoHypeClient({
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [marketActionId, setMarketActionId] = useState<string | null>(null)
+  const [loadedTabs, setLoadedTabs] = useState({
+    global: initialGlobalHype.length > 0,
+    brazil: initialBrazilHype.length > 0,
+    published: initialPublished.length > 0,
+  })
 
-  const hasInitialData = initialGlobalHype.length > 0 || initialBrazilHype.length > 0 || initialPublished.length > 0
+  async function loadPublishedData(force = false) {
+    if (!force && loadedTabs.published) {
+      return true
+    }
 
-  async function loadPublishedData() {
+    setLoading(true)
     const response = await fetch('/api/admin/mercado-hype/published', {
       credentials: 'include',
       method: 'GET',
     })
 
-    const publishedRes = await response.json()
+    const publishedRes = await response.json().catch(() => null)
 
-    if (response.ok && publishedRes.success) {
+    if (response.ok && publishedRes?.success) {
       setPublished(normalizePublishedMarkets(publishedRes.data || []))
+      setLoadedTabs(prev => ({ ...prev, published: true }))
+      setLoading(false)
       return true
     }
 
-    toast.error(`Erro ao carregar publicados: ${publishedRes.error || 'desconhecido'}`)
+    toast.error(`Erro ao carregar publicados: ${publishedRes?.error || 'desconhecido'}`)
+    setLoading(false)
     return false
   }
 
-  async function loadData() {
+  async function loadGlobalData(force = false) {
+    if (!force && loadedTabs.global) {
+      return true
+    }
+
     setLoading(true)
     try {
-      const [gRes, bRes, pRes] = await Promise.allSettled([
-        getPolymarketHypeAction(),
-        getBrazillianHypeAction(),
-        fetch('/api/admin/mercado-hype/published', {
-          credentials: 'include',
-          method: 'GET',
-        }).then(async response => ({
-          ok: response.ok,
-          body: await response.json(),
-        })),
-      ])
-
-      if (gRes.status === 'fulfilled') {
-        if (gRes.value.success) {
-          setGlobalHype(gRes.value.data || [])
-        }
-        else {
-          toast.error(`Erro ao carregar Hype Global: ${gRes.value.error || 'desconhecido'}`)
-        }
+      const res = await getPolymarketHypeAction()
+      if (res.success) {
+        setGlobalHype(res.data || [])
+        setLoadedTabs(prev => ({ ...prev, global: true }))
+        return true
       }
 
-      if (bRes.status === 'fulfilled') {
-        if (bRes.value.success) {
-          setBrazilHype(bRes.value.data || [])
-        }
-        else {
-          toast.error(`Erro ao carregar Brasil: ${bRes.value.error || 'desconhecido'}`)
-        }
-      }
-
-      if (pRes.status === 'fulfilled') {
-        if (pRes.value.ok && pRes.value.body.success) {
-          setPublished(normalizePublishedMarkets(pRes.value.body.data || []))
-        }
-        else {
-          toast.error(`Erro ao carregar publicados: ${pRes.value.body?.error || 'desconhecido'}`)
-        }
-      }
-
-      if (
-        gRes.status === 'rejected'
-        && bRes.status === 'rejected'
-        && pRes.status === 'rejected'
-      ) {
-        toast.error('Falha ao carregar dados do Hype Factory.')
-      }
+      toast.error(`Erro ao carregar Hype Global: ${res.error || 'desconhecido'}`)
+      return false
     }
     catch (err) {
-      console.error('Failed to fetch hype', err)
-      toast.error('Falha inesperada ao carregar mercados.')
+      console.error('Failed to fetch global hype', err)
+      toast.error('Falha inesperada ao carregar Hype Global.')
+      return false
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+
+  async function loadBrazilData(force = false) {
+    if (!force && loadedTabs.brazil) {
+      return true
+    }
+
+    setLoading(true)
+    try {
+      const res = await getBrazillianHypeAction()
+      if (res.success) {
+        setBrazilHype(res.data || [])
+        setLoadedTabs(prev => ({ ...prev, brazil: true }))
+        return true
+      }
+
+      toast.error(`Erro ao carregar Brasil: ${res.error || 'desconhecido'}`)
+      return false
+    }
+    catch (err) {
+      console.error('Failed to fetch brazil hype', err)
+      toast.error('Falha inesperada ao carregar mercados do Brasil.')
+      return false
     }
     finally {
       setLoading(false)
@@ -185,22 +191,24 @@ export default function MercadoHypeClient({
   }
 
   useEffect(() => {
-    if (!hasInitialData) {
-      void loadData()
+    if (activeTab === 'global') {
+      void loadGlobalData()
+      return
     }
-  }, [hasInitialData])
 
-  useEffect(() => {
-    if (activeTab === 'published' && published.length === 0) {
-      void loadPublishedData()
+    if (activeTab === 'brazil') {
+      void loadBrazilData()
+      return
     }
-  }, [activeTab, published.length])
+
+    void loadPublishedData()
+  }, [activeTab])
 
   async function handleDelete(id: string) {
     const res = await deleteMercadoAction(id)
     if (res.success) {
       toast.success('Mercado excluido.')
-      await loadData()
+      await loadPublishedData(true)
     }
     else {
       toast.error(`Erro ao excluir: ${res.error}`)
@@ -212,7 +220,15 @@ export default function MercadoHypeClient({
     const res = await syncAllHypeMarketsAction()
     if (res.success) {
       toast.success(`Sincronizados ${res.count} mercados ativos.`)
-      await loadData()
+      if (activeTab === 'global') {
+        await loadGlobalData(true)
+      }
+      else if (activeTab === 'brazil') {
+        await loadBrazilData(true)
+      }
+      else {
+        await loadPublishedData(true)
+      }
     }
     else {
       toast.error(`Erro ao sincronizar: ${res.error}`)
@@ -244,7 +260,7 @@ export default function MercadoHypeClient({
       else {
         toast.success(`Mercado resolvido como ${action === 'resolve-sim' ? 'SIM' : 'NAO'}.`)
       }
-      await loadData()
+      await loadPublishedData(true)
     }
     else {
       toast.error(res.error || 'Falha ao executar a operacao.')
